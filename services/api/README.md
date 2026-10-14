@@ -12,9 +12,28 @@ updates; unique constraints and append-only triggers protect history. SQLite tes
 cover offline behavior. Live PostgreSQL integration tests are gated by
 `ORCIFY_TEST_DATABASE_URL` and have passed against PostgreSQL 16.15.
 
-FastAPI routes, authenticated identity construction, and publication eligibility HTTP
-endpoints remain later Phase 2 tasks. Artifact versions and append-only provenance now
-live in `app/artifact_store.py`. They bind exact graph snapshots, asset node versions,
+FastAPI v1 routes now live in `app/http.py`. Authentication uses opaque random bearer
+credentials with only SHA-256 digests stored in PostgreSQL; actors and tenant roles
+are resolved from `api_credentials` and `tenant_memberships` on each request. Client
+tenant/project/actor/reviewer claims do not grant access. See ADR-009. Provision an
+identity from a trusted operator shell after migrations using
+`python scripts/provision_api_identity.py --tenant TENANT --actor ACTOR --role tenant_admin`.
+The command prints its credential once. Keep it in a secret manager and send it over
+a secure channel. Run the service with `uvicorn services.api.app.http:app`; OpenAPI
+is available at `/docs` and the committed contract is `docs/api/openapi.json`.
+
+The API exposes project create/list/get, authoritative current graph retrieval,
+graph-change submission, plan preview, exact-version approval transitions, artifact
+create/retrieval/eligibility, and execution run/attempt history and transitions. It
+recomputes planning decisions against PostgreSQL before approvals, artifacts, and
+execution runs. Eligibility delegates to the current-state transaction in the artifact
+store; Neo4j is not consulted. No publishing endpoint or real model provider exists.
+Tenant roles are currently tenant-wide; interactive login, SSO and scoped project
+roles remain limitations. API auth and OpenAPI tests use SQLite; a separate opt-in
+test checks authentication and revocation against PostgreSQL via
+`ORCIFY_TEST_DATABASE_URL`.
+
+Artifact versions and append-only provenance now live in `app/artifact_store.py`. They bind exact graph snapshots, asset node versions,
 dependency versions, source provenance, and a content hash. Execution runs/attempts
 have transactionally updated status indexes and immutable lifecycle events; missing,
 estimated, and measured values are explicitly distinguished. Artifact eligibility
@@ -27,5 +46,6 @@ run with `scripts/run_projection_worker.py`. It consumes full graph events from 
 PostgreSQL outbox, tracks retry/checkpoint state in PostgreSQL, applies ordered scoped
 Neo4j transactions, and periodically reconciles from authoritative snapshots. The
 pure domain under
-`packages/gamo_ca` imports none of these frameworks. Generated JSON contracts are
-under `docs/api/schemas`; they are not OpenAPI routes.
+`packages/gamo_ca` imports none of these frameworks. Generated domain JSON contracts
+are under `docs/api/schemas`; the HTTP contract is generated separately as
+`docs/api/openapi.json`.

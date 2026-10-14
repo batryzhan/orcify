@@ -452,13 +452,13 @@ def test_approval_persistence_uses_pure_transition_and_is_idempotent(session: Se
     )
     duplicate = append_approval(
         session,
-        command=command,
+        command=replace(command, created_at=NOW + timedelta(seconds=3)),
         identity=identity,
         graph=graph,
         plan=plan,
     )
     assert first.latest == command and first.replayed is False
-    assert duplicate.latest == command and duplicate.replayed is True
+    assert duplicate.latest == first.latest and duplicate.replayed is True
     assert len(session.scalars(select(ApprovalRecord)).all()) == 1
     record = session.scalar(select(ApprovalRecord))
     assert record is not None

@@ -269,3 +269,45 @@ attempts are mutable indexes guarded so header metadata cannot change; append-on
 execution events provide the durable history. Object/blob storage, retention and
 artifact diffing remain open. Docker Compose health metadata remains unverified because
 the Docker CLI is unavailable. No external publisher or provider integration exists.
+
+## 2026-10-14 — Phase 2D authenticated FastAPI boundary
+
+Observation category: MEASURED local engineering and security checks, not a scientific
+benchmark. ADR-009 selects expiring opaque bearer tokens for the MVP. Token digests and
+tenant memberships live in PostgreSQL; the token is printed only once by the operator
+provisioning command. The server derives actor identity and tenant role from those
+records. Request schemas reject actor/reviewer claims. Cross-tenant and revoked
+membership resources return 404, role denials return 403, and absent/invalid/expired
+credentials return 401. Roles are tenant-wide in this prototype.
+
+Migration `0007_authenticated_api` adds `api_credentials` and `tenant_memberships`.
+FastAPI exposes project create/list/get, PostgreSQL graph snapshot read/change, plan
+preview, approval submit/approve/reject/revoke transitions, artifact create/read and
+eligibility, execution run/attempt transitions and history. Approval, artifact, and
+run creation recompute the submitted planning event against the current PostgreSQL
+graph. Eligibility continues through the existing current-state PostgreSQL project
+lock and pure predicate. PostgreSQL remains authoritative; no publication side effect,
+real AI provider, or frontend was added. OpenAPI is generated into `docs/api/openapi.json`.
+
+| Executed command | Observed result |
+| --- | --- |
+| `.venv/Scripts/python -m alembic -c services/api/alembic.ini upgrade head` with local PostgreSQL | Applied `0007_authenticated_api` after `0006_execution_header_guards` |
+| `.venv/Scripts/python -m alembic -c services/api/alembic.ini current` | `0007_authenticated_api (head)` |
+| `.venv/Scripts/python -m alembic -c services/api/alembic.ini upgrade head --sql` | Full PostgreSQL migration chain through `0007_authenticated_api` compiled offline |
+| `.venv/Scripts/python scripts/tasks.py check-python` with `ORCIFY_TEST_DATABASE_URL` set to local PostgreSQL | Ruff checks/format passed; strict mypy passed for 29 source files; 92 passed, 1 skipped out of 93 tests |
+| PostgreSQL integration tests within the full suite | 5 passed: artifact/execution persistence, API credential/membership revocation, and 3 PostgreSQL concurrency tests |
+| SQLite FastAPI security/route tests | 10 passed: project creation, auth expiry/invalidity, tenant and role denial, forged identity rejection, graph duplicate replay, approval transitions, artifact creation/retrieval, and execution history |
+| `services/api/tests/test_projection_integration.py` in the full suite | 1 skipped because `ORCIFY_TEST_NEO4J_*` variables were not configured; no live Neo4j claim for this phase |
+| `.venv/Scripts/python scripts/export_openapi.py`; `.venv/Scripts/python scripts/tasks.py schemas --check` | OpenAPI regenerated; domain schemas remained consistent |
+| `.venv/Scripts/python scripts/tasks.py verify-test-gate`; `.venv/Scripts/python -m pip check`; `git diff --check` | All passed; deliberately broken test was rejected; no dependency conflicts or whitespace errors |
+| `npm run format:check`; `npm run lint`; `npm run typecheck`; `npm test` | All passed; 3 TypeScript contract tests passed |
+
+One Starlette deprecation warning is emitted by its test client recommending `httpx2`;
+it does not fail tests. Live PostgreSQL exercised authentication and the existing
+transactional persistence suites; the complete API route suite used isolated SQLite.
+The prototype still lacks interactive login/SSO/MFA, per-project membership roles,
+membership administration endpoints, rate limiting, production key rotation, and
+security alerting. TLS and secure one-time token delivery are deployment requirements.
+Neo4j projection and Docker Compose health were not revalidated in this phase. The
+finite tests establish these observed checks only; they do not establish universal
+security or scientific results.

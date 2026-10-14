@@ -35,6 +35,8 @@ def test_initial_migration_creates_authority_and_outbox_tables(tmp_path, monkeyp
             "execution_attempts",
             "execution_events",
             "artifact_provenance",
+            "api_credentials",
+            "tenant_memberships",
             "alembic_version",
         } <= set(schema.get_table_names())
         assert {

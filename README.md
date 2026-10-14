@@ -106,13 +106,21 @@ orcify/
 ## 11. Local developer experience
 Target: Python 3.12+, Node 22+, Docker Compose. Provide `make setup`, `make dev`, `make test`, `make lint`, `make benchmark-pilot`, `make seed-demo` (or cross-platform equivalents). `.env.example` contains placeholders only. Default to mock LLM mode with deterministic fixtures so no API key or billing is required to demonstrate the project. Document Windows PowerShell commands as well as Bash. Supply database migrations, sample data, OpenAPI docs and health endpoints.
 
-## 12. API sketch (proposed; subject to ADR)
-`POST /api/v1/campaigns`; `POST /api/v1/briefs`; `POST /api/v1/requirements/{id}/confirm`; `GET /api/v1/campaigns/{id}/graph`; `POST /api/v1/change-events/preview`; `POST /api/v1/change-events/apply`; `GET /api/v1/plans/{id}`; `POST /api/v1/assets/{id}/approve`; `GET /api/v1/audit`; `POST /api/v1/benchmarks/runs`; `GET /api/v1/benchmarks/runs/{id}`. All write routes require authorization and idempotency semantics.
+## 12. API boundary
+
+Phase 2D provides an authenticated FastAPI v1 prototype for tenant-scoped project,
+graph, planning, approval, artifact, execution, and eligibility operations. The API
+uses expiring opaque bearer credentials whose digests and tenant role assignments are
+stored in PostgreSQL. It does not accept client-supplied actor or reviewer identity as
+authority. See [ADR-009](docs/adr/009-authenticated-api-boundary.md),
+[`services/api/README.md`](services/api/README.md), and the generated
+[OpenAPI contract](docs/api/openapi.json). Tenant roles are currently shared across
+projects in that tenant. There is no interactive login, SSO, or public token issuance.
 
 ## 13. Definition of done
 A fresh clone boots from documented commands; seeded demo runs without paid API; a rule change triggers explainable targeted recomputation; stale approval cannot publish; all invariants have passing automated tests; benchmark outputs raw observations plus reproducible scripts; research report distinguishes hypotheses from results; UI is accessible, responsive and shows errors honestly.
 
-## 14. Current runnable milestone
+## 14. Phase 1 pure-kernel milestone (historical)
 
 Requires Python 3.12+ and Node 22+. This milestone is a pure offline plan preview;
 it does not start a web app, approve content or publish. No Docker, API key or `.env`
@@ -170,3 +178,22 @@ approval chain, fail-closed publication eligibility, and deterministic in-memory
 event replay. These pure functions do not provide authenticated sessions, durable
 database transactions, or external publishing. See `docs/research/limitations.md`
 and `TASK.md` for remaining gates.
+
+## 15. Authenticated API prototype
+
+After applying migrations, provision an identity from an operator-controlled shell.
+The provisioning command prints a random token once; store it in a secret manager and
+pass it as a Bearer credential. The server stores only its SHA-256 digest.
+
+```powershell
+.venv/Scripts/python -m alembic -c services/api/alembic.ini upgrade head
+.venv/Scripts/python scripts/provision_api_identity.py --tenant demo-tenant --actor operator-1 --role tenant_admin
+.venv/Scripts/python -m uvicorn services.api.app.http:app --host 127.0.0.1 --port 8000
+```
+
+OpenAPI and interactive documentation are served at `/openapi.json` and `/docs`.
+The API checks current membership on each request, hides cross-tenant resources,
+recomputes plans before approval/artifact/run writes, and evaluates eligibility from
+PostgreSQL within the existing project lock. Do not expose the development database
+credentials or token output from provisioning in shared logs. See ADR-009 for the
+authentication assumptions and deployment limitations.

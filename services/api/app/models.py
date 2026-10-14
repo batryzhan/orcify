@@ -29,6 +29,42 @@ class Base(DeclarativeBase):
     """Metadata root for Alembic and database tests."""
 
 
+class ApiCredentialRecord(Base):
+    """Opaque bearer credential digest; raw credentials are never persisted."""
+
+    __tablename__ = "api_credentials"
+    __table_args__ = (UniqueConstraint("token_digest", name="uq_api_credentials_digest"),)
+
+    credential_id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    actor_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    token_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+
+class TenantMembershipRecord(Base):
+    """Server-authoritative tenant role assignment for an authenticated actor."""
+
+    __tablename__ = "tenant_memberships"
+    __table_args__ = (
+        CheckConstraint(
+            "role IN ('tenant_admin', 'producer', 'editor', 'reviewer', 'researcher')",
+            name="ck_tenant_memberships_role",
+        ),
+    )
+
+    tenant_id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    actor_id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    role: Mapped[str] = mapped_column(String(32), nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+
 class ProjectRecord(Base):
     __tablename__ = "projects"
     __table_args__ = (CheckConstraint("revision >= 0", name="ck_projects_revision_nonnegative"),)

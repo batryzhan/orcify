@@ -29,14 +29,24 @@
 - [x] Produce `docs/research/algorithm.md`: pseudocode, complexity assumptions, known failure modes and diagrams. **Done:** algorithm, approval/replay contracts, complexity assumptions and limitations documented without LLM output.
 
 ## Phase 2 — Persistence and API (P0)
-- [ ] Compose local PostgreSQL + Neo4j, health checks and migrations. PostgreSQL 16.15 and Neo4j services respond to live probes; Alembic is applied through `0006_execution_header_guards`. Docker Compose health metadata remains unverified because `docker` is not available in this shell.
+- [ ] Compose local PostgreSQL + Neo4j, health checks and migrations. PostgreSQL 16.15 and Neo4j services responded to live probes earlier; Alembic is now applied through `0007_authenticated_api`. Docker Compose health metadata remains unverified because `docker` is not available in this shell.
 - [x] Persist immutable events, snapshots, approvals, artifacts and run logs. Complete graph-change events carry typed snapshot content; graph/replay snapshots, project pointers, revision, outbox, immutable artifact versions, provenance history, and transactional execution lifecycle records are implemented and tested. See ADR-008 and the Phase 2C execution log.
 - [x] Build Neo4j projection adapter and reconcile from event log. **Done:** leased ordered outbox delivery, bounded exponential retries/dead-letter status, PostgreSQL checkpoints, tenant-qualified atomic Neo4j snapshot writes, crash-idempotent replay, and authoritative rebuild/reconciliation. Deterministic failure tests and a live PostgreSQL + Neo4j integration test passed; see the Phase 2B experiment entry. Neo4j remains a rebuildable projection.
-- [ ] Add FastAPI v1 routes for campaign creation, brief upload, requirement confirmation, graph query, preview/apply change, plan inspection, approval and audit. **Done:** OpenAPI + integration tests.
-- [ ] Implement authorization with tenant isolation and role permissions (producer/editor/reviewer/researcher). **Done:** 403/404 semantics tested for unauthorized access.
-- [ ] Add upload size/type validation, content sanitization and audit logging. **Done:** malformed uploads fail safely.
-- [ ] Add idempotency key and optimistic concurrency to change application. **Done:** parallel updates cannot silently overwrite approvals.
-- [ ] Provide seeded demo data, migrations and API smoke-test script. **Done:** from clean DB, demo works without credentials.
+- [x] Add authenticated FastAPI v1 project, graph snapshot/change, planning, approval transition, artifact, execution history, and eligibility routes. **Done:** typed OpenAPI contract and API tests; campaigns, briefs, requirement confirmation, uploads, and audit endpoints remain separate work.
+- [x] Implement verified bearer authentication with tenant isolation and role permissions (tenant_admin/producer/editor/reviewer/researcher). **Done:** credential digests and active memberships are PostgreSQL-authoritative; expiry, revocation, forged identity, 403 and concealed 404 cases tested.
+- [ ] Add upload size/type validation, content sanitization and audit logging.
+- [x] Add idempotency key and optimistic concurrency to graph-change application. **Done:** exact duplicate graph requests replay; conflicting payloads and stale revisions fail closed through the transaction store.
+- [ ] Provide seeded API demo and smoke-test script. Migrations and one-time identity provisioning exist; a complete seeded HTTP demo remains open.
+
+### Phase 2D — authenticated API boundary (2026-10-14)
+
+- [x] Establish opaque expiring bearer credentials and server-verified actor identity; persist only token digests.
+- [x] Resolve tenant roles from active PostgreSQL membership on each request; reject expired credentials and hide cross-tenant or revoked-membership resources.
+- [x] Enforce role checks for project, graph, approval, artifact, execution, planning, and eligibility operations.
+- [x] Add typed OpenAPI schemas and endpoints for project create/list/get, authoritative graph read/change, planning, approval submission/approve/reject/revoke, artifact create/read, execution run/attempt lifecycle/history, and eligibility.
+- [x] Preserve existing transactions, exact-version approval, idempotency, revision checks, and PostgreSQL-only eligibility. No external publishing path is exposed.
+- [x] Verify offline security/route tests and live PostgreSQL migration/auth tests; exact commands and skipped checks are in the Phase 2D experiment log.
+- [ ] Add interactive identity management, per-project roles, upload/brief/requirement-confirmation APIs, and a seeded API smoke demo.
 
 ## Phase 3 — Execution and AI integration (P1)
 - [ ] Define provider interface `generate(task, confirmed_context, limits) -> result+usage+provenance` and deterministic MockProvider. **Done:** offline integration tests.
@@ -104,6 +114,9 @@ Phase 2 persistence now includes SQLAlchemy/Alembic authority storage, immutable
 and replay snapshots, pure-kernel-validated approvals, typed graph changes, a retryable
 Neo4j projection worker, immutable artifact versions/provenance, and transactional
 execution lifecycle history. PostgreSQL persistence was verified against live local
-PostgreSQL; `0005_artifacts_execution` is current. Compose health metadata remains
-unverified because no Docker CLI is discoverable in this shell. Authenticated FastAPI
-authorization/routes and UI remain open. See Phase 2B and 2C experiment-log entries.
+PostgreSQL; `0007_authenticated_api` is current. Phase 2D provides authenticated typed
+routes for projects, graph snapshots and changes, planning, approvals, artifacts,
+executions, and eligibility. The API uses opaque bearer-token digests and current
+tenant membership records. UI remains out of scope until security and integration
+coverage expands. Compose health metadata remains unverified because no Docker CLI is
+discoverable in this shell. See Phase 2B, 2C, and 2D experiment-log entries.

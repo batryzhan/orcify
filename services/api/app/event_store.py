@@ -475,7 +475,12 @@ def append_approval(
     payload = canonical(command)
     if not isinstance(payload, dict):
         raise TypeError("approval payload must serialize to an object")
-    payload_hash = fingerprint(payload)
+    # created_at is server-generated and may differ across retries; the immutable
+    # transition semantics (including exact versions, actor, policy and reason) define
+    # whether an idempotency key is an exact replay or a conflicting request.
+    payload_hash = fingerprint(
+        {key: value for key, value in payload.items() if key != "created_at"}
+    )
     with session.begin():
         project = session.scalar(
             select(ProjectRecord)
@@ -487,8 +492,6 @@ def append_approval(
         )
         if project is None:
             raise ProjectNotFound("project not found in authorized tenant scope")
-        if project.current_graph_hash != graph.snapshot_hash:
-            raise StaleProjectRevision("approval graph is not the authoritative current snapshot")
         if identity.actor_id != command.actor_id or not identity.is_human:
             raise ApprovalError("approval requires the authenticated human actor")
         prior = session.scalar(
@@ -499,13 +502,18 @@ def append_approval(
             )
         )
         if prior is not None:
-            if prior.payload_hash != payload_hash:
+            legacy_hash = fingerprint(payload)
+            if prior.payload_hash not in {payload_hash, legacy_hash}:
                 raise EventConflict("approval idempotency key has conflicting payload")
             history = _approval_history(session, identity.tenant_id, identity.project_id)
             chain = tuple(
                 item for item in history if item.asset_version_id == command.asset_version_id
             )
-            return ApprovalResult(chain, command, True)
+            if not chain:
+                raise ProjectStateCorrupt("approval idempotency row has no approval history")
+            return ApprovalResult(chain, chain[-1], True)
+        if project.current_graph_hash != graph.snapshot_hash:
+            raise StaleProjectRevision("approval graph is not the authoritative current snapshot")
         history = _approval_history(session, identity.tenant_id, identity.project_id)
         validated = apply_approval(history, command, identity, graph, plan)
         session.add(

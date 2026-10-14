@@ -3,10 +3,10 @@
 The current milestone implements contracts, pure planning, exact-version approval,
 fail-closed publication eligibility, deterministic replay, and transactional PostgreSQL
 event, graph snapshot, replay snapshot, approval and outbox persistence, including a
-retryable Neo4j projection and reconciliation path, not a complete production service.
-Authenticated API actor authorization wiring, executor timeouts, malicious document
-handling and any external publication remain mandatory
-later gates. The planner receives a
+retryable Neo4j projection, authenticated FastAPI boundary and tenant-scoped
+authorization, not a complete production service. Interactive identity management,
+project-scoped roles, uploads and malicious document handling, executor timeouts, and
+any external publication remain later gates. The planner receives a
 scoped graph; scope matching and a `ReviewerIdentity` value are not authentication.
 No real client data or paid model calls are used. There are no measured benchmark
 results, independently reviewed gold labels, usability findings or novelty claims.
@@ -26,9 +26,9 @@ current indexes, append-only lifecycle events, and `0006_execution_header_guards
 immutable run/attempt headers. Artifact rows are pinned to complete
 graph snapshot hashes and exact asset/dependency versions; stored content must match
 the graph asset content. Artifact eligibility re-reads PostgreSQL graph and approval
-history and invokes the pure publication predicate. API-level authentication remains
-unimplemented. Repository identities must be created by a
-verified server boundary; the helpers do not establish authentication themselves.
+history and invokes the pure publication predicate. API authentication now uses opaque
+bearer tokens and PostgreSQL membership records; persistence helpers still do not
+establish authentication themselves.
 The event store uses PostgreSQL row locks and database uniqueness constraints. Against
 the reachable local PostgreSQL 16.15 instance, migration `0004_projection_delivery`
 was applied and three live integration tests passed for concurrent pointer and graph
@@ -52,11 +52,23 @@ writes, conflicting idempotency payloads, append-only triggers, execution lifecy
 records, metric provenance labels and rollback of a partially constructed artifact.
 Offline tests cover stale dependency checks, retry transitions, cancellation, failed
 event insertion rollback and fail-closed artifact eligibility. No real provider
-integration, object storage, retention policy, API authentication, measured model
-usage or benchmark is included. Run/attempt status columns are mutable current-state
+integration, object storage, retention policy, measured model usage or benchmark is
+included. Run/attempt status columns are mutable current-state
 indexes; append-only execution events hold the provenance history. No universal safety
 claim is made.
 
-This folder did not have `.git` when work began. Local checks can be run, but
-hosted CI execution and Git SHA evidence require a Git repository and remote.
+Phase 2D's MVP authentication uses high-entropy opaque bearer tokens, SHA-256 token
+digests in PostgreSQL, and expiry/revocation checks against tenant-wide role
+memberships. Identity provisioning is an operator/database action; there is no login,
+SSO, MFA, automatic token rotation, membership administration endpoint, or project-
+scoped role assignment. Production use still needs TLS, secure one-time token delivery,
+secret management, database least-privilege roles, rate limiting, and security
+monitoring. Route security tests ran in SQLite; a live PostgreSQL test covered
+credential lookup and membership revocation. Eligibility continues to use the
+PostgreSQL store's project lock and current graph/approval state; Neo4j is not an
+authority source. These finite tests do not establish universal security or safety.
+Docker Compose health and live Neo4j projection were not retested in the Phase 2D
+verification run.
+
+Hosted CI was not run in this local verification session.
 License ownership/terms are deliberately unresolved.
