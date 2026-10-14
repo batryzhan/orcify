@@ -1,0 +1,13 @@
+Metadata-Version: 2.4
+Name: orcify-research
+Version: 0.1.0
+Summary: Pure version-aware creative workflow research kernel
+Requires-Python: >=3.12
+License-File: LICENSE
+Requires-Dist: pydantic<3,>=2.10
+Provides-Extra: dev
+Requires-Dist: pytest<10,>=8; extra == "dev"
+Requires-Dist: hypothesis<7,>=6; extra == "dev"
+Requires-Dist: ruff<1,>=0.9; extra == "dev"
+Requires-Dist: mypy<2,>=1.14; extra == "dev"
+Dynamic: license-file

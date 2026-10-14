@@ -1,0 +1,178 @@
+{
+  "$defs": {
+    "InputRef": {
+      "properties": {
+        "content_hash": {
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "source_id",
+        "version",
+        "content_hash"
+      ],
+      "title": "InputRef",
+      "type": "object"
+    },
+    "RequirementStatus": {
+      "enum": [
+        "UNCONFIRMED",
+        "CONFIRMED"
+      ],
+      "title": "RequirementStatus",
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "confirmed_by": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Confirmed By"
+    },
+    "content": {
+      "title": "Content",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "estimated_cost_usd": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Estimated Cost Usd"
+    },
+    "estimated_latency_s": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Estimated Latency S"
+    },
+    "evidence_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Evidence Ids",
+      "type": "array"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "inputs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/InputRef"
+      },
+      "title": "Inputs",
+      "type": "array"
+    },
+    "model_version": {
+      "default": "none",
+      "title": "Model Version",
+      "type": "string"
+    },
+    "policy_version": {
+      "default": "v1",
+      "title": "Policy Version",
+      "type": "string"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "prompt_version": {
+      "default": "none",
+      "title": "Prompt Version",
+      "type": "string"
+    },
+    "provider": {
+      "default": "none",
+      "title": "Provider",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "source_id": {
+      "title": "Source Id",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/RequirementStatus",
+      "default": "UNCONFIRMED"
+    },
+    "tenant_id": {
+      "title": "Tenant Id",
+      "type": "string"
+    },
+    "valid_from": {
+      "format": "date-time",
+      "title": "Valid From",
+      "type": "string"
+    },
+    "valid_to": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Valid To"
+    },
+    "version": {
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "id",
+    "tenant_id",
+    "project_id",
+    "created_at",
+    "version",
+    "content",
+    "valid_from",
+    "source_id"
+  ],
+  "title": "Requirement",
+  "type": "object"
+}

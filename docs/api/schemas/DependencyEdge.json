@@ -1,0 +1,87 @@
+{
+  "$defs": {
+    "DependencyType": {
+      "enum": [
+        "HARD",
+        "SOFT",
+        "INFORMATIONAL"
+      ],
+      "title": "DependencyType",
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "dependent_id": {
+      "title": "Dependent Id",
+      "type": "string"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "relevant_fields": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Relevant Fields",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "strength": {
+      "$ref": "#/$defs/DependencyType"
+    },
+    "tenant_id": {
+      "title": "Tenant Id",
+      "type": "string"
+    },
+    "upstream_id": {
+      "title": "Upstream Id",
+      "type": "string"
+    },
+    "valid_from": {
+      "format": "date-time",
+      "title": "Valid From",
+      "type": "string"
+    },
+    "valid_to": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Valid To"
+    }
+  },
+  "required": [
+    "id",
+    "tenant_id",
+    "project_id",
+    "created_at",
+    "upstream_id",
+    "dependent_id",
+    "strength",
+    "valid_from"
+  ],
+  "title": "DependencyEdge",
+  "type": "object"
+}

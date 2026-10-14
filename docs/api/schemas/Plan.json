@@ -1,0 +1,196 @@
+{
+  "$defs": {
+    "Action": {
+      "enum": [
+        "KEEP",
+        "RECOMPUTE",
+        "REVIEW",
+        "BLOCK"
+      ],
+      "title": "Action",
+      "type": "string"
+    },
+    "Decision": {
+      "properties": {
+        "action": {
+          "$ref": "#/$defs/Action"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "input_fingerprint": {
+          "title": "Input Fingerprint",
+          "type": "string"
+        },
+        "node_id": {
+          "title": "Node Id",
+          "type": "string"
+        },
+        "reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reasons",
+          "type": "array"
+        }
+      },
+      "required": [
+        "node_id",
+        "action",
+        "reasons",
+        "input_fingerprint",
+        "evidence_ids"
+      ],
+      "title": "Decision",
+      "type": "object"
+    },
+    "DependencyType": {
+      "enum": [
+        "HARD",
+        "SOFT",
+        "INFORMATIONAL"
+      ],
+      "title": "DependencyType",
+      "type": "string"
+    },
+    "EdgeTrace": {
+      "properties": {
+        "action": {
+          "$ref": "#/$defs/Action"
+        },
+        "dependent_id": {
+          "title": "Dependent Id",
+          "type": "string"
+        },
+        "edge_id": {
+          "title": "Edge Id",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "strength": {
+          "$ref": "#/$defs/DependencyType"
+        },
+        "upstream_id": {
+          "title": "Upstream Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "edge_id",
+        "upstream_id",
+        "dependent_id",
+        "strength",
+        "action",
+        "reason"
+      ],
+      "title": "EdgeTrace",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "decisions": {
+      "items": {
+        "$ref": "#/$defs/Decision"
+      },
+      "title": "Decisions",
+      "type": "array"
+    },
+    "estimate_status": {
+      "const": "SIMULATED",
+      "default": "SIMULATED",
+      "title": "Estimate Status",
+      "type": "string"
+    },
+    "event_id": {
+      "title": "Event Id",
+      "type": "string"
+    },
+    "execution_order": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Execution Order",
+      "type": "array"
+    },
+    "expected_cost_usd": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Expected Cost Usd"
+    },
+    "expected_latency_s": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Expected Latency S"
+    },
+    "non_publishable_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Non Publishable Ids",
+      "type": "array"
+    },
+    "plan_hash": {
+      "default": "",
+      "title": "Plan Hash",
+      "type": "string"
+    },
+    "policy_version": {
+      "title": "Policy Version",
+      "type": "string"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "snapshot_hash": {
+      "title": "Snapshot Hash",
+      "type": "string"
+    },
+    "tenant_id": {
+      "title": "Tenant Id",
+      "type": "string"
+    },
+    "traces": {
+      "items": {
+        "$ref": "#/$defs/EdgeTrace"
+      },
+      "title": "Traces",
+      "type": "array"
+    }
+  },
+  "required": [
+    "event_id",
+    "tenant_id",
+    "project_id",
+    "snapshot_hash",
+    "policy_version",
+    "decisions",
+    "traces",
+    "execution_order",
+    "non_publishable_ids",
+    "expected_cost_usd",
+    "expected_latency_s"
+  ],
+  "title": "Plan",
+  "type": "object"
+}

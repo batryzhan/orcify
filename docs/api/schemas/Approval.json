@@ -1,0 +1,77 @@
+{
+  "$defs": {
+    "ApprovalDecision": {
+      "enum": [
+        "APPROVED",
+        "REJECTED",
+        "REVOKED"
+      ],
+      "title": "ApprovalDecision",
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "actor_id": {
+      "title": "Actor Id",
+      "type": "string"
+    },
+    "asset_version_id": {
+      "title": "Asset Version Id",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "decision": {
+      "$ref": "#/$defs/ApprovalDecision"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "requirement_fingerprint": {
+      "title": "Requirement Fingerprint",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "supersedes_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Supersedes Id"
+    },
+    "tenant_id": {
+      "title": "Tenant Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "tenant_id",
+    "project_id",
+    "created_at",
+    "asset_version_id",
+    "requirement_fingerprint",
+    "actor_id",
+    "decision"
+  ],
+  "title": "Approval",
+  "type": "object"
+}

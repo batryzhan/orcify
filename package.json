@@ -1,0 +1,23 @@
+{
+  "name": "orcify-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "format": "prettier --write packages/contracts package.json tsconfig.json eslint.config.js .github/workflows/ci.yml",
+    "format:check": "prettier --check packages/contracts package.json tsconfig.json eslint.config.js .github/workflows/ci.yml",
+    "lint": "eslint packages/contracts",
+    "typecheck": "tsc --noEmit",
+    "test": "tsc && node --test dist/contracts/plan.test.js"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "eslint": "^10.12.0",
+    "prettier": "^3.9.10",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.2"
+  }
+}

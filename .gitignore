@@ -1,0 +1,25 @@
+# IDE
+.vscode/
+.idea/
+
+# Python
+htmlcov/
+.tox/
+
+# TypeScript
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local databases
+*.sqlite3
+*.db
+
+# Local benchmark outputs
+benchmark-results/
