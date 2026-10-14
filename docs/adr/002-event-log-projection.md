@@ -19,14 +19,26 @@ and reducer-state hashes because legacy pointer-only events do not contain full 
 content. Safety decisions load and verify the authoritative PostgreSQL snapshot.
 
 Neo4j is a rebuildable projection. Requests never dual-write it, and no safety decision
-falls back to a stale projection. A retryable, idempotent outbox consumer, projection
-offsets and reconciliation are the next implementation task. The PostgreSQL service
-was migrated through `0003_authoritative_graph_hash`; three live integration tests
-passed for graph advancement/replay, row-lock serialization, trigger enforcement,
-idempotency and rollback. Neo4j accepted an authenticated `RETURN 1` probe. Docker
-Compose health metadata remains unavailable because the Docker CLI is not discoverable
-in this shell.
+falls back to a stale projection. The Phase 2B worker claims events with PostgreSQL
+leases and `SKIP LOCKED`, preserves per-project revision order, and uses bounded
+exponential retry before dead-lettering. Neo4j applies a complete snapshot and its
+checkpoint atomically with tenant/project-scoped keys and revision/hash compare checks.
+PostgreSQL tracks delivery state, retry time, errors, checkpoint revision, graph hash
+and event ID. Reconciliation compares revision, graph hash, node hashes and edge hashes
+with the current PostgreSQL snapshot; any missing, stale or inconsistent projection is
+replaced from that authority. Rebuild is atomic in Neo4j and supersedes covered pending
+outbox rows in PostgreSQL. A crash between Neo4j commit and PostgreSQL acknowledgement
+retries safely using event/revision/hash idempotency.
+
+PostgreSQL is migrated through `0004_projection_delivery`. The live test passed against
+both PostgreSQL and Neo4j, verifying outbox projection, exact duplicate delivery,
+stale-event rejection, tenant-scoped reads, reconciliation and repair of a deleted
+projected node. Deterministic SQLite tests cover retry/backoff, dead-letter handling,
+crash recovery and rebuild. Docker Compose health metadata remains unavailable because
+the Docker CLI is not discoverable in this shell.
 
 Alternative: Neo4j authority or synchronous dual writes. Rejected because atomic
 approval/event consistency across two databases is fragile. The trade-off is eventual
-query consistency; projection lag and failures must be visible and recoverable.
+query consistency; projection lag and failures are visible and recoverable. Holding the
+PostgreSQL project lock while applying one bounded Neo4j transaction can delay graph
+ingestion during network stalls; driver and connection timeouts bound that interval.

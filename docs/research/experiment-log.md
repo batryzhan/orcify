@@ -208,3 +208,18 @@ authenticated Neo4j `RETURN 1` query establishes connectivity only, not projecti
 behavior. No Neo4j projection worker exists yet. The next Phase 2 task is to implement
 that retryable and idempotent outbox worker and reconciliation against the PostgreSQL
 event log.
+
+## 2026-10-14 — Phase 2B retryable Neo4j projection worker
+
+Observation category: MEASURED local engineering checks. This is not a scientific benchmark and makes no universal safety or performance claim. PostgreSQL remains authoritative. Migration `0004_projection_delivery` adds bounded retry state, delivery leases, dead-letter state and per-project projection checkpoints. The worker consumes committed outbox rows in project revision order, scopes Neo4j writes by tenant and project, and uses revision/hash checks for duplicate and stale delivery handling. Reconciliation rebuilds from complete PostgreSQL snapshots and detects revision, hash, node and edge drift. A crash after Neo4j commit but before the PostgreSQL checkpoint is recovered idempotently. Exhausted deliveries block later events until authoritative reconciliation. No external publication path was added.
+
+| Executed command | Observed result |
+| --- | --- |
+| `.venv/Scripts/alembic -c services/api/alembic.ini upgrade head` with local PostgreSQL URL; then `current` | Applied `0004_projection_delivery`; PostgreSQL reports `0004_projection_delivery (head)` |
+| `.venv/Scripts/python scripts/tasks.py check-python` with PostgreSQL and Neo4j test environment variables | Ruff lint/format passed; strict mypy passed for 22 source files; all 75 tests passed, including live PostgreSQL concurrency and live projection integration tests |
+| `.venv/Scripts/python -m pytest services/api/tests/test_projection_integration.py -q` with both live services | 1 passed against local PostgreSQL and Neo4j in 2.62s |
+| `.venv/Scripts/python scripts/tasks.py schemas --check` | Passed; no schema drift |
+| `.venv/Scripts/python -m pip check` | Passed; no broken requirements |
+| `.venv/Scripts/python -m ruff format --check .`; `git diff --check` | Passed; 57 files formatted and no whitespace errors |
+
+Deterministic tests cover exponential backoff, bounded retries, dead-letter ordering, pointer-only events, payload scope mismatch, reconciliation and crash recovery. Live integration covers projection, duplicate delivery, stale event rejection, tenant isolation and rebuilding after a deleted node. Compose health metadata remains unverified because Docker CLI is unavailable. The worker holds a PostgreSQL project row lock across a bounded Neo4j transaction, which can increase write latency during Neo4j stalls. Multi-worker throughput, alerting and long-duration recovery remain unmeasured. No research benchmark was run.

@@ -1,6 +1,6 @@
 # Orcify 2.0 — Research-first Creative Workflow Orchestration
 
-> Status: **Phase 0 and Phase 1 safety kernel implemented; Phase 2A includes PostgreSQL event, immutable graph/replay snapshot and approval persistence.** Authenticated API, artifact/run-log persistence, Neo4j projection worker, execution and UI remain unfinished. Never present simulated outcomes as measured results.
+> Status: **Phase 0 and Phase 1 safety kernel implemented; Phase 2A persistence and the Phase 2B retryable Neo4j projection worker are implemented.** Authenticated API, artifact/run-log persistence, execution and UI remain unfinished. Never present simulated outcomes as measured results.
 
 ## 1. Mission
 Build a reproducible research prototype for small creative agencies that coordinate AI services while tracking changing briefs, brand rules, asset versions, feedback and human approvals. The research question is whether **GAMO-CA (Graph-Aware Memory Orchestration — Change & Approval)** can reduce unnecessary recomputation relative to full replay and ordinary DAG caching **without violating safety/approval constraints**.

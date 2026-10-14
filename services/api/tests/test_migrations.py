@@ -29,6 +29,7 @@ def test_initial_migration_creates_authority_and_outbox_tables(tmp_path, monkeyp
             "event_outbox",
             "project_snapshots",
             "approvals",
+            "projection_checkpoints",
             "alembic_version",
         } <= set(schema.get_table_names())
         assert {
@@ -39,6 +40,12 @@ def test_initial_migration_creates_authority_and_outbox_tables(tmp_path, monkeyp
         assert "uq_outbox_delivery" in {
             constraint["name"] for constraint in schema.get_unique_constraints("event_outbox")
         }
+        assert {
+            "status",
+            "next_attempt_at",
+            "lease_until",
+            "lease_token",
+        } <= {column["name"] for column in schema.get_columns("event_outbox")}
     finally:
         engine.dispose()
 

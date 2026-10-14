@@ -27,6 +27,7 @@ accepts version 1 only. PostgreSQL remains authoritative; Neo4j is only an async
 projection.
 
 Verification is finite engineering evidence, not proof of universal safety or a
-scientific benchmark. Live PostgreSQL race/rollback/replay tests and offline domain and
-SQLite tests are recorded in `docs/research/experiment-log.md`. Authentication wiring,
-projection delivery/reconciliation, artifacts, run logs and API routes remain open.
+scientific benchmark. Live PostgreSQL race/rollback/replay and PostgreSQL + Neo4j
+projection/reconciliation tests, plus offline domain and SQLite tests, are recorded in
+`docs/research/experiment-log.md`. Authentication wiring, artifacts, run logs and API
+routes remain open.

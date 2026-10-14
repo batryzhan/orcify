@@ -29,9 +29,9 @@
 - [x] Produce `docs/research/algorithm.md`: pseudocode, complexity assumptions, known failure modes and diagrams. **Done:** algorithm, approval/replay contracts, complexity assumptions and limitations documented without LLM output.
 
 ## Phase 2 — Persistence and API (P0)
-- [ ] Compose local PostgreSQL + Neo4j, health checks and migrations. PostgreSQL 16.15 and Neo4j services respond to live probes; Alembic is applied through `0003_authoritative_graph_hash`. Docker Compose health metadata remains unverified because `docker` is not available in this shell.
+- [ ] Compose local PostgreSQL + Neo4j, health checks and migrations. PostgreSQL 16.15 and Neo4j services respond to live probes; Alembic is applied through `0004_projection_delivery`. Docker Compose health metadata remains unverified because `docker` is not available in this shell.
 - [ ] Persist immutable events, snapshots, approvals, artifacts and run logs. Complete versioned graph-change events now carry typed snapshot content; atomic graph/replay snapshots, project pointers, revision and outbox persistence are implemented and tested. Artifact and execution-log persistence remain open.
-- [ ] Build Neo4j projection adapter and reconcile from event log. **Next:** implement retryable, idempotent outbox projection and reconciliation; Neo4j remains a rebuildable projection.
+- [x] Build Neo4j projection adapter and reconcile from event log. **Done:** leased ordered outbox delivery, bounded exponential retries/dead-letter status, PostgreSQL checkpoints, tenant-qualified atomic Neo4j snapshot writes, crash-idempotent replay, and authoritative rebuild/reconciliation. Deterministic failure tests and a live PostgreSQL + Neo4j integration test passed; see the Phase 2B experiment entry. Neo4j remains a rebuildable projection.
 - [ ] Add FastAPI v1 routes for campaign creation, brief upload, requirement confirmation, graph query, preview/apply change, plan inspection, approval and audit. **Done:** OpenAPI + integration tests.
 - [ ] Implement authorization with tenant isolation and role permissions (producer/editor/reviewer/researcher). **Done:** 403/404 semantics tested for unauthorized access.
 - [ ] Add upload size/type validation, content sanitization and audit logging. **Done:** malformed uploads fail safely.
@@ -100,10 +100,11 @@
 Phase 0 and all Phase 1 tasks are complete for the pure offline kernel. Evidence and
 exact commands are in `docs/research/experiment-log.md`. Gate A's automated kernel
 check is reached for the current test suite; this is not a proof of universal safety.
-Phase 2 has SQLAlchemy/Alembic authority storage, Compose configuration, immutable
-graph and replay snapshot history, and pure-kernel-validated approval persistence.
-Complete graph changes advance the authoritative snapshot and transactional outbox.
-PostgreSQL migration and concurrency behavior were verified against live local
-services; Neo4j query connectivity was verified, while Compose health metadata remains
-inaccessible because no Docker CLI is discoverable in this shell. Artifact/run-log
-persistence, projection worker, verified API authorization and UI are still open.
+Phase 2 has SQLAlchemy/Alembic authority storage, immutable graph and replay snapshot
+history, pure-kernel-validated approval persistence, typed graph changes, and an
+ordered/retryable Neo4j projection worker with authoritative reconciliation. PostgreSQL
+migration/concurrency and Neo4j projection behavior were verified against live local
+services; `0004_projection_delivery` is current. Compose health metadata remains
+unverified because no Docker CLI is discoverable in this shell. Artifact/run-log
+persistence, verified API authorization and UI are still open. See the Phase 2B
+experiment-log entry for exact checks and limitations.

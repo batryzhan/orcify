@@ -12,8 +12,12 @@ updates; unique constraints and append-only triggers protect history. SQLite tes
 cover offline behavior. Live PostgreSQL integration tests are gated by
 `ORCIFY_TEST_DATABASE_URL` and have passed against PostgreSQL 16.15.
 
-FastAPI routes, authenticated identity construction, full graph snapshot
-advancement, artifact/run-log persistence and the Neo4j projection worker remain
-later Phase 2 tasks. The pure domain under
+FastAPI routes, authenticated identity construction, artifact/run-log persistence
+and publication eligibility endpoints remain later Phase 2 tasks. The Neo4j projection
+worker lives in `app/projection_worker.py`, uses `app/neo4j_projection.py`, and can be
+run with `scripts/run_projection_worker.py`. It consumes full graph events from the
+PostgreSQL outbox, tracks retry/checkpoint state in PostgreSQL, applies ordered scoped
+Neo4j transactions, and periodically reconciles from authoritative snapshots. The
+pure domain under
 `packages/gamo_ca` imports none of these frameworks. Generated JSON contracts are
 under `docs/api/schemas`; they are not OpenAPI routes.

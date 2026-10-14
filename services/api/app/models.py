@@ -103,7 +103,12 @@ class EventOutboxRecord(Base):
             "tenant_id", "project_id", "event_id", "destination", name="uq_outbox_delivery"
         ),
         CheckConstraint("attempt_count >= 0", name="ck_outbox_attempts_nonnegative"),
+        CheckConstraint(
+            "status IN ('pending', 'processing', 'retry', 'succeeded', 'dead', 'superseded')",
+            name="ck_outbox_status",
+        ),
         Index("ix_event_outbox_pending", "processed_at", "id"),
+        Index("ix_event_outbox_dispatch", "status", "next_attempt_at", "id"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -119,6 +124,46 @@ class EventOutboxRecord(Base):
     processed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     attempt_count: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
     last_error: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(
+        String(16), nullable=False, server_default=text("'pending'")
+    )
+    next_attempt_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    lease_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    lease_token: Mapped[str | None] = mapped_column(String(64))
+
+
+class ProjectionCheckpointRecord(Base):
+    """PostgreSQL checkpoint for the rebuildable graph projection."""
+
+    __tablename__ = "projection_checkpoints"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["tenant_id", "project_id"],
+            ["projects.tenant_id", "projects.project_id"],
+            ondelete="RESTRICT",
+            name="fk_projection_checkpoints_project",
+        ),
+        CheckConstraint("source_revision >= 0", name="ck_projection_revision_nonnegative"),
+        CheckConstraint(
+            "status IN ('healthy', 'error', 'rebuilding')", name="ck_projection_status"
+        ),
+    )
+
+    tenant_id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    project_id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    destination: Mapped[str] = mapped_column(String(64), primary_key=True)
+    source_revision: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    graph_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    last_event_id: Mapped[str | None] = mapped_column(String(128))
+    status: Mapped[str] = mapped_column(
+        String(16), nullable=False, server_default=text("'healthy'")
+    )
+    last_error: Mapped[str | None] = mapped_column(Text)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
+    )
 
 
 class ProjectSnapshotRecord(Base):
