@@ -1,6 +1,6 @@
 # Orcify 2.0 — Research-first Creative Workflow Orchestration
 
-> Status: **Phase 0 and Phase 1 safety kernel implemented; Phase 2A authority persistence, Phase 2B Neo4j projection, and Phase 2C artifact/execution provenance persistence are implemented.** Authenticated FastAPI routes, provider execution, and UI remain unfinished. Never present simulated outcomes as measured results.
+> Status: **Phase 0, Phase 1, and Phase 2A–2E backend milestones are implemented and locally validated.** Real provider execution and UI remain unfinished. Never present simulated outcomes as measured results.
 
 ## 1. Mission
 Build a reproducible research prototype for small creative agencies that coordinate AI services while tracking changing briefs, brand rules, asset versions, feedback and human approvals. The research question is whether **GAMO-CA (Graph-Aware Memory Orchestration — Change & Approval)** can reduce unnecessary recomputation relative to full replay and ordinary DAG caching **without violating safety/approval constraints**.
@@ -108,7 +108,7 @@ Target: Python 3.12+, Node 22+, Docker Compose. Provide `make setup`, `make dev`
 
 ## 12. API boundary
 
-Phase 2D provides an authenticated FastAPI v1 prototype for tenant-scoped project,
+Phases 2D–2E provide an authenticated FastAPI v1 prototype and live PostgreSQL/Neo4j validation for tenant-scoped project,
 graph, planning, approval, artifact, execution, and eligibility operations. The API
 uses expiring opaque bearer credentials whose digests and tenant role assignments are
 stored in PostgreSQL. It does not accept client-supplied actor or reviewer identity as
@@ -197,3 +197,62 @@ recomputes plans before approval/artifact/run writes, and evaluates eligibility 
 PostgreSQL within the existing project lock. Do not expose the development database
 credentials or token output from provisioning in shared logs. See ADR-009 for the
 authentication assumptions and deployment limitations.
+
+## 16. Phase 2E local API demo
+
+The API demo uses deterministic synthetic graph and artifact fixtures, local PostgreSQL,
+and a rebuildable Neo4j projection. It calls no paid provider and has no publishing
+route. The seeded `demo-copy-v1` artifact is deliberately unapproved; the smoke scenario
+creates a separate project and submits an exact version to a reviewer explicitly.
+Generated demo credentials are random, expire after two days, and are written to the
+git-ignored `var/demo-tokens.json` file. The seed script rotates active demo credentials
+when re-run. Keep this file local and remove it when finished.
+
+In PowerShell, start PostgreSQL and Neo4j with Docker Desktop, apply migrations, and
+seed the demo tenant, users, baseline project and unapproved sample artifact:
+
+```powershell
+docker compose -f infra/compose.yaml up -d --wait
+$env:DATABASE_URL = "postgresql+psycopg://orcify:orcify-local-dev@localhost:5432/orcify"
+$env:NEO4J_URI = "bolt://localhost:7687"
+$env:NEO4J_USER = "neo4j"
+$env:NEO4J_PASSWORD = "orcify-local-dev"
+.venv/Scripts/python -m alembic -c services/api/alembic.ini upgrade head
+.venv/Scripts/python scripts/seed_demo.py
+```
+
+Run the API and projection worker in separate PowerShell terminals. Set the same four
+database variables in each terminal before launching the process:
+
+```powershell
+.venv/Scripts/python -m uvicorn services.api.app.http:app --host 127.0.0.1 --port 8000
+```
+
+```powershell
+.venv/Scripts/python scripts/run_projection_worker.py
+```
+
+With the API and worker running, execute the network HTTP smoke scenario from another
+terminal. Use a unique `--run-id` for each run; a fixed value reproduces the same
+synthetic records on a fresh database. The smoke scenario leaves its project and
+append-only audit records in PostgreSQL for inspection:
+
+```powershell
+.venv/Scripts/python scripts/run_api_smoke.py --run-id demo-001
+```
+
+The command checks bearer authentication, project create/read, impact planning, artifact
+creation and exact-version human approval, concurrent idempotent graph writes,
+requirement-change recomputation, stale artifact eligibility, cross-tenant and revoked
+credential denial, and Neo4j reconciliation from PostgreSQL. It reports synthetic and
+deterministic-mock labels explicitly. To run the pytest integration against the live
+services, set `ORCIFY_TEST_DATABASE_URL`, `ORCIFY_TEST_NEO4J_URI`,
+`ORCIFY_TEST_NEO4J_USER`, and `ORCIFY_TEST_NEO4J_PASSWORD`, then run:
+
+```powershell
+.venv/Scripts/python -m pytest -q services/api/tests/test_phase2e_live_e2e.py services/api/tests/test_projection_integration.py
+```
+
+The smoke command intentionally does not create a publication request or contact an
+external service. PostgreSQL alone decides current artifact eligibility. A passed
+engineering smoke check is not a scientific benchmark or universal safety proof.

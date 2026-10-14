@@ -36,7 +36,7 @@
 - [x] Implement verified bearer authentication with tenant isolation and role permissions (tenant_admin/producer/editor/reviewer/researcher). **Done:** credential digests and active memberships are PostgreSQL-authoritative; expiry, revocation, forged identity, 403 and concealed 404 cases tested.
 - [ ] Add upload size/type validation, content sanitization and audit logging.
 - [x] Add idempotency key and optimistic concurrency to graph-change application. **Done:** exact duplicate graph requests replay; conflicting payloads and stale revisions fail closed through the transaction store.
-- [ ] Provide seeded API demo and smoke-test script. Migrations and one-time identity provisioning exist; a complete seeded HTTP demo remains open.
+- [x] Provide a deterministic synthetic API seed and real HTTP smoke-test script. The baseline artifact remains unapproved; reviewer approval occurs only in the explicit smoke workflow. See Phase 2E and ADR-010.
 
 ### Phase 2D — authenticated API boundary (2026-10-14)
 
@@ -114,9 +114,25 @@ Phase 2 persistence now includes SQLAlchemy/Alembic authority storage, immutable
 and replay snapshots, pure-kernel-validated approvals, typed graph changes, a retryable
 Neo4j projection worker, immutable artifact versions/provenance, and transactional
 execution lifecycle history. PostgreSQL persistence was verified against live local
-PostgreSQL; `0007_authenticated_api` is current. Phase 2D provides authenticated typed
-routes for projects, graph snapshots and changes, planning, approvals, artifacts,
+PostgreSQL; `0007_authenticated_api` is current. Phases 2D–2E provide authenticated
+typed routes for projects, graph snapshots and changes, planning, approvals, artifacts,
 executions, and eligibility. The API uses opaque bearer-token digests and current
-tenant membership records. UI remains out of scope until security and integration
-coverage expands. Compose health metadata remains unverified because no Docker CLI is
-discoverable in this shell. See Phase 2B, 2C, and 2D experiment-log entries.
+tenant membership records. Live PostgreSQL and Neo4j integration plus the seeded HTTP
+demo passed; the smallest useful React milestone is ready to scope. Compose health
+metadata remains unverified because no Docker CLI is discoverable in this shell. See
+the Phase 2B–2E experiment-log entries.
+
+### Phase 2E — live API validation and seeded demo (2026-10-14)
+
+- [x] Exercise authenticated FastAPI project, planning, graph, artifact, approval, and eligibility routes against live PostgreSQL.
+- [x] Revalidate the PostgreSQL transactional outbox, Neo4j projection, and reconciliation/rebuild path against live services.
+- [x] Add deterministic synthetic tenant/user/project/graph/requirement/artifact seed data with expiring server-provisioned credentials; keep the sample artifact unapproved.
+- [x] Add a real HTTP smoke workflow for exact-version approval, confirmed requirement change, invalidation, recomputation, and fail-closed stale eligibility.
+- [x] Check cross-tenant concealment, revoked credentials, and concurrent idempotent HTTP retries.
+- [x] Verify Neo4j reconciliation rebuild does not change PostgreSQL revision or snapshot pointers.
+- [x] Document PostgreSQL, Neo4j, API, and projection worker startup; no external publishing/provider is invoked.
+- [x] Record live, offline, skipped, and unavailable-tool evidence in the Phase 2E experiment entry.
+- [ ] Inspect Docker Compose container health metadata in an environment with Docker CLI available.
+
+The live HTTP scenario passed with PostgreSQL 16.15 and Neo4j reachable. These checks are
+engineering integration evidence, not a scientific benchmark or universal safety proof.

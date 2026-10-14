@@ -72,3 +72,18 @@ verification run.
 
 Hosted CI was not run in this local verification session.
 License ownership/terms are deliberately unresolved.
+
+Phase 2E adds a repeatable synthetic seed and a live HTTP smoke path. The seed uses
+stable IDs for the baseline graph and sample artifact; bearer tokens are random and
+short-lived, stored as digests in PostgreSQL, and held in a git-ignored local file. Keep
+that file private and remove it after the demo. Seeding refuses to change a role or reset
+an advanced baseline project. Smoke-created projects and audit rows are append-only and
+remain in the database, so assign unique run IDs or use a disposable database.
+
+The live authenticated API integration now runs with PostgreSQL 16.15 and Neo4j. It
+checks reviewer approval, stale-artifact denial after a confirmed requirement update,
+concurrent idempotent requests, tenant/revocation denials, and Neo4j rebuild without
+changing PostgreSQL authority. Two network HTTP smoke runs ran with the outbox worker process
+active. Compose health metadata remains unverified because the Docker CLI is not
+available in this shell; direct PostgreSQL and Neo4j connectivity checks succeeded.
+This does not establish production hardening, universal safety, or research performance.

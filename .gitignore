@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+/var/demo-tokens.json
 
 # Python
 .venv/

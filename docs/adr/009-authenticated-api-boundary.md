@@ -55,3 +55,5 @@ refresh credentials. Production deployment still requires TLS, secret-safe token
 delivery, database role separation, rate limits, audit/alerting, and operational
 credential rotation procedures. Security tests validate these implemented cases but
 do not establish universal security.
+
+Phase 2E validates this boundary through a live HTTP smoke scenario and a live PostgreSQL + Neo4j test; see [ADR-010](010-reproducible-api-demo.md) and the experiment log. The demo uses only synthetic identities and data.

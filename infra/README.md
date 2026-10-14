@@ -45,3 +45,22 @@ the real row-lock/concurrent-update integration tests. To include the live proje
 test, also set `ORCIFY_TEST_NEO4J_URI`, `ORCIFY_TEST_NEO4J_USER`, and
 `ORCIFY_TEST_NEO4J_PASSWORD`. SQLite tests cover failure injection and migration shape
 but do not verify PostgreSQL locking or Neo4j transaction semantics.
+
+## Phase 2E demo startup
+
+Docker Compose reads `.env` for its substitutions. Python processes also need
+`DATABASE_URL`, `NEO4J_URI`, `NEO4J_USER`, and `NEO4J_PASSWORD` in their own terminal
+environments. After migrations, seed the synthetic tenant/project and sample artifact
+with `python scripts/seed_demo.py`, then start the authenticated API in one terminal:
+
+```powershell
+.venv/Scripts/python -m uvicorn services.api.app.http:app --host 127.0.0.1 --port 8000
+```
+
+Start `python scripts/run_projection_worker.py` in a second terminal with the same
+PostgreSQL and Neo4j settings. Run `python scripts/run_api_smoke.py --run-id <unique-id>`
+from a third terminal. The smoke workflow stores its synthetic graph, approvals, and
+artifact records in PostgreSQL for inspection, verifies Neo4j rebuild from PostgreSQL,
+and never contacts a publishing service or model provider. The random demo bearer tokens
+are stored in ignored `var/demo-tokens.json`; keep this file private and remove it when
+finished.

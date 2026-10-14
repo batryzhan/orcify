@@ -311,3 +311,54 @@ security alerting. TLS and secure one-time token delivery are deployment require
 Neo4j projection and Docker Compose health were not revalidated in this phase. The
 finite tests establish these observed checks only; they do not establish universal
 security or scientific results.
+
+## 2026-10-14 — Phase 2E live API validation and seeded demo
+
+Observation category: local engineering integration checks, not a scientific benchmark.
+Phase 2E adds a deterministic seed for the synthetic `demo-tenant`, fixed role identities,
+`demo-project` graph and unapproved `demo-copy-v1` artifact. Credentials are random,
+short-lived bearer secrets whose SHA-256 digests are stored in PostgreSQL. Raw values are
+written to the ignored local `var/demo-tokens.json` file and never printed. Reseeding was
+run twice; the second run rotated only this demo's seed credentials and replayed the same
+immutable artifact successfully. Smoke runs use a separate project ID and retain their
+append-only records for review.
+
+A live authenticated FastAPI integration test now spans PostgreSQL 16.15 and Neo4j.
+It creates a project through the tenant-admin API, verifies project and graph reads,
+checks concealed cross-tenant access, revoked membership and revoked credential denial,
+requests a GAMO-CA plan, persists a synthetic artifact, and requires a distinct reviewer
+credential to approve the exact asset version and requirement fingerprint. Eligibility
+was false before approval, true after exact-version approval, then false after a confirmed
+upstream requirement change. The old immutable approval row remained recorded against
+its original requirement fingerprint. The new plan marked dependent copy/storyboard
+nodes for recomputation. Two simultaneous HTTP requests with an identical graph-change
+idempotency key yielded one write and one replay. Neo4j was made inconsistent and rebuilt
+from the PostgreSQL snapshot; PostgreSQL revision and graph/snapshot hashes were unchanged.
+The API exposes no publishing route.
+
+The real HTTP smoke script was run three times against Uvicorn and live PostgreSQL/Neo4j. The
+second run had the projection worker running separately. Both reported `PASS`, labeled
+data `SYNTHETIC` and execution `DETERMINISTIC_MOCK`, confirmed stale eligibility was
+blocked, and reported `external_publication_invoked: false`. No paid provider, fabricated
+usage/cost value, or scientific metric was involved.
+
+| Executed command/check | Observed result |
+| --- | --- |
+| PostgreSQL direct connectivity query and port check | PostgreSQL 16.15 responded; local PostgreSQL and Neo4j ports were reachable |
+| `.venv/Scripts/python -m alembic -c services/api/alembic.ini upgrade head`; `current` | Upgrade was a no-op at `0007_authenticated_api (head)` |
+| `.venv/Scripts/python -m alembic -c services/api/alembic.ini upgrade head --sql` | Full PostgreSQL migration chain through `0007_authenticated_api` compiled offline; Phase 2E adds no migration |
+| `.venv/Scripts/python -m pytest -q services/api/tests/test_phase2e_live_e2e.py services/api/tests/test_projection_integration.py` with PostgreSQL and Neo4j variables set | 2 passed, 0 skipped; one Starlette/httpx deprecation warning |
+| `.venv/Scripts/python scripts/tasks.py check-python` with all PostgreSQL and Neo4j test variables set | Ruff passed; 77 Python files formatted; strict mypy passed for 31 source files; 94 passed, 0 skipped |
+| `.venv/Scripts/python scripts/tasks.py check-python` without live service variables | 87 passed, 7 skipped (the 5 PostgreSQL-only test cases and 2 PostgreSQL/Neo4j integration cases); one test-client deprecation warning |
+| `scripts/seed_demo.py`, first and repeated invocation | Both exited 0; stable synthetic project/artifact, active demo credentials rotated and revoked fixture remains invalid |
+| `scripts/run_api_smoke.py --run-id phase2e-local-001/002/003` | All three real HTTP scenarios passed; runs 002 and 003 executed while Uvicorn and the projection worker were running |
+| `scripts/export_openapi.py`; `scripts/tasks.py schemas --check` | OpenAPI contract generated; domain schema and cross-language plan fixture check passed |
+| `npm run format:check`; `npm run lint`; `npm run typecheck`; `npm test` | All passed; 3 TypeScript contract tests passed |
+| `scripts/tasks.py verify-test-gate`; `python -m pip check`; `git diff --check` | Deliberate broken test was rejected; dependencies and final diff checks passed |
+
+The Docker CLI was not discoverable, so Compose container health metadata was not
+inspected in this shell. Direct service probes and live integration tests passed. The
+smoke workflow retains test projects and append-only records, so use a disposable local
+database or unique run IDs. The seed baseline refuses to overwrite an advanced project.
+These finite engineering checks do not prove universal safety, production readiness,
+scientific novelty, or performance improvement.
