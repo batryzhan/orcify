@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "content_hash": {
+      "title": "Content Hash",
+      "type": "string"
+    },
+    "node_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Node Id",
+      "type": "string"
+    },
+    "node_version": {
+      "exclusiveMinimum": 0,
+      "title": "Node Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "node_id",
+    "node_version",
+    "content_hash"
+  ],
+  "title": "DependencyVersion",
+  "type": "object"
+}

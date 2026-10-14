@@ -12,8 +12,16 @@ updates; unique constraints and append-only triggers protect history. SQLite tes
 cover offline behavior. Live PostgreSQL integration tests are gated by
 `ORCIFY_TEST_DATABASE_URL` and have passed against PostgreSQL 16.15.
 
-FastAPI routes, authenticated identity construction, artifact/run-log persistence
-and publication eligibility endpoints remain later Phase 2 tasks. The Neo4j projection
+FastAPI routes, authenticated identity construction, and publication eligibility HTTP
+endpoints remain later Phase 2 tasks. Artifact versions and append-only provenance now
+live in `app/artifact_store.py`. They bind exact graph snapshots, asset node versions,
+dependency versions, source provenance, and a content hash. Execution runs/attempts
+have transactionally updated status indexes and immutable lifecycle events; missing,
+estimated, and measured values are explicitly distinguished. Artifact eligibility
+re-reads authoritative graph and approval rows and calls the pure publication predicate.
+Migration `0005_artifacts_execution` adds these tables and append-only triggers;
+`0006_execution_header_guards` protects run/attempt metadata. The
+Neo4j projection
 worker lives in `app/projection_worker.py`, uses `app/neo4j_projection.py`, and can be
 run with `scripts/run_projection_worker.py`. It consumes full graph events from the
 PostgreSQL outbox, tracks retry/checkpoint state in PostgreSQL, applies ordered scoped

@@ -1,0 +1,119 @@
+{
+  "$defs": {
+    "ExecutionMetric": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/MetricStatus",
+          "default": "missing"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "title": "ExecutionMetric",
+      "type": "object"
+    },
+    "MetricStatus": {
+      "enum": [
+        "missing",
+        "estimated",
+        "measured"
+      ],
+      "title": "MetricStatus",
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "artifact_version_id": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Artifact Version Id"
+    },
+    "cost_usd": {
+      "$ref": "#/$defs/ExecutionMetric"
+    },
+    "elapsed": {
+      "$ref": "#/$defs/ExecutionMetric"
+    },
+    "error_classification": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Error Classification"
+    },
+    "error_message": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Error Message"
+    },
+    "event_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Event Id",
+      "type": "string"
+    },
+    "idempotency_key": {
+      "maxLength": 256,
+      "minLength": 1,
+      "title": "Idempotency Key",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "succeeded",
+        "failed",
+        "cancelled",
+        "retryable_failure"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "tokens": {
+      "$ref": "#/$defs/ExecutionMetric"
+    }
+  },
+  "required": [
+    "event_id",
+    "idempotency_key",
+    "status"
+  ],
+  "title": "ExecutionTransitionRequest",
+  "type": "object"
+}

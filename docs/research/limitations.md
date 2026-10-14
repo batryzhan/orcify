@@ -4,8 +4,8 @@ The current milestone implements contracts, pure planning, exact-version approva
 fail-closed publication eligibility, deterministic replay, and transactional PostgreSQL
 event, graph snapshot, replay snapshot, approval and outbox persistence, including a
 retryable Neo4j projection and reconciliation path, not a complete production service.
-Authenticated API actor authorization wiring, artifact/run-log persistence, executor
-timeouts, malicious document handling and any external publication remain mandatory
+Authenticated API actor authorization wiring, executor timeouts, malicious document
+handling and any external publication remain mandatory
 later gates. The planner receives a
 scoped graph; scope matching and a `ReviewerIdentity` value are not authentication.
 No real client data or paid model calls are used. There are no measured benchmark
@@ -20,8 +20,14 @@ Review and recomputation eligibility are separate from publication eligibility.
 The original reducer still stores version pointers and receipts. Typed
 `GraphChangePayload` events now carry full graph content, and PostgreSQL stores the
 immutable graph and replay snapshots with separate authority hashes. Historical graph
-replay verifies the current graph hash. Artifact/run-log persistence and API-level
-authentication remain unimplemented. Repository identities must be created by a
+replay verifies the current graph hash. Migration `0005_artifacts_execution` now stores
+immutable artifact versions, append-only source provenance, execution run/attempt
+current indexes, append-only lifecycle events, and `0006_execution_header_guards` for
+immutable run/attempt headers. Artifact rows are pinned to complete
+graph snapshot hashes and exact asset/dependency versions; stored content must match
+the graph asset content. Artifact eligibility re-reads PostgreSQL graph and approval
+history and invokes the pure publication predicate. API-level authentication remains
+unimplemented. Repository identities must be created by a
 verified server boundary; the helpers do not establish authentication themselves.
 The event store uses PostgreSQL row locks and database uniqueness constraints. Against
 the reachable local PostgreSQL 16.15 instance, migration `0004_projection_delivery`
@@ -40,6 +46,16 @@ of universal safety or performance improvement. The projection worker is current
 single-process runnable prototype; multi-worker throughput, production alerting and
 long-duration recovery have not been evaluated. Projection status must be checked by
 readers, and all authority decisions must continue to use PostgreSQL.
+
+Phase 2C's live PostgreSQL integration test covers concurrent duplicate artifact
+writes, conflicting idempotency payloads, append-only triggers, execution lifecycle
+records, metric provenance labels and rollback of a partially constructed artifact.
+Offline tests cover stale dependency checks, retry transitions, cancellation, failed
+event insertion rollback and fail-closed artifact eligibility. No real provider
+integration, object storage, retention policy, API authentication, measured model
+usage or benchmark is included. Run/attempt status columns are mutable current-state
+indexes; append-only execution events hold the provenance history. No universal safety
+claim is made.
 
 This folder did not have `.git` when work began. Local checks can be run, but
 hosted CI execution and Git SHA evidence require a Git repository and remote.

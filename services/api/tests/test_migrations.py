@@ -30,6 +30,11 @@ def test_initial_migration_creates_authority_and_outbox_tables(tmp_path, monkeyp
             "project_snapshots",
             "approvals",
             "projection_checkpoints",
+            "artifact_versions",
+            "execution_runs",
+            "execution_attempts",
+            "execution_events",
+            "artifact_provenance",
             "alembic_version",
         } <= set(schema.get_table_names())
         assert {
@@ -46,6 +51,18 @@ def test_initial_migration_creates_authority_and_outbox_tables(tmp_path, monkeyp
             "lease_until",
             "lease_token",
         } <= {column["name"] for column in schema.get_columns("event_outbox")}
+        assert {
+            "uq_artifact_version",
+            "uq_artifact_idempotency",
+        } <= {
+            constraint["name"] for constraint in schema.get_unique_constraints("artifact_versions")
+        }
+        assert {
+            "elapsed_status",
+            "token_status",
+            "cost_status",
+            "request_hash",
+        } <= {column["name"] for column in schema.get_columns("execution_events")}
     finally:
         engine.dispose()
 
@@ -71,3 +88,6 @@ def test_postgresql_migration_compiles_append_only_trigger(monkeypatch) -> None:
     assert result.returncode == 0, result.stderr
     assert "JSONB" in result.stdout
     assert "CREATE TRIGGER trg_change_events_append_only" in result.stdout
+    assert "CREATE TRIGGER trg_artifact_versions_append_only" in result.stdout
+    assert "CREATE TRIGGER trg_execution_events_append_only" in result.stdout
+    assert "CREATE TRIGGER trg_execution_runs_header_immutable" in result.stdout

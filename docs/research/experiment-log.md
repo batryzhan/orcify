@@ -223,3 +223,49 @@ Observation category: MEASURED local engineering checks. This is not a scientifi
 | `.venv/Scripts/python -m ruff format --check .`; `git diff --check` | Passed; 57 files formatted and no whitespace errors |
 
 Deterministic tests cover exponential backoff, bounded retries, dead-letter ordering, pointer-only events, payload scope mismatch, reconciliation and crash recovery. Live integration covers projection, duplicate delivery, stale event rejection, tenant isolation and rebuilding after a deleted node. Compose health metadata remains unverified because Docker CLI is unavailable. The worker holds a PostgreSQL project row lock across a bounded Neo4j transaction, which can increase write latency during Neo4j stalls. Multi-worker throughput, alerting and long-duration recovery remain unmeasured. No research benchmark was run.
+
+## 2026-10-14 — Phase 2C artifact and execution provenance persistence
+
+Observation category: MEASURED local engineering checks, not a scientific benchmark.
+PostgreSQL is authoritative for artifact content, graph/approval state, and execution
+history. Alembic migrations `0005_artifacts_execution` and
+`0006_execution_header_guards` add immutable artifact versions, append-only artifact
+provenance and execution lifecycle events, current run/attempt indexes, scoped
+constraints, and run/attempt header guards. Artifact records bind tenant/project,
+source graph revision/hash, exact asset node/version, captured input node versions and
+hashes, content SHA-256, planner decision, and optional provider/model labels. Artifact
+content must match the referenced graph asset content. Eligibility reads the current
+PostgreSQL graph and approval records and invokes the pure publication predicate.
+
+Execution runs pin a complete planner decision and source graph snapshot. Attempts
+record dependency versions and optional provider/model/prompt identifiers. Lifecycle
+changes are append-only events and include pending, running, succeeded, failed,
+cancelled and retryable-failure states. Project/run locks, request hashes and scoped
+uniqueness provide transactional idempotency and reject conflicting/out-of-order
+updates. Retryable failure permits a higher attempt number; terminal states do not
+restart. Elapsed time, token count and cost remain null with `missing` status unless a
+caller provides a value labeled `estimated` or `measured`. No AI provider was invoked,
+and no latency, token count, cost saving, or research benchmark is claimed.
+
+| Executed command | Observed result |
+| --- | --- |
+| `.venv/Scripts/alembic -c services/api/alembic.ini upgrade head`; then `current` with live PostgreSQL 16.15 | Applied `0005_artifacts_execution` and `0006_execution_header_guards`; current head is `0006_execution_header_guards` |
+| `.venv/Scripts/python scripts/tasks.py check-python` with live PostgreSQL and Neo4j test environment | Ruff lint/format passed; strict mypy passed for 24 source files; all 82 tests passed |
+| Full test suite live-service subset | Four PostgreSQL integration tests passed (artifact/execution transaction test plus three persistence concurrency tests); one PostgreSQL + Neo4j projection integration test passed |
+| `.venv/Scripts/python scripts/tasks.py schemas`; then `schemas --check` | Passed; artifact, execution and provenance JSON schemas generated and checked |
+| `.venv/Scripts/python scripts/tasks.py verify-test-gate` | Passed; deliberate broken test was rejected with exit 1 |
+| `.venv/Scripts/alembic -c services/api/alembic.ini upgrade head --sql` | Full PostgreSQL migration chain through `0006_execution_header_guards` compiled offline |
+| `.venv/Scripts/python -m pip check`; `git diff --check` | Passed; no broken requirements or whitespace errors |
+| `npm run format:check`; `npm run lint`; `npm run typecheck`; `npm test` | All passed; 3 TypeScript contract tests passed |
+| `.venv/Scripts/python scripts/tasks.py demo` | Exited 0; output remains SIMULATED and publication NOT_IMPLEMENTED |
+
+Offline tests cover immutable artifact versions, content/dependency binding, stale graph
+and dependency rejection, approval-dependent eligibility, idempotency conflicts,
+execution retries/cancellation, missing-vs-estimated-vs-measured values, append-only
+history, and injected rollback. Live PostgreSQL covers concurrent duplicate artifact
+requests, tenant and stale revision rejection, append-only/header triggers, lifecycle
+writes and artifact provenance rollback. The current-state status columns on runs and
+attempts are mutable indexes guarded so header metadata cannot change; append-only
+execution events provide the durable history. Object/blob storage, retention and
+artifact diffing remain open. Docker Compose health metadata remains unverified because
+the Docker CLI is unavailable. No external publisher or provider integration exists.

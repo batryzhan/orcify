@@ -1,0 +1,113 @@
+{
+  "$defs": {
+    "DependencyVersion": {
+      "additionalProperties": false,
+      "properties": {
+        "content_hash": {
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "node_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Node Id",
+          "type": "string"
+        },
+        "node_version": {
+          "exclusiveMinimum": 0,
+          "title": "Node Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "node_id",
+        "node_version",
+        "content_hash"
+      ],
+      "title": "DependencyVersion",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "attempt_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Attempt Id",
+      "type": "string"
+    },
+    "attempt_number": {
+      "exclusiveMinimum": 0,
+      "title": "Attempt Number",
+      "type": "integer"
+    },
+    "dependencies": {
+      "items": {
+        "$ref": "#/$defs/DependencyVersion"
+      },
+      "title": "Dependencies",
+      "type": "array"
+    },
+    "idempotency_key": {
+      "maxLength": 256,
+      "minLength": 1,
+      "title": "Idempotency Key",
+      "type": "string"
+    },
+    "model_id": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Model Id"
+    },
+    "node_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Node Id",
+      "type": "string"
+    },
+    "prompt_version": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Prompt Version"
+    },
+    "provider_id": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Provider Id"
+    }
+  },
+  "required": [
+    "attempt_id",
+    "node_id",
+    "attempt_number",
+    "dependencies",
+    "idempotency_key"
+  ],
+  "title": "ExecutionAttemptStartRequest",
+  "type": "object"
+}

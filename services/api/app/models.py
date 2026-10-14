@@ -20,6 +20,7 @@ from sqlalchemy import (
 from sqlalchemy import (
     event as sqlalchemy_event,
 )
+from sqlalchemy import inspect as sqlalchemy_inspect
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -245,6 +246,296 @@ class ApprovalRecord(Base):
     )
 
 
+class ArtifactVersionRecord(Base):
+    """Immutable creative output bound to an exact graph and dependency snapshot."""
+
+    __tablename__ = "artifact_versions"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["tenant_id", "project_id"],
+            ["projects.tenant_id", "projects.project_id"],
+            ondelete="RESTRICT",
+            name="fk_artifact_versions_project",
+        ),
+        ForeignKeyConstraint(
+            ["tenant_id", "project_id", "graph_revision", "snapshot_kind"],
+            [
+                "project_snapshots.tenant_id",
+                "project_snapshots.project_id",
+                "project_snapshots.revision",
+                "project_snapshots.snapshot_kind",
+            ],
+            ondelete="RESTRICT",
+            name="fk_artifact_versions_graph_snapshot",
+        ),
+        UniqueConstraint(
+            "tenant_id", "project_id", "artifact_id", "version", name="uq_artifact_version"
+        ),
+        UniqueConstraint(
+            "tenant_id", "project_id", "idempotency_key", name="uq_artifact_idempotency"
+        ),
+        UniqueConstraint(
+            "tenant_id", "project_id", "artifact_version_id", name="uq_artifact_version_id"
+        ),
+        CheckConstraint("version > 0", name="ck_artifact_version_positive"),
+        CheckConstraint("node_version > 0", name="ck_artifact_node_version_positive"),
+        CheckConstraint("snapshot_kind = 'graph'", name="ck_artifact_graph_snapshot_kind"),
+        Index("ix_artifact_scope_node", "tenant_id", "project_id", "node_id", "node_version"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    tenant_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    project_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    artifact_version_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    artifact_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    node_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    node_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    graph_revision: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    snapshot_kind: Mapped[str] = mapped_column(
+        String(32), nullable=False, server_default=text("'graph'")
+    )
+    graph_snapshot_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    dependencies: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    planner_decision: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    provider_id: Mapped[str | None] = mapped_column(String(128))
+    model_id: Mapped[str | None] = mapped_column(String(128))
+    idempotency_key: Mapped[str] = mapped_column(String(256), nullable=False)
+    request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+
+class ExecutionRunRecord(Base):
+    """Run header; current status is advanced with append-only execution events."""
+
+    __tablename__ = "execution_runs"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["tenant_id", "project_id"],
+            ["projects.tenant_id", "projects.project_id"],
+            ondelete="RESTRICT",
+            name="fk_execution_runs_project",
+        ),
+        ForeignKeyConstraint(
+            ["tenant_id", "project_id", "graph_revision", "snapshot_kind"],
+            [
+                "project_snapshots.tenant_id",
+                "project_snapshots.project_id",
+                "project_snapshots.revision",
+                "project_snapshots.snapshot_kind",
+            ],
+            ondelete="RESTRICT",
+            name="fk_execution_runs_graph_snapshot",
+        ),
+        UniqueConstraint("tenant_id", "project_id", "run_id", name="uq_execution_run_id"),
+        UniqueConstraint(
+            "tenant_id", "project_id", "idempotency_key", name="uq_execution_run_idempotency"
+        ),
+        CheckConstraint("snapshot_kind = 'graph'", name="ck_execution_run_snapshot_kind"),
+        CheckConstraint(
+            "status IN ('pending', 'running', 'succeeded', 'failed', 'cancelled', "
+            "'retryable_failure')",
+            name="ck_execution_run_status",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    tenant_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    project_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    run_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    graph_revision: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    snapshot_kind: Mapped[str] = mapped_column(
+        String(32), nullable=False, server_default=text("'graph'")
+    )
+    graph_snapshot_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    plan: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(32), nullable=False, server_default=text("'pending'")
+    )
+    idempotency_key: Mapped[str] = mapped_column(String(256), nullable=False)
+    request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+
+class ExecutionAttemptRecord(Base):
+    """Current index for one immutable attempt identity and captured dependencies."""
+
+    __tablename__ = "execution_attempts"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["tenant_id", "project_id", "run_id"],
+            ["execution_runs.tenant_id", "execution_runs.project_id", "execution_runs.run_id"],
+            ondelete="RESTRICT",
+            name="fk_execution_attempts_run",
+        ),
+        UniqueConstraint("tenant_id", "project_id", "attempt_id", name="uq_execution_attempt_id"),
+        UniqueConstraint(
+            "tenant_id",
+            "project_id",
+            "run_id",
+            "attempt_number",
+            name="uq_execution_attempt_number",
+        ),
+        CheckConstraint("attempt_number > 0", name="ck_execution_attempt_number_positive"),
+        CheckConstraint(
+            "status IN ('running', 'succeeded', 'failed', 'cancelled', 'retryable_failure')",
+            name="ck_execution_attempt_status",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    tenant_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    project_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    run_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    attempt_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    attempt_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False)
+    dependencies: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
+    provider_id: Mapped[str | None] = mapped_column(String(128))
+    model_id: Mapped[str | None] = mapped_column(String(128))
+    prompt_version: Mapped[str | None] = mapped_column(String(128))
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class ExecutionEventRecord(Base):
+    """Append-only execution lifecycle/provenance event with honest metric status."""
+
+    __tablename__ = "execution_events"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["tenant_id", "project_id", "run_id"],
+            ["execution_runs.tenant_id", "execution_runs.project_id", "execution_runs.run_id"],
+            ondelete="RESTRICT",
+            name="fk_execution_events_run",
+        ),
+        ForeignKeyConstraint(
+            ["tenant_id", "project_id", "attempt_id"],
+            [
+                "execution_attempts.tenant_id",
+                "execution_attempts.project_id",
+                "execution_attempts.attempt_id",
+            ],
+            ondelete="RESTRICT",
+            name="fk_execution_events_attempt",
+        ),
+        ForeignKeyConstraint(
+            ["tenant_id", "project_id", "artifact_version_id"],
+            [
+                "artifact_versions.tenant_id",
+                "artifact_versions.project_id",
+                "artifact_versions.artifact_version_id",
+            ],
+            ondelete="RESTRICT",
+            name="fk_execution_events_artifact",
+        ),
+        UniqueConstraint("tenant_id", "project_id", "event_id", name="uq_execution_event_id"),
+        UniqueConstraint(
+            "tenant_id", "project_id", "idempotency_key", name="uq_execution_event_idempotency"
+        ),
+        CheckConstraint(
+            "status IN ('pending', 'running', 'succeeded', 'failed', 'cancelled', "
+            "'retryable_failure')",
+            name="ck_execution_event_status",
+        ),
+        CheckConstraint(
+            "elapsed_status IN ('missing', 'estimated', 'measured') AND "
+            "((elapsed_status = 'missing' AND elapsed_ms IS NULL) OR "
+            "(elapsed_status <> 'missing' AND elapsed_ms IS NOT NULL AND elapsed_ms >= 0))",
+            name="ck_execution_event_elapsed_measurement",
+        ),
+        CheckConstraint(
+            "token_status IN ('missing', 'estimated', 'measured') AND "
+            "((token_status = 'missing' AND token_count IS NULL) OR "
+            "(token_status <> 'missing' AND token_count IS NOT NULL AND token_count >= 0))",
+            name="ck_execution_event_token_measurement",
+        ),
+        CheckConstraint(
+            "cost_status IN ('missing', 'estimated', 'measured') AND "
+            "((cost_status = 'missing' AND cost_usd IS NULL) OR "
+            "(cost_status <> 'missing' AND cost_usd IS NOT NULL AND cost_usd >= 0))",
+            name="ck_execution_event_cost_measurement",
+        ),
+        Index("ix_execution_events_run", "tenant_id", "project_id", "run_id", "created_at"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    tenant_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    project_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    event_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    run_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    attempt_id: Mapped[str | None] = mapped_column(String(128))
+    idempotency_key: Mapped[str] = mapped_column(String(256), nullable=False)
+    request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False)
+    error_classification: Mapped[str | None] = mapped_column(String(128))
+    error_message: Mapped[str | None] = mapped_column(Text)
+    elapsed_ms: Mapped[int | None] = mapped_column(BigInteger)
+    elapsed_status: Mapped[str] = mapped_column(
+        String(16), nullable=False, server_default=text("'missing'")
+    )
+    token_count: Mapped[int | None] = mapped_column(BigInteger)
+    token_status: Mapped[str] = mapped_column(
+        String(16), nullable=False, server_default=text("'missing'")
+    )
+    cost_usd: Mapped[float | None] = mapped_column()
+    cost_status: Mapped[str] = mapped_column(
+        String(16), nullable=False, server_default=text("'missing'")
+    )
+    artifact_version_id: Mapped[str | None] = mapped_column(String(128))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+
+class ArtifactProvenanceRecord(Base):
+    """Append-only source and generation provenance attached to an artifact version."""
+
+    __tablename__ = "artifact_provenance"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["tenant_id", "project_id", "artifact_version_id"],
+            [
+                "artifact_versions.tenant_id",
+                "artifact_versions.project_id",
+                "artifact_versions.artifact_version_id",
+            ],
+            ondelete="RESTRICT",
+            name="fk_artifact_provenance_artifact",
+        ),
+        UniqueConstraint(
+            "tenant_id", "project_id", "provenance_id", name="uq_artifact_provenance_id"
+        ),
+        UniqueConstraint(
+            "tenant_id",
+            "project_id",
+            "artifact_version_id",
+            "source_id",
+            "source_kind",
+            name="uq_artifact_provenance_source",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    tenant_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    project_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    provenance_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    artifact_version_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    source_kind: Mapped[str] = mapped_column(String(64), nullable=False)
+    source_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    details: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+
 class ImmutableRecordMutation(RuntimeError):
     """Raised when application code tries to edit or delete immutable history."""
 
@@ -253,8 +544,42 @@ class ImmutableRecordMutation(RuntimeError):
 @sqlalchemy_event.listens_for(ProjectSnapshotRecord, "before_delete")
 @sqlalchemy_event.listens_for(ApprovalRecord, "before_update")
 @sqlalchemy_event.listens_for(ApprovalRecord, "before_delete")
+@sqlalchemy_event.listens_for(ArtifactVersionRecord, "before_update")
+@sqlalchemy_event.listens_for(ArtifactVersionRecord, "before_delete")
+@sqlalchemy_event.listens_for(ExecutionEventRecord, "before_update")
+@sqlalchemy_event.listens_for(ExecutionEventRecord, "before_delete")
+@sqlalchemy_event.listens_for(ArtifactProvenanceRecord, "before_update")
+@sqlalchemy_event.listens_for(ArtifactProvenanceRecord, "before_delete")
 def _reject_immutable_mutation(*args: object) -> None:
-    raise ImmutableRecordMutation("snapshot and approval records are append-only")
+    raise ImmutableRecordMutation(
+        "snapshot, approval, artifact, and provenance records are append-only"
+    )
+
+
+@sqlalchemy_event.listens_for(ExecutionRunRecord, "before_update")
+def _protect_execution_run_header(
+    mapper: object, connection: object, target: ExecutionRunRecord
+) -> None:
+    changed = {
+        attribute.key
+        for attribute in sqlalchemy_inspect(target).attrs
+        if attribute.history.has_changes()
+    }
+    if changed - {"status"}:
+        raise ImmutableRecordMutation("execution run metadata is immutable")
+
+
+@sqlalchemy_event.listens_for(ExecutionAttemptRecord, "before_update")
+def _protect_execution_attempt_header(
+    mapper: object, connection: object, target: ExecutionAttemptRecord
+) -> None:
+    changed = {
+        attribute.key
+        for attribute in sqlalchemy_inspect(target).attrs
+        if attribute.history.has_changes()
+    }
+    if changed - {"status", "finished_at"}:
+        raise ImmutableRecordMutation("execution attempt metadata is immutable")
 
 
 def utc_now() -> datetime:

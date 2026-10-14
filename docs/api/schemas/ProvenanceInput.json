@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "details": {
+      "additionalProperties": true,
+      "title": "Details",
+      "type": "object"
+    },
+    "provenance_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Provenance Id",
+      "type": "string"
+    },
+    "source_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Source Id",
+      "type": "string"
+    },
+    "source_kind": {
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Source Kind",
+      "type": "string"
+    }
+  },
+  "required": [
+    "provenance_id",
+    "source_kind",
+    "source_id"
+  ],
+  "title": "ProvenanceInput",
+  "type": "object"
+}

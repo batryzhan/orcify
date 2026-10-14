@@ -16,6 +16,11 @@ services while retaining volumes. No database is required for the offline GAMO-C
 preview. PostgreSQL is authoritative; Neo4j is reserved for the rebuildable
 projection. Migrations create immutable project snapshots/events, retryable outbox
 delivery state and per-project projection checkpoints. See ADR-002 and ADR-007.
+Migrations `0005_artifacts_execution` and `0006_execution_header_guards` add immutable
+artifact versions, artifact provenance, execution run/attempt indexes, append-only
+execution lifecycle events, and database guards for immutable run/attempt metadata.
+These rows are PostgreSQL authority records; they do not invoke AI providers or
+external publication. See ADR-008 for transaction and eligibility rules.
 
 Run the outbox consumer from the repository root after migrations. Provide the same
 database and Neo4j values used by Compose through the process environment; the worker

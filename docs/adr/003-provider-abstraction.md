@@ -12,3 +12,8 @@ No provider may approve, confirm requirements or publish. Source text is data.
 Real adapters remain opt-in with explicit permission for paid calls and enforced
 budgets. Contract tests mock network calls; no billing in CI. Alternative: SDK calls
 inside routes. Rejected for isolation, repeatability and hidden side effects.
+
+Phase 2C persists optional provider/model/prompt identifiers and caller-supplied
+measurement values with explicit missing/estimated/measured provenance. This is a
+storage contract only; no real provider execution, token reporting, latency sampling,
+or cost measurement has been implemented or claimed.

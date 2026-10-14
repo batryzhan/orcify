@@ -21,9 +21,28 @@ def export_schemas(check: bool) -> None:
     from gamo_ca.planner import Plan
     from pydantic import TypeAdapter
 
+    from services.api.app.artifact_schemas import (
+        ArtifactCreateRequest,
+        ArtifactEligibilityResult,
+        DependencyVersion,
+        ExecutionAttemptStartRequest,
+        ExecutionRunCreateRequest,
+        ExecutionTransitionRequest,
+        ProvenanceInput,
+    )
+
     destination = ROOT / "docs" / "api" / "schemas"
     destination.mkdir(parents=True, exist_ok=True)
-    for model in (*DOMAIN_TYPES, Plan, GraphChangePayload):
+    artifact_models = (
+        ArtifactCreateRequest,
+        ArtifactEligibilityResult,
+        DependencyVersion,
+        ExecutionAttemptStartRequest,
+        ExecutionRunCreateRequest,
+        ExecutionTransitionRequest,
+        ProvenanceInput,
+    )
+    for model in (*DOMAIN_TYPES, Plan, GraphChangePayload, *artifact_models):
         schema = TypeAdapter(model).json_schema()
         schema["$schema"] = "https://json-schema.org/draft/2020-12/schema"
         text = json.dumps(schema, indent=2, sort_keys=True) + "\n"
