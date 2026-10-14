@@ -22,16 +22,16 @@
 - [x] Implement typed graph representation and cycle detection; enforce tenant boundary. **Done:** unit tests cover disconnected graph, DAG, cycle and cross-tenant edge.
 - [x] Implement conservative impact closure across HARD edges; SOFT relevance policy and INFORMATIONAL handling. **Done:** traceable decisions for each edge.
 - [x] Implement `plan_change(graph, event, policy) -> Plan` as pure deterministic function. Plan includes `KEEP/RECOMPUTE/REVIEW/BLOCK`, explanation, dependency ordering, expected cost and snapshot hash. **Done:** identical inputs yield identical plan.
-- [ ] Implement exact-version approval state machine: draft → review → approved/rejected; change invalidates approval eligibility. **Done:** no implicit approval inheritance.
-- [ ] Implement safe publication eligibility predicate and all six invariants as tests. **Done:** adversarial and property-based tests pass.
-- [ ] Implement replay/idempotency handling for repeated change IDs and stale snapshots. **Done:** no duplicated side effects.
-- [ ] Add deterministic toy graph fixtures with a slogan change and an unrelated note change. **Done:** hard changes rerun only affected nodes; unrelated nodes retained.
-- [ ] Produce `docs/research/algorithm.md`: pseudocode, complexity assumptions, known failure modes and diagrams. **Done:** every action can be explained without LLM output.
+- [x] Implement exact-version approval state machine: draft → review → approved/rejected; change invalidates approval eligibility. **Done:** immutable submission/review/approve/reject/revoke chain, actor authorization claims and exact asset/requirement/policy binding; version or requirement changes make old approvals ineligible.
+- [x] Implement safe publication eligibility predicate and all six invariants as tests. **Done:** fail-closed check requires an exact current approval and confirmed evidence/requirements; KEEP alone cannot pass. Regression and Hypothesis tests cover scope, version, policy, stale/revoked approval, unresolved dependencies and replay.
+- [x] Implement replay/idempotency handling for repeated change IDs and stale snapshots. **Done:** deterministic in-memory reducer returns the original receipt for an exact duplicate and rejects conflicting, stale, gapped, old-version and out-of-order events. Durable effects are not implemented yet.
+- [x] Add deterministic toy graph fixtures with a slogan change and an unrelated note change. **Done:** hard changes rerun only affected nodes; unrelated nodes retained.
+- [x] Produce `docs/research/algorithm.md`: pseudocode, complexity assumptions, known failure modes and diagrams. **Done:** algorithm, approval/replay contracts, complexity assumptions and limitations documented without LLM output.
 
 ## Phase 2 — Persistence and API (P0)
-- [ ] Compose local PostgreSQL + Neo4j, health checks and migrations. **Done:** one command starts dependencies.
-- [ ] Persist immutable events, snapshots, approvals, artifacts and run logs. **Done:** restart retains all state.
-- [ ] Build Neo4j projection adapter and reconcile from event log. **Done:** projection can be rebuilt and checked for drift.
+- [ ] Compose local PostgreSQL + Neo4j, health checks and migrations. PostgreSQL 16.15 and Neo4j services respond to live probes; Alembic is applied through `0003_authoritative_graph_hash`. Docker Compose health metadata remains unverified because `docker` is not available in this shell.
+- [ ] Persist immutable events, snapshots, approvals, artifacts and run logs. Complete versioned graph-change events now carry typed snapshot content; atomic graph/replay snapshots, project pointers, revision and outbox persistence are implemented and tested. Artifact and execution-log persistence remain open.
+- [ ] Build Neo4j projection adapter and reconcile from event log. **Next:** implement retryable, idempotent outbox projection and reconciliation; Neo4j remains a rebuildable projection.
 - [ ] Add FastAPI v1 routes for campaign creation, brief upload, requirement confirmation, graph query, preview/apply change, plan inspection, approval and audit. **Done:** OpenAPI + integration tests.
 - [ ] Implement authorization with tenant isolation and role permissions (producer/editor/reviewer/researcher). **Done:** 403/404 semantics tested for unauthorized access.
 - [ ] Add upload size/type validation, content sanitization and audit logging. **Done:** malformed uploads fail safely.
@@ -97,10 +97,13 @@
 
 ## Verified execution status — 2026-10-14
 
-Phase 0 and the first five Phase 1 tasks are complete. Evidence and exact commands:
-`docs/research/experiment-log.md`. Next sequential task: exact-version approval
-state machine, followed by publication eligibility/invariant coverage and replay.
-Toy fixtures and provisional algorithm notes are already used to test the kernel;
-their later checkboxes remain unchecked until preceding safety tasks are verified.
-Gate A has **not** been reached. No benchmark run, human gold review, paid provider,
-production API, database migration or UI is claimed complete.
+Phase 0 and all Phase 1 tasks are complete for the pure offline kernel. Evidence and
+exact commands are in `docs/research/experiment-log.md`. Gate A's automated kernel
+check is reached for the current test suite; this is not a proof of universal safety.
+Phase 2 has SQLAlchemy/Alembic authority storage, Compose configuration, immutable
+graph and replay snapshot history, and pure-kernel-validated approval persistence.
+Complete graph changes advance the authoritative snapshot and transactional outbox.
+PostgreSQL migration and concurrency behavior were verified against live local
+services; Neo4j query connectivity was verified, while Compose health metadata remains
+inaccessible because no Docker CLI is discoverable in this shell. Artifact/run-log
+persistence, projection worker, verified API authorization and UI are still open.

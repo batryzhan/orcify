@@ -1,6 +1,6 @@
 # Orcify 2.0 — Research-first Creative Workflow Orchestration
 
-> Status: **Phase 0 foundation and initial Phase 1 kernel implemented**. Approval safety gates, persistence, API, execution and UI remain unfinished. Never present simulated outcomes as measured results.
+> Status: **Phase 0 and Phase 1 safety kernel implemented; Phase 2A includes PostgreSQL event, immutable graph/replay snapshot and approval persistence.** Authenticated API, artifact/run-log persistence, Neo4j projection worker, execution and UI remain unfinished. Never present simulated outcomes as measured results.
 
 ## 1. Mission
 Build a reproducible research prototype for small creative agencies that coordinate AI services while tracking changing briefs, brand rules, asset versions, feedback and human approvals. The research question is whether **GAMO-CA (Graph-Aware Memory Orchestration — Change & Approval)** can reduce unnecessary recomputation relative to full replay and ordinary DAG caching **without violating safety/approval constraints**.
@@ -165,5 +165,8 @@ in `docs/adr/001` through `005` (full filenames in that directory). The source's
 six invariants and the README's six invariants are both required. Baseline B2 will
 follow the PDF's **versioned graph + DAG without approval/risk policy**; graph
 retrieval comparisons are a separate study. No benchmark or independent gold
-annotation has been completed. See `docs/research/limitations.md` and `TASK.md`
-for remaining gates, including the exact-version approval state machine next.
+annotation has been completed. Phase 1 includes an immutable exact-version
+approval chain, fail-closed publication eligibility, and deterministic in-memory
+event replay. These pure functions do not provide authenticated sessions, durable
+database transactions, or external publishing. See `docs/research/limitations.md`
+and `TASK.md` for remaining gates.

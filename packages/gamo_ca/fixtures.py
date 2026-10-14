@@ -126,8 +126,10 @@ def change_event(target_id: str = "slogan", graph: Graph | None = None) -> Chang
     graph = graph or toy_graph()
     target = graph.node(target_id)
     return ChangeEvent(
-        **SCOPE,
         id=f"change-{target_id}",
+        tenant_id=graph.tenant_id,
+        project_id=graph.project_id,
+        created_at=SCOPE["created_at"],
         target_id=target_id,
         source_id="evidence",
         actor_id="synthetic-reviewer",
@@ -168,9 +170,13 @@ def entity_examples() -> tuple[Entity, ...]:
             **SCOPE,
             id="approval",
             asset_version_id="copy",
+            asset_version=1,
             actor_id="human",
             requirement_fingerprint=requirement_fingerprint(graph.requirements),
             decision=ApprovalDecision.APPROVED,
+            policy_version="v1",
+            idempotency_key="fixture-approval",
+            expected_revision=0,
         ),
         change_event(),
         ExecutionRecord(

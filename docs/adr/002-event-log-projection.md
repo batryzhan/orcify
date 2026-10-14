@@ -1,20 +1,32 @@
 # ADR-002: PostgreSQL authority, Neo4j query projection
 
-Status: accepted design, implementation deferred to Phase 2; 2026-10-14.
+Status: accepted; complete graph-change events and PostgreSQL event/outbox, graph/replay snapshot and approval persistence implemented; projection-worker gates remain open; 2026-10-14.
 
-One PostgreSQL transaction will append an event, immutable snapshots/approval
-decisions, optimistic campaign revision, and an outbox row. Unique
-`(tenant_id, project_id, event_id)` and idempotency-key/payload hashes will reject
-conflicting replay; identical replay returns the original receipt. No dual write
-to Neo4j within a request. A projection consumer applies ordered outbox entries
-idempotently and records its offset. Query responses expose projection revision.
-Safety decisions read authoritative state, never a lagging graph projection.
+PostgreSQL is the authority for projects, graph snapshots, event receipts, approvals,
+replay state and the transactional outbox. One transaction appends the graph-change
+event, immutable graph and replay snapshots, replay pointers, project revision, graph
+hash and outbox record. A project-row lock and scoped unique constraints provide
+optimistic concurrency and idempotency. Exact retries return the stored receipt;
+conflicting payloads and stale revisions fail closed. ORM guards and PostgreSQL
+triggers enforce append-only event, snapshot and approval history.
 
-Rebuild Neo4j from the log, verify revision/content hashes, then switch a complete
-projection. Failed delivery remains pending for retry with a recorded error;
-reconciliation checks offsets and drift. Crash after graph write but before offset
-is handled by event-ID deduplication. Transaction/recovery tests are Phase 2 gates.
+Graph changes use a versioned, self-contained event envelope with typed node and edge
+content. Replaying the event log therefore reconstructs graph content; hashes verify
+that content but do not replace it. Before persistence, the pure GAMO-CA validator
+checks project scope, temporal validity, acyclicity, version advancement, provenance,
+authorized human actor and confirmed requirements. The project stores separate graph
+and reducer-state hashes because legacy pointer-only events do not contain full graph
+content. Safety decisions load and verify the authoritative PostgreSQL snapshot.
 
-Alternative: Neo4j authority or synchronous dual write. Rejected because atomic
-approval/event consistency across two databases is otherwise fragile. Trade-off:
-eventual query consistency and projection operations must be visible and tested.
+Neo4j is a rebuildable projection. Requests never dual-write it, and no safety decision
+falls back to a stale projection. A retryable, idempotent outbox consumer, projection
+offsets and reconciliation are the next implementation task. The PostgreSQL service
+was migrated through `0003_authoritative_graph_hash`; three live integration tests
+passed for graph advancement/replay, row-lock serialization, trigger enforcement,
+idempotency and rollback. Neo4j accepted an authenticated `RETURN 1` probe. Docker
+Compose health metadata remains unavailable because the Docker CLI is not discoverable
+in this shell.
+
+Alternative: Neo4j authority or synchronous dual writes. Rejected because atomic
+approval/event consistency across two databases is fragile. The trade-off is eventual
+query consistency; projection lag and failures must be visible and recoverable.

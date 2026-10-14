@@ -40,6 +40,7 @@ class RequirementStatus(StrEnum):
 
 
 class ApprovalDecision(StrEnum):
+    SUBMITTED = "SUBMITTED"
     APPROVED = "APPROVED"
     REJECTED = "REJECTED"
     REVOKED = "REVOKED"
@@ -199,9 +200,14 @@ class Feedback(Entity):
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Approval(Entity):
     asset_version_id: str
+    asset_version: int
     requirement_fingerprint: str
     actor_id: str
     decision: ApprovalDecision
+    policy_version: str
+    idempotency_key: str
+    expected_revision: int
+    reason: str | None = None
     supersedes_id: str | None = None
 
     def __post_init__(self) -> None:
@@ -209,8 +215,21 @@ class Approval(Entity):
         require_id(self.asset_version_id)
         require_id(self.actor_id)
         require_hash(self.requirement_fingerprint)
+        require_id(self.policy_version)
+        require_id(self.idempotency_key)
+        if type(self.asset_version) is not int or self.asset_version < 1:
+            raise ValueError("approval asset version must be positive")
+        if type(self.expected_revision) is not int or self.expected_revision < 0:
+            raise ValueError("approval revision must be nonnegative")
         if not isinstance(self.decision, ApprovalDecision):
             raise ValueError("invalid approval decision")
+        if self.decision in (ApprovalDecision.REJECTED, ApprovalDecision.REVOKED):
+            if not isinstance(self.reason, str) or not self.reason.strip():
+                raise ValueError("rejection/revocation requires reason")
+        if self.reason is not None and not isinstance(self.reason, str):
+            raise TypeError("approval reason must be text")
+        if self.supersedes_id is not None:
+            require_id(self.supersedes_id)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

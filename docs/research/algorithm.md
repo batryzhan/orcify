@@ -1,7 +1,8 @@
 # Kernel v1: deterministic conservative preview
 
-Status: implemented preview; approval state machine, event application and executor
-are subsequent Phase 1–3 tasks. This is not a validated performance result.
+Status: pure planner, approval state machine, publication predicate and deterministic
+version-pointer replay implemented. Durable application and executor remain Phase 2–3
+work. This is not a validated performance result.
 
 `plan_change(graph, event, policy)` consumes immutable explicit inputs, reads no
 clock or random source and performs no network/database calls. Graph scope is
@@ -28,12 +29,30 @@ the scope from verified identity and authorize the human actor before planning.
    optional simulated serial cost/latency sum, snapshot hash and plan hash.
 
 KEEP corresponds to PDF REUSE and means computational retention only. The preview
-does not mutate current versions/approval history; it must be applied atomically
-by a later service. `non_publishable_ids` identifies change-induced holds, not the
-complete set of assets lacking approval. No publication capability exists yet.
-Rebuild candidates may be tasks or derived asset nodes; the executor must resolve
-each asset to its producing task before executing. This contract is provisional
-until the executor schema is finalized; previews do not generate asset versions.
+does not mutate current versions/approval history; a later service must apply it
+atomically. `non_publishable_ids` identifies change-induced holds, not the complete
+set of assets lacking approval. The pure predicate returns eligibility and reasons;
+no publication endpoint or external side effect exists. Rebuild candidates may be
+tasks or derived asset nodes; the executor must resolve each asset to its producing
+task before executing. Previews do not generate asset versions.
+
+`apply_approval` appends decisions bound to an asset-version ID and number, the
+current requirement fingerprint, actor, policy, idempotency key and expected chain
+revision. Rejection/revocation reasons are required. Revocation is a new decision;
+old records remain immutable. A plan with stale graph snapshot or unresolved asset
+ancestors cannot approve or publish. Publication also requires all current
+requirements and asset evidence to have human confirmation and the latest
+well-formed chain entry to be an exact APPROVED decision. An imported history is
+validated for unique IDs/keys, sequential revisions, superseding links, advancing
+times and legal decision transitions.
+
+`EventReplayState.from_graph` captures scoped current version pointers and confirmed
+evidence IDs. `apply_change_event` replaces one pointer and returns an immutable
+receipt. Identical event replay returns the same receipt/state; reused IDs with
+different payloads, stale projection hashes, gaps, old versions, unconfirmed
+sources and non-advancing times fail. The reducer records hashes, not new content;
+the database/application layer must persist the actual immutable snapshot and
+append event atomically before issuing the next graph plan.
 
 ```mermaid
 flowchart LR
@@ -56,6 +75,6 @@ No global optimization or unchanged-output pruning is implemented. All changed
 HARD paths invalidate conservatively even when content is equal across versions.
 Wrong but human-confirmed edge labels can still produce wrong impact; independently
 reviewed gold data remains necessary. Full historical queries, time-scheduled changes,
-authentication, approval/revoke race safety, replay deduplication, provider failures
-and publication eligibility remain open gates. The supplied graph represents
+authentication, approval/revoke database race safety, durable event deduplication,
+provider failures and any external publication integration remain open gates. The supplied graph represents
 current versions at exactly the event timestamp; future/backdated events reject.

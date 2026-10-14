@@ -1,19 +1,26 @@
 # Exact resolved developer environment, captured 2026-10-14.
 annotated-types==0.8.0
+alembic==1.20.0
 colorama==0.4.6
 hypothesis==6.169.1
 iniconfig==2.3.1
 librt==0.16.0
+Mako==1.4.3
+MarkupSafe==3.0.4
 mypy==1.20.2
 mypy_extensions==1.1.0
 packaging==26.3
 pathspec==1.1.1
 pluggy==1.6.0
+psycopg==3.3.6
+psycopg-binary==3.3.6
 pydantic==2.14.1
 pydantic_core==2.50.1
 Pygments==2.21.0
 pytest==9.1.1
 ruff==0.17.0
+SQLAlchemy==2.1.4
 sortedcontainers==2.4.0
 typing-inspection==0.4.4
 typing_extensions==4.16.0
+tzdata==2026.5

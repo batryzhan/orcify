@@ -16,13 +16,14 @@ def run(*args: str) -> None:
 
 
 def export_schemas(check: bool) -> None:
+    from gamo_ca.events import GraphChangePayload
     from gamo_ca.models import DOMAIN_TYPES
     from gamo_ca.planner import Plan
     from pydantic import TypeAdapter
 
     destination = ROOT / "docs" / "api" / "schemas"
     destination.mkdir(parents=True, exist_ok=True)
-    for model in (*DOMAIN_TYPES, Plan):
+    for model in (*DOMAIN_TYPES, Plan, GraphChangePayload):
         schema = TypeAdapter(model).json_schema()
         schema["$schema"] = "https://json-schema.org/draft/2020-12/schema"
         text = json.dumps(schema, indent=2, sort_keys=True) + "\n"

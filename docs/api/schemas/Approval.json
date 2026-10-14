@@ -2,6 +2,7 @@
   "$defs": {
     "ApprovalDecision": {
       "enum": [
+        "SUBMITTED",
         "APPROVED",
         "REJECTED",
         "REVOKED"
@@ -16,6 +17,10 @@
       "title": "Actor Id",
       "type": "string"
     },
+    "asset_version": {
+      "title": "Asset Version",
+      "type": "integer"
+    },
     "asset_version_id": {
       "title": "Asset Version Id",
       "type": "string"
@@ -28,13 +33,37 @@
     "decision": {
       "$ref": "#/$defs/ApprovalDecision"
     },
+    "expected_revision": {
+      "title": "Expected Revision",
+      "type": "integer"
+    },
     "id": {
       "title": "Id",
+      "type": "string"
+    },
+    "idempotency_key": {
+      "title": "Idempotency Key",
+      "type": "string"
+    },
+    "policy_version": {
+      "title": "Policy Version",
       "type": "string"
     },
     "project_id": {
       "title": "Project Id",
       "type": "string"
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reason"
     },
     "requirement_fingerprint": {
       "title": "Requirement Fingerprint",
@@ -68,9 +97,13 @@
     "project_id",
     "created_at",
     "asset_version_id",
+    "asset_version",
     "requirement_fingerprint",
     "actor_id",
-    "decision"
+    "decision",
+    "policy_version",
+    "idempotency_key",
+    "expected_revision"
   ],
   "title": "Approval",
   "type": "object"
