@@ -1,48 +1,67 @@
-# Orcify 2.0 — Research-first Creative Workflow Orchestration
+# Orcify 2.0 — Student Research Prototype
 
-> Status: **Phase 0, Phase 1, and Phase 2A–2E backend milestones are implemented and locally validated.** Real provider execution and UI remain unfinished. Never present simulated outcomes as measured results.
+> Status: A high-school scientific research prototype for Kazakhstan's Republican Scientific Projects Competition. This repository is not a SaaS product or production-ready service. Its success depends on explainable algorithms and reproducible measurements, not feature count.
+
+## Final presentation build
+
+Start the existing React application from this repository:
+
+```powershell
+npm ci
+npm run dev
+```
+
+Open the Vite URL (normally `http://127.0.0.1:5173/`). The presentation opens without
+credentials and provides **Research overview**, **Graph & impact**, and
+**Experiments & results**. The default graph demo is explicitly **SIMULATED / OFFLINE**:
+it uses the original slogan-change fixture and verified saved Python planner output,
+has a Reset demo action, and performs no generation, approval, publication, or database
+write. Live API remains available as an explicit mode with the existing bearer login.
+
+Results are loaded directly from preserved R1.1–R1.3 CSVs, including unfavorable
+planning overhead and the field-aware DAG match. R1.4 independent human validation
+remains incomplete. This build is presentation completion, not a new research phase.
+
+See [`docs/final-presentation/startup.md`](docs/final-presentation/startup.md), the
+[three-minute demo script](docs/final-presentation/demo-script.md),
+[methodology](docs/final-presentation/methodology.md), and
+[jury questions](docs/final-presentation/jury-questions.md). Check that the demo still
+matches the planner and all 22 preserved research files with:
+
+```powershell
+.venv/Scripts/python scripts/export_presentation.py --check
+```
+
+No dependency, backend service, API endpoint, or database migration was added for the
+presentation. The existing backend and pure safety kernel remain the research support.
 
 ## 1. Mission
-Build a reproducible research prototype for small creative agencies that coordinate AI services while tracking changing briefs, brand rules, asset versions, feedback and human approvals. The research question is whether **GAMO-CA (Graph-Aware Memory Orchestration — Change & Approval)** can reduce unnecessary recomputation relative to full replay and ordinary DAG caching **without violating safety/approval constraints**.
+Build a small, reproducible high-school research prototype that studies whether **GAMO-CA (Graph-Aware Memory Orchestration — Change & Approval)** can reduce unnecessary recomputation compared with full replay and ordinary DAG caching while preserving explicit approval constraints in a creative workflow. The student should be able to explain the problem, algorithm, experiments, and limitations independently.
 
 This repository is **not** a generic chatbot, AI content generator, or no-code automation clone. The research engine and reproducible benchmark are the core; the UI is an explanation and demonstration layer.
 
 ## 2. Source of truth and scientific boundaries
-Primary specification: `Orcify_2_0_Research_Concept_2026.pdf` (place a copy in `docs/research/`). This README operationalizes its conceptual design, but where ambiguous, create an ADR and do not invent findings. Scientific novelty is a **hypothesis**: combining temporal/versioned evidence, typed dependencies, approval-aware invalidation and safe selective replanning in creative workflows. Incremental recomputation, graph databases, workflow scheduling and RAG are pre-existing ideas. Literature review and baselines must reflect this.
+Primary specification: `Orcify_2_0_Research_Concept_2026.pdf` in `docs/research/`. This README operationalizes its conceptual design, but where ambiguous, create an ADR and do not invent findings. Scientific novelty is a **hypothesis**, not an established claim. Incremental recomputation, graph databases, workflow scheduling, and RAG are pre-existing ideas; the student must compare fairly and discuss limitations.
 
-Research scenarios: advertising campaign creation, e.g. client brief → brand rules → concept → copy → storyboard → revision → approval → publication eligibility. Keep a human responsible for publication.
+Research scenario: one small synthetic advertising workflow, such as brief → confirmed requirement → copy → storyboard → review. Keep the example small enough to explain at a school competition; no real customer data or publication side effect is needed.
 
-## 3. Users and MVP journeys
-- **Producer:** creates a campaign, uploads a brief, sees parsed requirements and confirms them.
-- **Creative editor:** generates or edits copy/storyboard draft, sees provenance and version differences.
-- **Reviewer:** requests changes, approves a specific immutable version, can reject or revoke approval.
-- **Researcher:** injects change events, views GAMO-CA decisions and compares benchmark runs.
+## 3. Research demonstration
+The demonstration uses one small synthetic creative workflow: change a confirmed requirement or asset, inspect the graph impact, and compare GAMO-CA decisions (`KEEP`, `REVIEW`, `RECOMPUTE`) with simple baseline algorithms. Approval checks illustrate the safety constraint; no external publication occurs. The existing authenticated API and read-only graph explorer are supporting demonstration tools, not commercial product surfaces.
 
-Demo journey: create campaign from sample brief; approve extracted requirements; generate a draft; approve version 1; change a brand rule; observe affected nodes, invalidated approval and targeted re-execution; inspect audit trail and comparison with full replay/DAG cache. Publication must remain blocked until new version is approved.
+## 4. Strict student-project scope
+**In:** an understandable Python GAMO-CA kernel; a small typed dependency graph; immutable version and approval examples; deterministic synthetic fixtures; simple baselines; experiment scripts; raw results and analysis; focused automated tests; and a minimal read-only graph/impact demonstration.
 
-## 4. Scope
-**In:** versioned campaign graph; provenance; typed change impact; rule-based GAMO-CA; durable execution log; mock AI provider; real provider adapter behind configuration; approval gate; visualization; benchmark harness; CSV/JSON reports; tests.
+**Frozen supporting infrastructure:** the existing FastAPI, PostgreSQL, Neo4j projection, and React explorer may be used to run and show the research. Keep them stable. Make changes only when required to demonstrate the hypothesis, protect an existing safety invariant, or make an experiment reproducible.
 
-**Out of MVP:** automated publishing to social platforms; payments; collaborative real-time editing; model training from private customer data; arbitrary user-defined executable code; fully autonomous approval; complicated multi-cloud deployment.
+**Out of scope:** SaaS/commercial features, billing, subscriptions, onboarding, organization administration, enterprise identity, real-time collaboration, complex deployment, new infrastructure layers, production hardening unrelated to the local study, broad UI work, paid AI APIs, and external publication. Do not add a dependency, service, abstraction, or database table without stating its direct research need and simpler alternatives.
 
-## 5. Architecture
+## 5. Small research architecture
 ```text
-React + TypeScript + Vite + Tailwind + shadcn/ui + React Flow
-                   | REST / WebSocket
-             FastAPI / Pydantic
-                   |
-        Application / domain services
-       /           |               \
-Versioned graph  GAMO-CA planner   Workflow executor
-Neo4j adapter    pure Python       mock/LLM adapters
-       \           |               /
-        PostgreSQL event log + approvals
-                   |
-        Artifact storage (local in dev)
-                   |
-      Benchmark runner / report exporter
+Small Python graph fixtures -> pure GAMO-CA planner -> baseline comparison -> raw experiment records
+                                      |
+                     existing API / graph explorer for demonstration only
 ```
-Keep the domain and algorithm independent from web, database and LLM frameworks. Prefer simple synchronous execution for initial MVP; introduce Redis/worker only after demonstrable need.
+Keep the algorithm independent from web, database, and model frameworks. Reuse existing infrastructure; prefer local scripts and straightforward data structures for experiments. Do not add workers or distributed services for hypothetical scale.
 
 ## 6. Domain model
 Nodes: Tenant, Client, Brand, Campaign, Brief, Requirement, Task, Asset, AssetVersion, Feedback, Approval, Evidence, Execution, ChangeEvent. Every persisted node has `tenant_id`, `project_id` where applicable, `id`, timestamps and schema version. Relationships: `OWNS`, `HAS_BRIEF`, `DEFINES`, `DEPENDS_ON`, `PRODUCES`, `REVISES`, `REFERENCES`, `APPROVES`, `INVALIDATES`, `DERIVED_FROM`, `AFFECTS`.
@@ -82,11 +101,9 @@ Safety is a hard constraint, not a term traded away for token savings. A simple 
 Design property-based and adversarial tests for each invariant.
 
 ## 9. Baselines and research protocol
-Four modes on identical cases: **full replay**, **ordinary DAG cache**, **graph-context only**, **GAMO-CA**. Optional manual workflow is a separate human usability study, not directly comparable as algorithm runtime.
+The first executed pilot compares **Full Recompute**, **Conventional DAG Incremental**, and **GAMO-CA** on identical small synthetic scenarios. A graph-context retrieval condition is a separate question and is not included. The R1.1 pilot has five authored scenarios, not an independently annotated benchmark. Its oracle obligations, counts, measured plan timings, and limitations are documented in [`docs/research/r1_1-pilot/README.md`](docs/research/r1_1-pilot/README.md). Do not start a larger campaign until a second human reviews the cases and oracle.
 
-Pilot: 5 campaigns × 4 change events = 20. Main planned benchmark: 24 campaigns × 6 change events = **144** events. These are target dataset sizes, **not completed experiments**. Construct gold impacted nodes with independently reviewed annotations. Include changes to slogans, budget, brand color, legal disclaimers, approvals, unrelated notes and cross-client distractors. Randomize case order and repeat runs; fix model versions, prompts, data and budget.
-
-Metrics: impacted-node precision/recall (HARD recall prioritized), unnecessary rerun count, total execution time, model tokens and monetary cost, approval/publishing safety violations, provenance completeness, reviewer workload, recovery from failed provider calls. Report distributions and uncertainty (bootstrap confidence intervals); analyze paired differences. Include ablations: no typed edges, no temporal versioning, no approval-aware planning. Never invent scores or charts.
+The proposed 5×4 and 24×6 dataset sizes in the research concept remain planning targets, not completed studies. Future experiments should use independently reviewed impacted-node labels and equal information access; record runtime, recomputation and review work separately. Report actual distributions and failure cases. Do not claim statistical significance from the small R1.1 pilot, and do not fabricate scores, costs, or charts.
 
 ## 10. Suggested repository structure
 ```text
@@ -104,7 +121,7 @@ orcify/
 `AGENTS.md` can be a small bridge pointing Codex to the three authoritative files.
 
 ## 11. Local developer experience
-Target: Python 3.12+, Node 22+, Docker Compose. Provide `make setup`, `make dev`, `make test`, `make lint`, `make benchmark-pilot`, `make seed-demo` (or cross-platform equivalents). `.env.example` contains placeholders only. Default to mock LLM mode with deterministic fixtures so no API key or billing is required to demonstrate the project. Document Windows PowerShell commands as well as Bash. Supply database migrations, sample data, OpenAPI docs and health endpoints.
+Local tools: Python 3.12+, Node 22+, and the existing Docker Compose setup for the API demonstration. Keep deterministic fixtures as the default; no API key, paid service, or real customer data is required. Prefer a simple script and saved configuration for research runs. Do not build new deployment infrastructure for scale that this study does not need.
 
 ## 12. API boundary
 
@@ -117,8 +134,8 @@ authority. See [ADR-009](docs/adr/009-authenticated-api-boundary.md),
 [OpenAPI contract](docs/api/openapi.json). Tenant roles are currently shared across
 projects in that tenant. There is no interactive login, SSO, or public token issuance.
 
-## 13. Definition of done
-A fresh clone boots from documented commands; seeded demo runs without paid API; a rule change triggers explainable targeted recomputation; stale approval cannot publish; all invariants have passing automated tests; benchmark outputs raw observations plus reproducible scripts; research report distinguishes hypotheses from results; UI is accessible, responsive and shows errors honestly.
+## 13. Definition of research success
+A student can explain the question and GAMO-CA in two minutes, walk through a small creative graph, explain each decision and formula, fairly compare it with existing approaches, reproduce the recorded measurements from the saved data and scripts, discuss limitations, and defend the work independently. Engineering tests demonstrate code behavior; they are not scientific performance results.
 
 ## 14. Phase 1 pure-kernel milestone (historical)
 
@@ -198,6 +215,33 @@ PostgreSQL within the existing project lock. Do not expose the development datab
 credentials or token output from provisioning in shared logs. See ADR-009 for the
 authentication assumptions and deployment limitations.
 
+## 17. Phase 3A Graph & Impact Explorer
+
+The read-only browser explorer uses the authenticated API and generated contract in
+`apps/web/src/api/generated.ts`. From the repository root, install the locked workspace
+dependencies, start the API as above, then run:
+
+```powershell
+npm ci
+npm run web:dev
+```
+
+Open the Vite URL shown in the terminal. The development server proxies `/api` to
+`http://127.0.0.1:8000`; override this server-side with `ORCIFY_API_PROXY` if the API
+is elsewhere. The login form accepts a server-provisioned bearer token. The seeded
+demo token is stored in the ignored local `var/demo-tokens.json` file. Paste it into
+the form locally; the browser keeps it only in memory until sign-out or tab close.
+Do not copy the token into a URL, source file, or shared terminal log.
+
+For a separately hosted web origin, set `VITE_API_BASE_URL` at build time and configure
+the API `ORCIFY_WEB_ORIGINS` to the exact allowed origins. The default allow-list is
+limited to local Vite origins. OpenAPI types can be regenerated with `npm run web:types`.
+The UI reads authorized tenant memberships and project lists from FastAPI, retrieves
+the authoritative PostgreSQL graph snapshot, previews plans, and reads exact-version
+approval history and eligibility. Its planner form does not mutate the graph; approval,
+artifact creation, execution, and publication controls are not included. See
+[ADR-011](docs/adr/011-read-only-graph-explorer.md) and the Phase 3A experiment entry.
+
 ## 16. Phase 2E local API demo
 
 The API demo uses deterministic synthetic graph and artifact fixtures, local PostgreSQL,
@@ -256,3 +300,19 @@ services, set `ORCIFY_TEST_DATABASE_URL`, `ORCIFY_TEST_NEO4J_URI`,
 The smoke command intentionally does not create a publication request or contact an
 external service. PostgreSQL alone decides current artifact eligibility. A passed
 engineering smoke check is not a scientific benchmark or universal safety proof.
+
+## 18. R1.1 minimal scientific pilot
+
+The next research step is a local Python-only comparison with three algorithms and
+five small synthetic workflow changes. It uses the pure GAMO-CA planner and two
+independently implemented baselines. To reproduce the pilot from the repository root:
+
+```powershell
+.venv/Scripts/python scripts/r1_1_pilot.py --seed 20261014 --timing-repeats 101
+.venv/Scripts/python -m pytest -q tests/test_r1_1_pilot.py
+```
+
+Results are saved under `docs/research/r1_1-pilot/` as CSV, a run manifest, and SVG
+plots. The oracle and operation definitions, actual observations, and limitations are
+in that folder's README. These five hand-authored synthetic cases are a methodology
+pilot, not a statistically meaningful benchmark or an independently reviewed study.

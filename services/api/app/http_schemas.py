@@ -37,6 +37,11 @@ class ProjectResponse(StrictRequest):
     current_snapshot_hash: str
 
 
+class TenantAccessResponse(StrictRequest):
+    tenant_id: str
+    role: str
+
+
 class GraphResponse(StrictRequest):
     revision: int
     snapshot_hash: str
@@ -122,6 +127,10 @@ class ArtifactResponse(StrictRequest):
     planner_decision: Plan
 
 
+class ApprovalHistoryResponse(StrictRequest):
+    approvals: tuple[Approval, ...]
+
+
 class ExecutionRunView(StrictRequest):
     run_id: str
     graph_revision: int
@@ -194,6 +203,7 @@ class ApiError(StrictRequest):
 __all__ = [
     "ApprovalRequest",
     "ApprovalResponse",
+    "ApprovalHistoryResponse",
     "ArtifactCreateHttpRequest",
     "ArtifactCreateRequest",
     "ArtifactCreateResponse",
@@ -213,5 +223,6 @@ __all__ = [
     "GraphResponse",
     "ProjectCreateRequest",
     "ProjectResponse",
+    "TenantAccessResponse",
     "RunHistoryResponse",
 ]

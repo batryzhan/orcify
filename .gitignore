@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 /var/demo-tokens.json
+/var/presentation-qa/
 
 # Python
 .venv/

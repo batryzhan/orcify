@@ -1,0 +1,20 @@
+{
+  "phase": "R1.3",
+  "classification": "SMALL_SYNTHETIC_WORKFLOW_VALIDATION_NOT_HUMAN_REVIEW",
+  "seed": 20261014,
+  "python_version": "3.14.6",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "timing_repeats": 21,
+  "outcome_combinations": 16,
+  "branch_outcomes_are_human_responses": false,
+  "worksheet_labels_are_blank": true,
+  "original_r1_1_r1_2_artifacts_modified": false,
+  "initial_plan_calls_per_workflow": 5,
+  "replans_per_gamo_or_field_aware_workflow": 4,
+  "synthetic_outcome_semantics": {
+    "material": "set the SOFT edge relevant_fields to the changed event fields",
+    "non_material": "set the SOFT edge relevant_fields to a distinct, non-overlapping field"
+  },
+  "field_aware_dag": "independent traversal baseline using the same edge field metadata and synthetic review outcomes; assumes valid fixtures and omits GAMO-CA's validation/provenance features",
+  "timing_scope": "planner calls only; excludes synthetic human review time and asset generation"
+}

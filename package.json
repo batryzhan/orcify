@@ -3,15 +3,23 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "workspaces": [
+    "apps/web"
+  ],
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "format": "prettier --write packages/contracts package.json tsconfig.json eslint.config.js .github/workflows/ci.yml",
-    "format:check": "prettier --check packages/contracts package.json tsconfig.json eslint.config.js .github/workflows/ci.yml",
-    "lint": "eslint packages/contracts",
+    "format": "prettier --write packages/contracts apps/web/src apps/web/*.ts apps/web/*.json package.json tsconfig.json eslint.config.js .github/workflows/ci.yml",
+    "format:check": "prettier --check packages/contracts apps/web/src apps/web/*.ts apps/web/*.json package.json tsconfig.json eslint.config.js .github/workflows/ci.yml",
+    "lint": "eslint packages/contracts apps/web/src",
     "typecheck": "tsc --noEmit",
-    "test": "tsc && node --test dist/contracts/plan.test.js"
+    "test": "tsc && node --test dist/contracts/plan.test.js && npm run web:test",
+    "web:dev": "npm --workspace apps/web run dev",
+    "web:build": "npm --workspace apps/web run build",
+    "web:test": "npm --workspace apps/web run test",
+    "web:types": "npm --workspace apps/web run generate:api",
+    "dev": "npm --workspace apps/web run dev"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",

@@ -1,0 +1,16 @@
+scenario,method,seed,graph_nodes,graph_edges,recompute_operations,review_operations,correctness,correctness_failures,approval_leaks,eligible_asset_ids,median_planning_time_ms,timing_repetitions,timing_scope
+slogan_change,Full Recompute,20261014,9,6,6,6,PASS,,0,,0.003400,101,planner only; no generation or human time
+slogan_change,Conventional DAG Incremental,20261014,9,6,6,6,PASS,,0,,0.011000,101,planner only; no generation or human time
+slogan_change,GAMO-CA,20261014,9,6,3,6,PASS,,0,,3.404800,101,planner only; no generation or human time
+brand_guideline_change,Full Recompute,20261014,8,5,5,5,PASS,,0,,0.001900,101,planner only; no generation or human time
+brand_guideline_change,Conventional DAG Incremental,20261014,8,5,4,5,PASS,,0,,0.005700,101,planner only; no generation or human time
+brand_guideline_change,GAMO-CA,20261014,8,5,2,5,PASS,,0,,2.953500,101,planner only; no generation or human time
+asset_version_update,Full Recompute,20261014,8,6,5,6,PASS,,0,,0.001900,101,planner only; no generation or human time
+asset_version_update,Conventional DAG Incremental,20261014,8,6,4,5,PASS,,0,approved_copy,0.005900,101,planner only; no generation or human time
+asset_version_update,GAMO-CA,20261014,8,6,2,5,PASS,,0,approved_copy,3.093100,101,planner only; no generation or human time
+approval_invalidation,Full Recompute,20261014,7,4,4,4,PASS,,0,,0.001800,101,planner only; no generation or human time
+approval_invalidation,Conventional DAG Incremental,20261014,7,4,3,4,PASS,,0,,0.005100,101,planner only; no generation or human time
+approval_invalidation,GAMO-CA,20261014,7,4,1,4,PASS,,0,,2.066800,101,planner only; no generation or human time
+all_hard_fanout_no_advantage,Full Recompute,20261014,6,4,4,4,PASS,,0,,0.001700,101,planner only; no generation or human time
+all_hard_fanout_no_advantage,Conventional DAG Incremental,20261014,6,4,4,4,PASS,,0,,0.007500,101,planner only; no generation or human time
+all_hard_fanout_no_advantage,GAMO-CA,20261014,6,4,4,4,PASS,,0,,1.974000,101,planner only; no generation or human time

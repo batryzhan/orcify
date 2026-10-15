@@ -9,6 +9,14 @@
 - At the end of every phase: update docs, run tests, record results and produce a runnable demonstration.
 - Preserve experimental reproducibility and distinguish simulated from measured values.
 
+## Mandatory student-research scope (2026-10-14)
+- Orcify is a high-school scientific research prototype for the Kazakhstan Republican Scientific Projects Competition, not a SaaS business or production service.
+- Prioritize the hypothesis, understandable GAMO-CA logic, fair baselines, reproducible experiments, measured results, and limitations.
+- Treat existing PostgreSQL, Neo4j, FastAPI, and React components as frozen demonstration infrastructure. Reuse them; extend only when essential to a research experiment or existing safety invariant.
+- Do not add commercial features, enterprise administration/authentication, production-only infrastructure, broad UI work, paid providers, or external publishing.
+- Keep experiments small and student-explainable. Before adding a dependency, service, abstraction, or table, document the research need and simpler alternatives.
+- Engineering milestones and tests are not scientific results. A planned dataset size, feature, or metric is not complete until its artifact and execution evidence exist.
+
 ## Phase 0 — Source alignment and architecture (P0)
 - [x] Inspect the research PDF; extract requirements, six invariants, algorithm, experiment design, risks and scope into `docs/research/spec-mapping.md` with page references. **Done:** no requirement silently dropped; ambiguities marked open.
 - [x] Review existing incremental computation, DAG caching, GraphRAG and workflow literature; maintain `docs/research/related-work.md` with verifiable links and differences. **Done:** no unsupported novelty claims.
@@ -34,7 +42,7 @@
 - [x] Build Neo4j projection adapter and reconcile from event log. **Done:** leased ordered outbox delivery, bounded exponential retries/dead-letter status, PostgreSQL checkpoints, tenant-qualified atomic Neo4j snapshot writes, crash-idempotent replay, and authoritative rebuild/reconciliation. Deterministic failure tests and a live PostgreSQL + Neo4j integration test passed; see the Phase 2B experiment entry. Neo4j remains a rebuildable projection.
 - [x] Add authenticated FastAPI v1 project, graph snapshot/change, planning, approval transition, artifact, execution history, and eligibility routes. **Done:** typed OpenAPI contract and API tests; campaigns, briefs, requirement confirmation, uploads, and audit endpoints remain separate work.
 - [x] Implement verified bearer authentication with tenant isolation and role permissions (tenant_admin/producer/editor/reviewer/researcher). **Done:** credential digests and active memberships are PostgreSQL-authoritative; expiry, revocation, forged identity, 403 and concealed 404 cases tested.
-- [ ] Add upload size/type validation, content sanitization and audit logging.
+- [ ] Upload and document sanitization endpoints are deferred; they are unnecessary for the synthetic local research study.
 - [x] Add idempotency key and optimistic concurrency to graph-change application. **Done:** exact duplicate graph requests replay; conflicting payloads and stale revisions fail closed through the transaction store.
 - [x] Provide a deterministic synthetic API seed and real HTTP smoke-test script. The baseline artifact remains unapproved; reviewer approval occurs only in the explicit smoke workflow. See Phase 2E and ADR-010.
 
@@ -46,55 +54,77 @@
 - [x] Add typed OpenAPI schemas and endpoints for project create/list/get, authoritative graph read/change, planning, approval submission/approve/reject/revoke, artifact create/read, execution run/attempt lifecycle/history, and eligibility.
 - [x] Preserve existing transactions, exact-version approval, idempotency, revision checks, and PostgreSQL-only eligibility. No external publishing path is exposed.
 - [x] Verify offline security/route tests and live PostgreSQL migration/auth tests; exact commands and skipped checks are in the Phase 2D experiment log.
-- [ ] Add interactive identity management, per-project roles, upload/brief/requirement-confirmation APIs, and a seeded API smoke demo.
+- [x] Seeded API smoke demo exists (see Phase 2E). Interactive identity management, per-project roles, uploads, and additional campaign APIs are out of scope under ADR-012.
 
-## Phase 3 — Execution and AI integration (P1)
-- [ ] Define provider interface `generate(task, confirmed_context, limits) -> result+usage+provenance` and deterministic MockProvider. **Done:** offline integration tests.
-- [ ] Implement context assembly from **confirmed** requirement versions only, with source IDs and tenant filter. **Done:** unverified extraction excluded.
-- [ ] Implement draft content task types: campaign concept, ad copy, storyboard outline. **Done:** mock fixtures exercise versioning and dependencies.
-- [ ] Implement dependency-ordered executor with bounded concurrency, retry/backoff, timeout and failure recording. **Done:** partial failure does not mark plan complete.
-- [ ] Implement optional real LLM adapter using environment secrets; no paid calls in CI. **Done:** contract tests mocked and cost limit enforced.
-- [ ] Implement human review and explicit approval endpoint; publication remains simulation-only. **Done:** no automatic approval via model.
-- [ ] Record input hashes, model/prompt versions, output hashes, token usage, latency and cost when available. **Done:** full trace reconstructible.
+## Phase 3 — Deterministic demonstration support (existing prototype)
+- [x] Use deterministic mock fixtures and confirmed context for the small workflow demonstration. No real model provider is required.
+- [x] Preserve explicit human approval and exact-version safety checks in the existing API prototype.
+- [ ] Avoid expanding execution/provider infrastructure unless the benchmark requires it; real-provider integration is out of scope for the student study.
 
-## Phase 4 — Research-grade UI (P1)
-- [ ] Set up React/TS/Vite/Tailwind/shadcn/ui app with design tokens and responsive shell. **Done:** mobile and desktop layouts work.
-- [ ] Implement campaigns dashboard, new campaign wizard, upload brief and requirement confirmation view. **Done:** validation and accessibility tested.
-- [ ] Implement graph explorer in React Flow with typed edge legend, versions, evidence, selection and filter. **Done:** graph matches API and supports keyboard inspection.
-- [ ] Implement change-event editor and side-by-side plan preview. **Done:** shows `KEEP/RECOMPUTE/REVIEW/BLOCK` and reasons.
-- [ ] Implement asset version history, diff, feedback, review and approval. **Done:** exact-version approval clearly visible.
-- [ ] Implement run monitor, timeline, error states and audit trail. **Done:** failed executions never appear successful.
-- [ ] Implement research dashboard with measured/simulated labels and CSV export. **Done:** no placeholder metrics misrepresented.
-- [ ] E2E test three demo flows (slogan change, unrelated note, approval invalidation). **Done:** tests run headless in CI.
+### Phase 3A — Authenticated read-only Graph & Impact Explorer (2026-10-14)
+
+- [x] Inspect the current frontend package and OpenAPI contract before implementation; identify and add only required reads for active tenant memberships, project artifacts, and approval history.
+- [x] Generate strict TypeScript API types from `docs/api/openapi.json`; use typed API methods for tenant/project scope, graph, planning, artifacts, approval history, and authoritative eligibility.
+- [x] Build a responsive React/Vite/Tailwind/React Flow explorer with deterministic graph layout, typed dependency edges, zoom/pan/fit, node selection, and version/provenance/requirement inspection.
+- [x] Add in-memory-only development bearer authentication; derive tenant choices from active server memberships and handle unauthorized/expired credentials.
+- [x] Add a non-mutating proposed-change planner preview and render actual `KEEP`, `REVIEW`, `RECOMPUTE`, and `BLOCK` planner decisions/reasons; explicitly state that KEEP is not approval.
+- [x] Display artifact exact node-version approval history and eligibility from PostgreSQL-backed API responses; failed reads are represented as unavailable.
+- [x] Keep graph mutation, artifact creation, approval transition, execution, and publishing controls absent; preserve backend and domain invariants.
+- [x] Add web tests for graph mapping/rendering, decision explanations, bearer handling, and authorization errors; wire production build and tests into CI.
+- [x] Update OpenAPI, developer startup instructions, ADR-011, experiment log, and limitations. No database migration was required.
+
+Verification evidence is recorded in `docs/research/experiment-log.md`; the explorer
+is a read-only engineering prototype, not an evaluated research result.
+
+## Final presentation build — complete existing work, no new research phase
+
+- [x] Inspect the existing UI, API, pure planner, and R1.1–R1.4 artifacts; preserve the research scope and original outputs.
+- [x] Add coherent research overview, reusable graph explorer, and saved-results pages with accessible light/purple styling and responsive navigation.
+- [x] Export one deterministic existing slogan fixture, verify its decisions against R1.1, and provide explicit offline preview plus repeatable Reset demo. Keep live API mode explicit and authenticated.
+- [x] Read original CSVs for pilot counts/reviews/timing, hypothetical sensitivity, and all 16 review/replan outcomes; disclose field-aware DAG equivalence and higher/asymmetric planning overhead.
+- [x] Prepare project overview, methodology, three-minute demonstration, ten jury questions, and local startup under `docs/final-presentation/`.
+- [x] Finish frontend/Python gates, production build, actual browser visual/behavior checks, and verify all preserved research hashes; record exact results in the experiment log. **Verified:** 112 Python passed / 7 live skips; 3 contract + 15 web tests passed; headless Chrome production-preview checks passed including all 16 outcome settings. See `docs/final-presentation/verification.md`.
+
+This is the final presentation of existing work, not R1.5/R2. Human-validation and
+equal-safeguard comparison gates below remain open; no research finding is invented
+to complete a presentation checklist.
+
+## Phase 4 — Product expansion (deferred and out of scope)
+No campaign dashboard, onboarding wizard, upload/review suite, broad run-monitor UI, or design-polish sprint is planned. The existing read-only explorer is sufficient for the minimal demonstration. Reopen this phase only if a specific experiment cannot be shown or audited with existing tools; document that research need first.
 
 ## Phase 5 — Benchmark and baselines (P0 for scientific claim)
-- [ ] Define benchmark JSONL schema and annotation rubric for gold impacted nodes, approval outcomes and evidence. **Done:** schema validated.
-- [ ] Create **pilot**: 5 synthetic campaigns × 4 changes = 20 cases. **Done:** independent review of labels and saved dataset version.
-- [ ] Create **main planned benchmark**: 24 campaigns × 6 changes = 144 cases. **Done:** dataset published internally with seed, splits and gold labels; report actual count.
-- [ ] Implement baseline A full replay. **Done:** all eligible downstream tasks re-executed; correct output state.
-- [ ] Implement baseline B ordinary DAG caching. **Done:** standard fingerprint-based cache without approval-aware policy.
-- [ ] Implement baseline C graph-context-only orchestration. **Done:** retrieval advantages isolated from replanning policy.
-- [ ] Implement GAMO-CA treatment on identical scenarios and model fixtures. **Done:** equal input access and logged exceptions.
-- [ ] Measure impact precision/recall, HARD recall, reruns, latency, cost, approval violations, provenance completeness and failure recovery. **Done:** raw per-event CSV and aggregation script.
-- [ ] Run repeated paired experiments with pinned seed/config; bootstrap confidence intervals and uncertainty. **Done:** reproducible outputs from raw data.
-- [ ] Perform ablations (remove typed edges, temporal versioning, approval awareness). **Done:** explain what each removal changes.
-- [ ] Include negative/failure cases and overhead at small graph sizes. **Done:** honest limitations documented.
-- [ ] Write `docs/research/results.md` only from recorded observations. **Done:** all plots regenerated by script, with provenance.
+- [x] Phase R1.1 minimal pilot: define a scenario-authored oracle before planner execution, implement Full Recompute and Conventional DAG Incremental independently, compare all three methods on five identical synthetic workloads, and save CSV/SVG outputs. **Done:** 15/15 plans passed the limited oracle; operation counts and descriptive plan timings are recorded in `docs/research/r1_1-pilot/README.md` and `docs/research/experiment-log.md`. This is not a statistical benchmark.
+- [x] Phase R1.2 audit of R1.1: assess oracle independence and input/safety comparability; explain the 12-versus-21 count; identify review-gated work; report all five scenario reasons and unfavorable planning time; add a clearly hypothetical, separated cost model and sensitivity table. R1.1 artifacts remain unchanged. See `docs/research/r1_2-audit/README.md` and the R1.2 experiment entry.
+- [x] Phase R1.3 preparation: create a blinded, blank worksheet for all five synthetic cases; document independent labeling, approval-label separation, and disagreement handling. No human responses were created. See `docs/research/r1_3-workflow/review-worksheet.csv` and `human-review-protocol.md`.
+- [x] Evaluate all 16 synthetic outcomes for the four unresolved SOFT branches; rerun the pure planner after updating field evidence and snapshot binding; record final planned recomputations, reviews, replanning calls, and timing. Add an independent field-aware DAG baseline using the same relevance metadata and update the four-part hypothetical cost model. See the R1.3 report and CSVs.
+- [ ] Obtain and preserve an actual second human's blinded worksheet before claiming independent labels or beginning a larger benchmark. R1.3's material/non-material outcomes are synthetic test inputs only.
+- [ ] Have a second human review the scenario graph labels, oracle obligations, global approval-fingerprint assumption, and baseline fairness. Do not scale the dataset until this review is complete.
+- [x] Phase R1.4 preparation: add a student-friendly reviewer guide and a strict importer that requires two complete, distinct worksheets, records source hashes, reports disagreements without adjudication, and compares algorithm outputs against each reviewer and agreement-only rows. Engineering tests use temporary synthetic rows only; no human responses are present. See `docs/research/r1_4-independent-review/`.
+- [ ] Collect two actual blinded worksheets and inspect disagreements before reporting independent accuracy or beginning a larger benchmark. The importer has not been run on human data.
+- [ ] Reassess approval, provenance, and recovery benefits against an ordinary DAG with equivalent safeguards; existing evidence does not isolate an algorithmic advantage.
+- [x] Synthetic regression verifies that each of the four review-gated HARD descendants recomputes after a material resolution and remains KEEP after a non-material resolution. This does not replace the independent human-label gate above.
+- [ ] Define a small JSONL experiment format, annotation guide, and independent ground-truth review process; document label disagreements.
+- [ ] Create a bounded synthetic pilot (start with 5 workflows × 4 changes = 20 only if student review time allows); save the actual dataset version and seed. The proposed 24 × 6 dataset is not required or complete.
+- [ ] Implement and explain simple baseline A (full replay) and baseline B (ordinary DAG caching) on identical inputs.
+- [ ] Run GAMO-CA on the same cases and confirm each approach receives equivalent information.
+- [ ] Record raw per-case impact correctness, recomputations, safety outcomes, and measured runtime; leave unavailable cost/token values missing.
+- [ ] Repeat a small paired experiment with a fixed seed; report actual distributions and uncertainty only when supported by data.
+- [ ] Run a small number of ablations only when they answer a stated hypothesis and remain student-explainable.
+- [ ] Write `docs/research/results.md` only after experiments have run; include failures and negative findings.
 
-## Phase 6 — Security, performance and research packaging (P1)
-- [ ] Run tenant-isolation, prompt-injection, stale-approval, race-condition and replay attack tests. **Done:** all critical tests pass.
-- [ ] Measure planner time/memory as graph size grows; identify complexity/overhead limits. **Done:** raw data and plot included.
-- [ ] Improve accessibility, error recovery and UI performance; profile before optimizing. **Done:** recorded before/after measurements.
-- [ ] Document data protection, consent and human evaluation protocol; use only synthetic/authorized data. **Done:** ethics checklist complete.
-- [ ] Produce a 3-minute demo script and reproducibility guide for judges. **Done:** fresh machine can replay the demo offline.
-- [ ] Produce research paper outline in Kazakh: abstract, introduction, related work, method, hypotheses, experiment, results, limitations, conclusion, references. **Done:** no unmeasured claims.
+## Phase 6 — Research communication and bounded checks
+- [ ] Re-run existing safety regressions for the actual experiment code and report command and result.
+- [ ] Measure planner runtime on the pilot only when it answers the research question; record machine and graph size.
+- [ ] Document synthetic-data limits, label review, consent boundaries, and threats to validity.
+- [ ] Prepare a short student-led explanation and reproduction guide; the student must explain each formula and result independently.
+- [ ] Draft the Kazakh research report from verified observations; leave results planned until data exists.
 
 ## Milestones / gates
 **Gate A:** domain planner + invariants proven by automated tests (before serious UI).  
 **Gate B:** API + persistence + offline demo.  
 **Gate C:** complete reviewer workflow and graph visualization.  
 **Gate D:** paired benchmark + ablations + real measured report.  
-**Gate E:** polished presentation and scientific manuscript.
+**Gate E:** reproducible scientific report and student-led defense; no product polish requirement.
 
 ## First Codex work session — execute now
 1. Read all project docs and the research PDF.

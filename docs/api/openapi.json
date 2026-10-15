@@ -117,6 +117,23 @@
         "title": "ApprovalDecision",
         "type": "string"
       },
+      "ApprovalHistoryResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "approvals": {
+            "items": {
+              "$ref": "#/components/schemas/Approval"
+            },
+            "title": "Approvals",
+            "type": "array"
+          }
+        },
+        "required": [
+          "approvals"
+        ],
+        "title": "ApprovalHistoryResponse",
+        "type": "object"
+      },
       "ApprovalRequest": {
         "additionalProperties": false,
         "properties": {
@@ -2506,6 +2523,25 @@
         "title": "Task",
         "type": "object"
       },
+      "TenantAccessResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "tenant_id": {
+            "title": "Tenant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "role"
+        ],
+        "title": "TenantAccessResponse",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -2584,6 +2620,33 @@
         "tags": [
           "system"
         ]
+      }
+    },
+    "/api/v1/tenants": {
+      "get": {
+        "operationId": "list_tenants_route_api_v1_tenants_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TenantAccessResponse"
+                  },
+                  "title": "Response List Tenants Route Api V1 Tenants Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Tenants Route"
       }
     },
     "/api/v1/tenants/{tenant_id}/projects": {
@@ -2740,6 +2803,57 @@
       }
     },
     "/api/v1/tenants/{tenant_id}/projects/{project_id}/approvals": {
+      "get": {
+        "operationId": "approval_history_route_api_v1_tenants__tenant_id__projects__project_id__approvals_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalHistoryResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Approval History Route"
+      },
       "post": {
         "operationId": "approval_route_api_v1_tenants__tenant_id__projects__project_id__approvals_post",
         "parameters": [
@@ -2803,6 +2917,61 @@
       }
     },
     "/api/v1/tenants/{tenant_id}/projects/{project_id}/artifacts": {
+      "get": {
+        "operationId": "list_artifacts_route_api_v1_tenants__tenant_id__projects__project_id__artifacts_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "title": "Tenant Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ArtifactResponse"
+                  },
+                  "title": "Response List Artifacts Route Api V1 Tenants  Tenant Id  Projects  Project Id  Artifacts Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Artifacts Route"
+      },
       "post": {
         "operationId": "create_artifact_route_api_v1_tenants__tenant_id__projects__project_id__artifacts_post",
         "parameters": [

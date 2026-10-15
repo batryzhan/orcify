@@ -1,0 +1,33 @@
+{
+  "audit": "R1.2",
+  "classification": "AUDIT_OF_EXISTING_R1_1_OUTPUTS; NOT_A_NEW_BENCHMARK_RUN",
+  "source_results_sha256": "bbb9b04102e0aa4c0ff925f6e5811e30db072331570e24f6d9906a45f867b91a",
+  "source_decisions_sha256": "9afd5c82d11902eb749b9367da9f1dcde7fe790efdfe6425eab5d886dfd01d39",
+  "source_result_rows": 15,
+  "source_decision_rows": 114,
+  "source_seed": "20261014",
+  "inputs_are_read_only": true,
+  "assumptions": {
+    "recomputation_work_units_per_operation": 1,
+    "review_work_units_per_operation": [
+      0.25,
+      1,
+      4
+    ],
+    "planning_work_units_per_ms": [
+      0,
+      0.01,
+      0.1,
+      1
+    ],
+    "fraction_of_four_uncertain_branches_resolved_as_material": [
+      0,
+      0.25,
+      0.5,
+      0.75,
+      1
+    ],
+    "conditional_asset_recomputes_if_all_four_branches_are_material": 8
+  },
+  "timing_note": "Planning values sum the five saved scenario medians. This is descriptive, not an independent repeated workload sample."
+}

@@ -1,0 +1,150 @@
+{
+  "pilot": "R1.1",
+  "classification": "SMALL_SYNTHETIC_ENGINEERING_PILOT",
+  "seed": 20261014,
+  "python_version": "3.14.6",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "timing_repetitions": 101,
+  "methods": [
+    "Full Recompute",
+    "Conventional DAG Incremental",
+    "GAMO-CA"
+  ],
+  "oracle_definition": {
+    "hard_required": "the listed node must be RECOMPUTE",
+    "soft_uncertain": "the listed node must be REVIEW, RECOMPUTE, or BLOCK",
+    "approval": "eligible only for unchanged asset version and requirement fingerprint; no new approval is assumed",
+    "counts": "AssetVersion nodes count as recomputation operations; reviews count unique reviewed nodes plus invalidated approved assets"
+  },
+  "scenarios": [
+    {
+      "name": "slogan_change",
+      "description": "A confirmed slogan changes; copy paths are HARD and visual paths are SOFT.",
+      "snapshot_hash": "140ac536ed4093b703d3e805bfe65d9d8f1fb5ae8898466c97e11c47eb6fe4cb",
+      "event_id": "event-slogan_change",
+      "changed_target": "req_slogan",
+      "changed_fields": [
+        "text"
+      ],
+      "nodes": 9,
+      "edges": 6,
+      "oracle_must_recompute": [
+        "captions",
+        "copy",
+        "storyboard"
+      ],
+      "oracle_must_review": [
+        "logo",
+        "social_export"
+      ],
+      "oracle_invalidated_approvals": [
+        "captions",
+        "copy",
+        "logo",
+        "social_export",
+        "social_visual",
+        "storyboard"
+      ]
+    },
+    {
+      "name": "brand_guideline_change",
+      "description": "A brand palette changes; relevant links recompute and unknown links need review.",
+      "snapshot_hash": "3d1341b283edfe6afa35d4e0aea940474cb6a7ccb4cb77066975d4ebf541f2b2",
+      "event_id": "event-brand_guideline_change",
+      "changed_target": "req_palette",
+      "changed_fields": [
+        "color"
+      ],
+      "nodes": 8,
+      "edges": 5,
+      "oracle_must_recompute": [
+        "palette_art",
+        "photo_grade"
+      ],
+      "oracle_must_review": [
+        "final_export",
+        "layout_review"
+      ],
+      "oracle_invalidated_approvals": [
+        "copy",
+        "final_export",
+        "layout_review",
+        "palette_art",
+        "photo_grade"
+      ]
+    },
+    {
+      "name": "asset_version_update",
+      "description": "A source photo is replaced; dependent crops are HARD and captions uncertain.",
+      "snapshot_hash": "230dbd3bdcb63cb0e7b6f1299be59720595b0f5be1d8bc09e63fae7663fc7159",
+      "event_id": "event-asset_version_update",
+      "changed_target": "source_photo",
+      "changed_fields": [
+        "image"
+      ],
+      "nodes": 8,
+      "edges": 6,
+      "oracle_must_recompute": [
+        "ad_crop",
+        "web_crop"
+      ],
+      "oracle_must_review": [
+        "caption",
+        "caption_export"
+      ],
+      "oracle_invalidated_approvals": [
+        "source_photo"
+      ]
+    },
+    {
+      "name": "approval_invalidation",
+      "description": "A legal requirement changes; approvals bound to the old snapshot expire.",
+      "snapshot_hash": "6e6208be43c1a6c4bc676045574a19bd8754ea5ca28920b1ee8cbfb386c6fa49",
+      "event_id": "event-approval_invalidation",
+      "changed_target": "req_legal",
+      "changed_fields": [
+        "disclaimer"
+      ],
+      "nodes": 7,
+      "edges": 4,
+      "oracle_must_recompute": [
+        "compliance_copy"
+      ],
+      "oracle_must_review": [
+        "legal_export",
+        "legal_montage"
+      ],
+      "oracle_invalidated_approvals": [
+        "compliance_copy",
+        "legal_export",
+        "legal_montage",
+        "moodboard"
+      ]
+    },
+    {
+      "name": "all_hard_fanout_no_advantage",
+      "description": "Every output is on a HARD path; selective planning has no work to avoid.",
+      "snapshot_hash": "a40be4617cd4d36ececaeddbf8d18d79879bd4ed18718fb14e4fa67be8059750",
+      "event_id": "event-all_hard_fanout_no_advantage",
+      "changed_target": "req_slogan",
+      "changed_fields": [
+        "text"
+      ],
+      "nodes": 6,
+      "edges": 4,
+      "oracle_must_recompute": [
+        "banner",
+        "captions",
+        "copy",
+        "storyboard"
+      ],
+      "oracle_must_review": [],
+      "oracle_invalidated_approvals": [
+        "banner",
+        "captions",
+        "copy",
+        "storyboard"
+      ]
+    }
+  ]
+}

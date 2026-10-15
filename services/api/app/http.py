@@ -10,6 +10,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from gamo_ca.approvals import ApprovalError, ReviewerIdentity
 from gamo_ca.events import EventReplayState, GraphChangeIdentity, GraphChangePayload
@@ -50,6 +51,7 @@ from services.api.app.event_store import (
     load_project,
 )
 from services.api.app.http_schemas import (
+    ApprovalHistoryResponse,
     ApprovalRequest,
     ApprovalResponse,
     ArtifactCreateHttpRequest,
@@ -68,6 +70,7 @@ from services.api.app.http_schemas import (
     ProjectCreateRequest,
     ProjectResponse,
     RunHistoryResponse,
+    TenantAccessResponse,
 )
 from services.api.app.models import (
     ApprovalRecord,
@@ -162,6 +165,20 @@ def create_app(engine: Engine | None = None) -> FastAPI:
     app = FastAPI(
         title="Orcify API", version="1.0.0", description="Authenticated, tenant-scoped research API"
     )
+    web_origins = [
+        origin.strip()
+        for origin in os.environ.get(
+            "ORCIFY_WEB_ORIGINS", "http://127.0.0.1:5173,http://localhost:5173"
+        ).split(",")
+        if origin.strip()
+    ]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=web_origins,
+        allow_credentials=False,
+        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "Accept"],
+    )
     app.state.session_factory = factory
 
     @app.exception_handler(StaleProjectRevision)
@@ -194,6 +211,21 @@ def create_app(engine: Engine | None = None) -> FastAPI:
     @app.get("/api/v1/health", tags=["system"])
     def health() -> dict[str, str]:
         return {"status": "ok"}
+
+    @app.get("/api/v1/tenants", response_model=list[TenantAccessResponse])
+    def list_tenants_route(
+        principal: Principal = Depends(authenticate),
+        session: Session = Depends(get_session),
+    ) -> list[TenantAccessResponse]:
+        memberships = session.scalars(
+            select(TenantMembershipRecord)
+            .where(
+                TenantMembershipRecord.actor_id == principal.actor_id,
+                TenantMembershipRecord.revoked_at.is_(None),
+            )
+            .order_by(TenantMembershipRecord.tenant_id)
+        ).all()
+        return [TenantAccessResponse(tenant_id=row.tenant_id, role=row.role) for row in memberships]
 
     @app.post(
         "/api/v1/tenants/{tenant_id}/projects", response_model=ProjectResponse, status_code=201
@@ -383,6 +415,29 @@ def create_app(engine: Engine | None = None) -> FastAPI:
         )
         return ApprovalResponse(approval=result.latest, replayed=result.replayed)
 
+    @app.get(
+        "/api/v1/tenants/{tenant_id}/projects/{project_id}/approvals",
+        response_model=ApprovalHistoryResponse,
+    )
+    def approval_history_route(
+        tenant_id: str,
+        project_id: str,
+        principal: Principal = Depends(authenticate),
+        session: Session = Depends(get_session),
+    ) -> ApprovalHistoryResponse:
+        _project_access(session, principal, tenant_id, project_id, ALL_ROLES)
+        records = session.scalars(
+            select(ApprovalRecord)
+            .where(
+                ApprovalRecord.tenant_id == tenant_id,
+                ApprovalRecord.project_id == project_id,
+            )
+            .order_by(ApprovalRecord.revision, ApprovalRecord.id)
+        ).all()
+        return ApprovalHistoryResponse(
+            approvals=tuple(TypeAdapter(Approval).validate_python(row.payload) for row in records)
+        )
+
     @app.post(
         "/api/v1/tenants/{tenant_id}/projects/{project_id}/artifacts",
         status_code=201,
@@ -419,6 +474,27 @@ def create_app(engine: Engine | None = None) -> FastAPI:
         )
         assert row is not None
         return ArtifactCreateResponse(artifact=_artifact_response(row), replayed=result.replayed)
+
+    @app.get(
+        "/api/v1/tenants/{tenant_id}/projects/{project_id}/artifacts",
+        response_model=list[ArtifactResponse],
+    )
+    def list_artifacts_route(
+        tenant_id: str,
+        project_id: str,
+        principal: Principal = Depends(authenticate),
+        session: Session = Depends(get_session),
+    ) -> list[ArtifactResponse]:
+        _project_access(session, principal, tenant_id, project_id, ALL_ROLES)
+        rows = session.scalars(
+            select(ArtifactVersionRecord)
+            .where(
+                ArtifactVersionRecord.tenant_id == tenant_id,
+                ArtifactVersionRecord.project_id == project_id,
+            )
+            .order_by(ArtifactVersionRecord.artifact_id, ArtifactVersionRecord.version)
+        ).all()
+        return [_artifact_response(row) for row in rows]
 
     @app.get(
         "/api/v1/tenants/{tenant_id}/projects/{project_id}/artifacts/{artifact_version_id}",

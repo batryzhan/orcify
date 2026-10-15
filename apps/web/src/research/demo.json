@@ -1,0 +1,472 @@
+{
+  "classification": "SIMULATED_OFFLINE_PREVIEW_NOT_EXECUTION",
+  "seed": 20261014,
+  "scenario": "slogan_change",
+  "description": "A confirmed slogan changes; copy paths are HARD and visual paths are SOFT.",
+  "asset_ids": [
+    "copy",
+    "captions",
+    "storyboard",
+    "social_visual",
+    "social_export",
+    "logo"
+  ],
+  "target_id": "req_slogan",
+  "before": "Made to move",
+  "proposed": "Made to move — revised",
+  "changed_fields": ["text"],
+  "graph": {
+    "tenant_id": "pilot-tenant",
+    "project_id": "pilot-slogan_change",
+    "as_of": "2026-10-14T00:00:00Z",
+    "nodes": [
+      {
+        "id": "evidence-slogan_change",
+        "tenant_id": "pilot-tenant",
+        "project_id": "pilot-slogan_change",
+        "created_at": "2026-10-14T00:00:00Z",
+        "schema_version": 1,
+        "version": 1,
+        "content": "Synthetic confirmed source for slogan_change",
+        "valid_from": "2026-10-14T00:00:00Z",
+        "valid_to": null,
+        "inputs": [],
+        "evidence_ids": [],
+        "provider": "none",
+        "model_version": "none",
+        "prompt_version": "none",
+        "policy_version": "v1",
+        "estimated_cost_usd": null,
+        "estimated_latency_s": null,
+        "source_id": "source-slogan_change",
+        "extracted_span": "Synthetic human-confirmed instruction",
+        "confirmed_by": "synthetic-reviewer"
+      },
+      {
+        "id": "req_slogan",
+        "tenant_id": "pilot-tenant",
+        "project_id": "pilot-slogan_change",
+        "created_at": "2026-10-14T00:00:00Z",
+        "schema_version": 1,
+        "version": 1,
+        "content": "Made to move",
+        "valid_from": "2026-10-14T00:00:00Z",
+        "valid_to": null,
+        "inputs": [],
+        "evidence_ids": ["evidence-slogan_change"],
+        "provider": "none",
+        "model_version": "none",
+        "prompt_version": "none",
+        "policy_version": "v1",
+        "estimated_cost_usd": null,
+        "estimated_latency_s": null,
+        "source_id": "evidence-slogan_change",
+        "status": "CONFIRMED",
+        "confirmed_by": "synthetic-reviewer"
+      },
+      {
+        "id": "req_palette",
+        "tenant_id": "pilot-tenant",
+        "project_id": "pilot-slogan_change",
+        "created_at": "2026-10-14T00:00:00Z",
+        "schema_version": 1,
+        "version": 1,
+        "content": "teal and cream",
+        "valid_from": "2026-10-14T00:00:00Z",
+        "valid_to": null,
+        "inputs": [],
+        "evidence_ids": ["evidence-slogan_change"],
+        "provider": "none",
+        "model_version": "none",
+        "prompt_version": "none",
+        "policy_version": "v1",
+        "estimated_cost_usd": null,
+        "estimated_latency_s": null,
+        "source_id": "evidence-slogan_change",
+        "status": "CONFIRMED",
+        "confirmed_by": "synthetic-reviewer"
+      },
+      {
+        "id": "copy",
+        "tenant_id": "pilot-tenant",
+        "project_id": "pilot-slogan_change",
+        "created_at": "2026-10-14T00:00:00Z",
+        "schema_version": 1,
+        "version": 1,
+        "content": "Synthetic draft: copy",
+        "valid_from": "2026-10-14T00:00:00Z",
+        "valid_to": null,
+        "inputs": [
+          {
+            "source_id": "req_slogan",
+            "version": 1,
+            "content_hash": "6b2c7696801e6a386d59a3323b2c81dbc0d373949de99d68736075b95349d50d"
+          }
+        ],
+        "evidence_ids": ["evidence-slogan_change"],
+        "provider": "deterministic-mock",
+        "model_version": "fixture-v1",
+        "prompt_version": "pilot-v1",
+        "policy_version": "policy-v1",
+        "estimated_cost_usd": null,
+        "estimated_latency_s": null,
+        "asset_id": "asset-copy",
+        "requirement_fingerprint": "423a31a2ce4144b263848730661b6f9a73999397b083dbf8b935e29679ce6d6b"
+      },
+      {
+        "id": "captions",
+        "tenant_id": "pilot-tenant",
+        "project_id": "pilot-slogan_change",
+        "created_at": "2026-10-14T00:00:00Z",
+        "schema_version": 1,
+        "version": 1,
+        "content": "Synthetic draft: captions",
+        "valid_from": "2026-10-14T00:00:00Z",
+        "valid_to": null,
+        "inputs": [
+          {
+            "source_id": "copy",
+            "version": 1,
+            "content_hash": "fa3d0a8763122661f260d834c22539d00a59cf93f1404b51c47d5f6bbbbb21fc"
+          }
+        ],
+        "evidence_ids": ["evidence-slogan_change"],
+        "provider": "deterministic-mock",
+        "model_version": "fixture-v1",
+        "prompt_version": "pilot-v1",
+        "policy_version": "policy-v1",
+        "estimated_cost_usd": null,
+        "estimated_latency_s": null,
+        "asset_id": "asset-captions",
+        "requirement_fingerprint": "423a31a2ce4144b263848730661b6f9a73999397b083dbf8b935e29679ce6d6b"
+      },
+      {
+        "id": "storyboard",
+        "tenant_id": "pilot-tenant",
+        "project_id": "pilot-slogan_change",
+        "created_at": "2026-10-14T00:00:00Z",
+        "schema_version": 1,
+        "version": 1,
+        "content": "Synthetic draft: storyboard",
+        "valid_from": "2026-10-14T00:00:00Z",
+        "valid_to": null,
+        "inputs": [
+          {
+            "source_id": "copy",
+            "version": 1,
+            "content_hash": "fa3d0a8763122661f260d834c22539d00a59cf93f1404b51c47d5f6bbbbb21fc"
+          }
+        ],
+        "evidence_ids": ["evidence-slogan_change"],
+        "provider": "deterministic-mock",
+        "model_version": "fixture-v1",
+        "prompt_version": "pilot-v1",
+        "policy_version": "policy-v1",
+        "estimated_cost_usd": null,
+        "estimated_latency_s": null,
+        "asset_id": "asset-storyboard",
+        "requirement_fingerprint": "423a31a2ce4144b263848730661b6f9a73999397b083dbf8b935e29679ce6d6b"
+      },
+      {
+        "id": "social_visual",
+        "tenant_id": "pilot-tenant",
+        "project_id": "pilot-slogan_change",
+        "created_at": "2026-10-14T00:00:00Z",
+        "schema_version": 1,
+        "version": 1,
+        "content": "Synthetic draft: social_visual",
+        "valid_from": "2026-10-14T00:00:00Z",
+        "valid_to": null,
+        "inputs": [
+          {
+            "source_id": "req_slogan",
+            "version": 1,
+            "content_hash": "6b2c7696801e6a386d59a3323b2c81dbc0d373949de99d68736075b95349d50d"
+          }
+        ],
+        "evidence_ids": ["evidence-slogan_change"],
+        "provider": "deterministic-mock",
+        "model_version": "fixture-v1",
+        "prompt_version": "pilot-v1",
+        "policy_version": "policy-v1",
+        "estimated_cost_usd": null,
+        "estimated_latency_s": null,
+        "asset_id": "asset-social_visual",
+        "requirement_fingerprint": "423a31a2ce4144b263848730661b6f9a73999397b083dbf8b935e29679ce6d6b"
+      },
+      {
+        "id": "social_export",
+        "tenant_id": "pilot-tenant",
+        "project_id": "pilot-slogan_change",
+        "created_at": "2026-10-14T00:00:00Z",
+        "schema_version": 1,
+        "version": 1,
+        "content": "Synthetic draft: social_export",
+        "valid_from": "2026-10-14T00:00:00Z",
+        "valid_to": null,
+        "inputs": [
+          {
+            "source_id": "req_slogan",
+            "version": 1,
+            "content_hash": "6b2c7696801e6a386d59a3323b2c81dbc0d373949de99d68736075b95349d50d"
+          }
+        ],
+        "evidence_ids": ["evidence-slogan_change"],
+        "provider": "deterministic-mock",
+        "model_version": "fixture-v1",
+        "prompt_version": "pilot-v1",
+        "policy_version": "policy-v1",
+        "estimated_cost_usd": null,
+        "estimated_latency_s": null,
+        "asset_id": "asset-social_export",
+        "requirement_fingerprint": "423a31a2ce4144b263848730661b6f9a73999397b083dbf8b935e29679ce6d6b"
+      },
+      {
+        "id": "logo",
+        "tenant_id": "pilot-tenant",
+        "project_id": "pilot-slogan_change",
+        "created_at": "2026-10-14T00:00:00Z",
+        "schema_version": 1,
+        "version": 1,
+        "content": "Synthetic draft: logo",
+        "valid_from": "2026-10-14T00:00:00Z",
+        "valid_to": null,
+        "inputs": [
+          {
+            "source_id": "social_export",
+            "version": 1,
+            "content_hash": "1ff022263d10de369c6adb1f6af231e6497a1dfa8b4e5d8af1a2b804d22dbe43"
+          }
+        ],
+        "evidence_ids": ["evidence-slogan_change"],
+        "provider": "deterministic-mock",
+        "model_version": "fixture-v1",
+        "prompt_version": "pilot-v1",
+        "policy_version": "policy-v1",
+        "estimated_cost_usd": null,
+        "estimated_latency_s": null,
+        "asset_id": "asset-logo",
+        "requirement_fingerprint": "423a31a2ce4144b263848730661b6f9a73999397b083dbf8b935e29679ce6d6b"
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-req_slogan-copy",
+        "tenant_id": "pilot-tenant",
+        "project_id": "pilot-slogan_change",
+        "created_at": "2026-10-14T00:00:00Z",
+        "schema_version": 1,
+        "upstream_id": "req_slogan",
+        "dependent_id": "copy",
+        "strength": "HARD",
+        "valid_from": "2026-10-14T00:00:00Z",
+        "valid_to": null,
+        "relevant_fields": []
+      },
+      {
+        "id": "edge-copy-captions",
+        "tenant_id": "pilot-tenant",
+        "project_id": "pilot-slogan_change",
+        "created_at": "2026-10-14T00:00:00Z",
+        "schema_version": 1,
+        "upstream_id": "copy",
+        "dependent_id": "captions",
+        "strength": "HARD",
+        "valid_from": "2026-10-14T00:00:00Z",
+        "valid_to": null,
+        "relevant_fields": []
+      },
+      {
+        "id": "edge-copy-storyboard",
+        "tenant_id": "pilot-tenant",
+        "project_id": "pilot-slogan_change",
+        "created_at": "2026-10-14T00:00:00Z",
+        "schema_version": 1,
+        "upstream_id": "copy",
+        "dependent_id": "storyboard",
+        "strength": "HARD",
+        "valid_from": "2026-10-14T00:00:00Z",
+        "valid_to": null,
+        "relevant_fields": []
+      },
+      {
+        "id": "edge-req_slogan-social_visual",
+        "tenant_id": "pilot-tenant",
+        "project_id": "pilot-slogan_change",
+        "created_at": "2026-10-14T00:00:00Z",
+        "schema_version": 1,
+        "upstream_id": "req_slogan",
+        "dependent_id": "social_visual",
+        "strength": "SOFT",
+        "valid_from": "2026-10-14T00:00:00Z",
+        "valid_to": null,
+        "relevant_fields": ["palette"]
+      },
+      {
+        "id": "edge-req_slogan-social_export",
+        "tenant_id": "pilot-tenant",
+        "project_id": "pilot-slogan_change",
+        "created_at": "2026-10-14T00:00:00Z",
+        "schema_version": 1,
+        "upstream_id": "req_slogan",
+        "dependent_id": "social_export",
+        "strength": "SOFT",
+        "valid_from": "2026-10-14T00:00:00Z",
+        "valid_to": null,
+        "relevant_fields": []
+      },
+      {
+        "id": "edge-social_export-logo",
+        "tenant_id": "pilot-tenant",
+        "project_id": "pilot-slogan_change",
+        "created_at": "2026-10-14T00:00:00Z",
+        "schema_version": 1,
+        "upstream_id": "social_export",
+        "dependent_id": "logo",
+        "strength": "HARD",
+        "valid_from": "2026-10-14T00:00:00Z",
+        "valid_to": null,
+        "relevant_fields": []
+      }
+    ]
+  },
+  "plan": {
+    "event_id": "event-slogan_change",
+    "tenant_id": "pilot-tenant",
+    "project_id": "pilot-slogan_change",
+    "snapshot_hash": "140ac536ed4093b703d3e805bfe65d9d8f1fb5ae8898466c97e11c47eb6fe4cb",
+    "policy_version": "pilot-policy-v1",
+    "decisions": [
+      {
+        "node_id": "captions",
+        "action": "RECOMPUTE",
+        "reasons": ["edge-copy-captions: changed HARD input/version"],
+        "input_fingerprint": "8d3d1906e9753f03685b97db052696d2d06f25bcc4a4566b9c67de5ef89c13ed",
+        "evidence_ids": ["evidence-slogan_change"]
+      },
+      {
+        "node_id": "copy",
+        "action": "RECOMPUTE",
+        "reasons": ["edge-req_slogan-copy: changed HARD input/version"],
+        "input_fingerprint": "e8d285f289682a583e6a406011ff9b16bf289a2e9d519ffc883a3dded70e6d02",
+        "evidence_ids": ["evidence-slogan_change"]
+      },
+      {
+        "node_id": "evidence-slogan_change",
+        "action": "KEEP",
+        "reasons": ["no affected dependency"],
+        "input_fingerprint": "2ac074861100f7be19ab83c85c02107a1e74b71b0ac55ba740bcf418c1f3848a",
+        "evidence_ids": []
+      },
+      {
+        "node_id": "logo",
+        "action": "REVIEW",
+        "reasons": ["edge-social_export-logo: HARD input pending human review"],
+        "input_fingerprint": "6b61fce807ed2fd17d150dbc2ca38b7de0b77d1b9cca029c00cc25ced342f798",
+        "evidence_ids": ["evidence-slogan_change"]
+      },
+      {
+        "node_id": "req_palette",
+        "action": "KEEP",
+        "reasons": ["no affected dependency"],
+        "input_fingerprint": "2ac074861100f7be19ab83c85c02107a1e74b71b0ac55ba740bcf418c1f3848a",
+        "evidence_ids": ["evidence-slogan_change"]
+      },
+      {
+        "node_id": "req_slogan",
+        "action": "KEEP",
+        "reasons": ["no affected dependency"],
+        "input_fingerprint": "2ac074861100f7be19ab83c85c02107a1e74b71b0ac55ba740bcf418c1f3848a",
+        "evidence_ids": ["evidence-slogan_change"]
+      },
+      {
+        "node_id": "social_export",
+        "action": "REVIEW",
+        "reasons": [
+          "edge-req_slogan-social_export: SOFT impact unknown; human review required"
+        ],
+        "input_fingerprint": "e8d285f289682a583e6a406011ff9b16bf289a2e9d519ffc883a3dded70e6d02",
+        "evidence_ids": ["evidence-slogan_change"]
+      },
+      {
+        "node_id": "social_visual",
+        "action": "KEEP",
+        "reasons": [
+          "edge-req_slogan-social_visual: SOFT fields explicitly disjoint from changed fields"
+        ],
+        "input_fingerprint": "e8d285f289682a583e6a406011ff9b16bf289a2e9d519ffc883a3dded70e6d02",
+        "evidence_ids": ["evidence-slogan_change"]
+      },
+      {
+        "node_id": "storyboard",
+        "action": "RECOMPUTE",
+        "reasons": ["edge-copy-storyboard: changed HARD input/version"],
+        "input_fingerprint": "8d3d1906e9753f03685b97db052696d2d06f25bcc4a4566b9c67de5ef89c13ed",
+        "evidence_ids": ["evidence-slogan_change"]
+      }
+    ],
+    "traces": [
+      {
+        "edge_id": "edge-copy-captions",
+        "upstream_id": "copy",
+        "dependent_id": "captions",
+        "strength": "HARD",
+        "action": "RECOMPUTE",
+        "reason": "changed HARD input/version"
+      },
+      {
+        "edge_id": "edge-copy-storyboard",
+        "upstream_id": "copy",
+        "dependent_id": "storyboard",
+        "strength": "HARD",
+        "action": "RECOMPUTE",
+        "reason": "changed HARD input/version"
+      },
+      {
+        "edge_id": "edge-req_slogan-copy",
+        "upstream_id": "req_slogan",
+        "dependent_id": "copy",
+        "strength": "HARD",
+        "action": "RECOMPUTE",
+        "reason": "changed HARD input/version"
+      },
+      {
+        "edge_id": "edge-req_slogan-social_export",
+        "upstream_id": "req_slogan",
+        "dependent_id": "social_export",
+        "strength": "SOFT",
+        "action": "REVIEW",
+        "reason": "SOFT impact unknown; human review required"
+      },
+      {
+        "edge_id": "edge-req_slogan-social_visual",
+        "upstream_id": "req_slogan",
+        "dependent_id": "social_visual",
+        "strength": "SOFT",
+        "action": "KEEP",
+        "reason": "SOFT fields explicitly disjoint from changed fields"
+      },
+      {
+        "edge_id": "edge-social_export-logo",
+        "upstream_id": "social_export",
+        "dependent_id": "logo",
+        "strength": "HARD",
+        "action": "REVIEW",
+        "reason": "HARD input pending human review"
+      }
+    ],
+    "execution_order": ["copy", "captions", "storyboard"],
+    "non_publishable_ids": [
+      "captions",
+      "copy",
+      "logo",
+      "social_export",
+      "storyboard"
+    ],
+    "expected_cost_usd": null,
+    "expected_latency_s": null,
+    "estimate_status": "SIMULATED",
+    "plan_hash": "1f24bc95620644bd25d611666588f5b75d7cd7efe6be7c5e72fdb9e7f0cea3c2"
+  },
+  "source": "scripts/r1_1_pilot.py / slogan_change; saved R1.1 node_decisions.csv"
+}

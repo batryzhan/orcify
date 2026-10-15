@@ -1,0 +1,115 @@
+scenario,method,node_id,node_type,action,reason,required_by_oracle,eligible_after_change
+slogan_change,Full Recompute,evidence-slogan_change,Evidence,KEEP,full replay baseline,NONE,False
+slogan_change,Full Recompute,req_slogan,Requirement,KEEP,full replay baseline,NONE,False
+slogan_change,Full Recompute,req_palette,Requirement,KEEP,full replay baseline,NONE,False
+slogan_change,Full Recompute,copy,AssetVersion,RECOMPUTE,full replay baseline,RECOMPUTE,False
+slogan_change,Full Recompute,captions,AssetVersion,RECOMPUTE,full replay baseline,RECOMPUTE,False
+slogan_change,Full Recompute,storyboard,AssetVersion,RECOMPUTE,full replay baseline,RECOMPUTE,False
+slogan_change,Full Recompute,social_visual,AssetVersion,RECOMPUTE,full replay baseline,NONE,False
+slogan_change,Full Recompute,social_export,AssetVersion,RECOMPUTE,full replay baseline,REVIEW,False
+slogan_change,Full Recompute,logo,AssetVersion,RECOMPUTE,full replay baseline,REVIEW,False
+slogan_change,Conventional DAG Incremental,evidence-slogan_change,Evidence,KEEP,DAG descendant invalidation,NONE,False
+slogan_change,Conventional DAG Incremental,req_slogan,Requirement,KEEP,DAG descendant invalidation,NONE,False
+slogan_change,Conventional DAG Incremental,req_palette,Requirement,KEEP,DAG descendant invalidation,NONE,False
+slogan_change,Conventional DAG Incremental,copy,AssetVersion,RECOMPUTE,DAG descendant invalidation,RECOMPUTE,False
+slogan_change,Conventional DAG Incremental,captions,AssetVersion,RECOMPUTE,DAG descendant invalidation,RECOMPUTE,False
+slogan_change,Conventional DAG Incremental,storyboard,AssetVersion,RECOMPUTE,DAG descendant invalidation,RECOMPUTE,False
+slogan_change,Conventional DAG Incremental,social_visual,AssetVersion,RECOMPUTE,DAG descendant invalidation,NONE,False
+slogan_change,Conventional DAG Incremental,social_export,AssetVersion,RECOMPUTE,DAG descendant invalidation,REVIEW,False
+slogan_change,Conventional DAG Incremental,logo,AssetVersion,RECOMPUTE,DAG descendant invalidation,REVIEW,False
+slogan_change,GAMO-CA,evidence-slogan_change,Evidence,KEEP,no affected dependency,NONE,False
+slogan_change,GAMO-CA,req_slogan,Requirement,KEEP,no affected dependency,NONE,False
+slogan_change,GAMO-CA,req_palette,Requirement,KEEP,no affected dependency,NONE,False
+slogan_change,GAMO-CA,copy,AssetVersion,RECOMPUTE,edge-req_slogan-copy: changed HARD input/version,RECOMPUTE,False
+slogan_change,GAMO-CA,captions,AssetVersion,RECOMPUTE,edge-copy-captions: changed HARD input/version,RECOMPUTE,False
+slogan_change,GAMO-CA,storyboard,AssetVersion,RECOMPUTE,edge-copy-storyboard: changed HARD input/version,RECOMPUTE,False
+slogan_change,GAMO-CA,social_visual,AssetVersion,KEEP,edge-req_slogan-social_visual: SOFT fields explicitly disjoint from changed fields,NONE,False
+slogan_change,GAMO-CA,social_export,AssetVersion,REVIEW,edge-req_slogan-social_export: SOFT impact unknown; human review required,REVIEW,False
+slogan_change,GAMO-CA,logo,AssetVersion,REVIEW,edge-social_export-logo: HARD input pending human review,REVIEW,False
+brand_guideline_change,Full Recompute,evidence-brand_guideline_change,Evidence,KEEP,full replay baseline,NONE,False
+brand_guideline_change,Full Recompute,req_palette,Requirement,KEEP,full replay baseline,NONE,False
+brand_guideline_change,Full Recompute,req_slogan,Requirement,KEEP,full replay baseline,NONE,False
+brand_guideline_change,Full Recompute,copy,AssetVersion,RECOMPUTE,full replay baseline,NONE,False
+brand_guideline_change,Full Recompute,palette_art,AssetVersion,RECOMPUTE,full replay baseline,RECOMPUTE,False
+brand_guideline_change,Full Recompute,photo_grade,AssetVersion,RECOMPUTE,full replay baseline,RECOMPUTE,False
+brand_guideline_change,Full Recompute,layout_review,AssetVersion,RECOMPUTE,full replay baseline,REVIEW,False
+brand_guideline_change,Full Recompute,final_export,AssetVersion,RECOMPUTE,full replay baseline,REVIEW,False
+brand_guideline_change,Conventional DAG Incremental,evidence-brand_guideline_change,Evidence,KEEP,DAG descendant invalidation,NONE,False
+brand_guideline_change,Conventional DAG Incremental,req_palette,Requirement,KEEP,DAG descendant invalidation,NONE,False
+brand_guideline_change,Conventional DAG Incremental,req_slogan,Requirement,KEEP,DAG descendant invalidation,NONE,False
+brand_guideline_change,Conventional DAG Incremental,copy,AssetVersion,KEEP,DAG descendant invalidation,NONE,False
+brand_guideline_change,Conventional DAG Incremental,palette_art,AssetVersion,RECOMPUTE,DAG descendant invalidation,RECOMPUTE,False
+brand_guideline_change,Conventional DAG Incremental,photo_grade,AssetVersion,RECOMPUTE,DAG descendant invalidation,RECOMPUTE,False
+brand_guideline_change,Conventional DAG Incremental,layout_review,AssetVersion,RECOMPUTE,DAG descendant invalidation,REVIEW,False
+brand_guideline_change,Conventional DAG Incremental,final_export,AssetVersion,RECOMPUTE,DAG descendant invalidation,REVIEW,False
+brand_guideline_change,GAMO-CA,evidence-brand_guideline_change,Evidence,KEEP,no affected dependency,NONE,False
+brand_guideline_change,GAMO-CA,req_palette,Requirement,KEEP,no affected dependency,NONE,False
+brand_guideline_change,GAMO-CA,req_slogan,Requirement,KEEP,no affected dependency,NONE,False
+brand_guideline_change,GAMO-CA,copy,AssetVersion,KEEP,edge-req_slogan-copy: upstream unchanged; retain,NONE,False
+brand_guideline_change,GAMO-CA,palette_art,AssetVersion,RECOMPUTE,edge-req_palette-palette_art: SOFT relevant field changed,RECOMPUTE,False
+brand_guideline_change,GAMO-CA,photo_grade,AssetVersion,RECOMPUTE,edge-req_palette-photo_grade: SOFT relevant field changed,RECOMPUTE,False
+brand_guideline_change,GAMO-CA,layout_review,AssetVersion,REVIEW,edge-req_palette-layout_review: SOFT impact unknown; human review required,REVIEW,False
+brand_guideline_change,GAMO-CA,final_export,AssetVersion,REVIEW,edge-layout_review-final_export: HARD input pending human review,REVIEW,False
+asset_version_update,Full Recompute,evidence-asset_version_update,Evidence,KEEP,full replay baseline,NONE,False
+asset_version_update,Full Recompute,req_campaign,Requirement,KEEP,full replay baseline,NONE,False
+asset_version_update,Full Recompute,source_photo,AssetVersion,KEEP,full replay baseline,NONE,False
+asset_version_update,Full Recompute,ad_crop,AssetVersion,RECOMPUTE,full replay baseline,RECOMPUTE,False
+asset_version_update,Full Recompute,web_crop,AssetVersion,RECOMPUTE,full replay baseline,RECOMPUTE,False
+asset_version_update,Full Recompute,caption,AssetVersion,RECOMPUTE,full replay baseline,REVIEW,False
+asset_version_update,Full Recompute,caption_export,AssetVersion,RECOMPUTE,full replay baseline,REVIEW,False
+asset_version_update,Full Recompute,approved_copy,AssetVersion,RECOMPUTE,full replay baseline,NONE,False
+asset_version_update,Conventional DAG Incremental,evidence-asset_version_update,Evidence,KEEP,DAG descendant invalidation,NONE,False
+asset_version_update,Conventional DAG Incremental,req_campaign,Requirement,KEEP,DAG descendant invalidation,NONE,False
+asset_version_update,Conventional DAG Incremental,source_photo,AssetVersion,KEEP,DAG descendant invalidation,NONE,False
+asset_version_update,Conventional DAG Incremental,ad_crop,AssetVersion,RECOMPUTE,DAG descendant invalidation,RECOMPUTE,False
+asset_version_update,Conventional DAG Incremental,web_crop,AssetVersion,RECOMPUTE,DAG descendant invalidation,RECOMPUTE,False
+asset_version_update,Conventional DAG Incremental,caption,AssetVersion,RECOMPUTE,DAG descendant invalidation,REVIEW,False
+asset_version_update,Conventional DAG Incremental,caption_export,AssetVersion,RECOMPUTE,DAG descendant invalidation,REVIEW,False
+asset_version_update,Conventional DAG Incremental,approved_copy,AssetVersion,KEEP,DAG descendant invalidation,NONE,True
+asset_version_update,GAMO-CA,evidence-asset_version_update,Evidence,KEEP,no affected dependency,NONE,False
+asset_version_update,GAMO-CA,req_campaign,Requirement,KEEP,no affected dependency,NONE,False
+asset_version_update,GAMO-CA,source_photo,AssetVersion,KEEP,edge-req_campaign-source_photo: upstream unchanged; retain,NONE,False
+asset_version_update,GAMO-CA,ad_crop,AssetVersion,RECOMPUTE,edge-source_photo-ad_crop: changed HARD input/version,RECOMPUTE,False
+asset_version_update,GAMO-CA,web_crop,AssetVersion,RECOMPUTE,edge-source_photo-web_crop: changed HARD input/version,RECOMPUTE,False
+asset_version_update,GAMO-CA,caption,AssetVersion,REVIEW,edge-source_photo-caption: SOFT impact unknown; human review required,REVIEW,False
+asset_version_update,GAMO-CA,caption_export,AssetVersion,REVIEW,edge-caption-caption_export: HARD input pending human review,REVIEW,False
+asset_version_update,GAMO-CA,approved_copy,AssetVersion,KEEP,edge-req_campaign-approved_copy: upstream unchanged; retain,NONE,True
+approval_invalidation,Full Recompute,evidence-approval_invalidation,Evidence,KEEP,full replay baseline,NONE,False
+approval_invalidation,Full Recompute,req_legal,Requirement,KEEP,full replay baseline,NONE,False
+approval_invalidation,Full Recompute,req_mood,Requirement,KEEP,full replay baseline,NONE,False
+approval_invalidation,Full Recompute,compliance_copy,AssetVersion,RECOMPUTE,full replay baseline,RECOMPUTE,False
+approval_invalidation,Full Recompute,legal_montage,AssetVersion,RECOMPUTE,full replay baseline,REVIEW,False
+approval_invalidation,Full Recompute,legal_export,AssetVersion,RECOMPUTE,full replay baseline,REVIEW,False
+approval_invalidation,Full Recompute,moodboard,AssetVersion,RECOMPUTE,full replay baseline,NONE,False
+approval_invalidation,Conventional DAG Incremental,evidence-approval_invalidation,Evidence,KEEP,DAG descendant invalidation,NONE,False
+approval_invalidation,Conventional DAG Incremental,req_legal,Requirement,KEEP,DAG descendant invalidation,NONE,False
+approval_invalidation,Conventional DAG Incremental,req_mood,Requirement,KEEP,DAG descendant invalidation,NONE,False
+approval_invalidation,Conventional DAG Incremental,compliance_copy,AssetVersion,RECOMPUTE,DAG descendant invalidation,RECOMPUTE,False
+approval_invalidation,Conventional DAG Incremental,legal_montage,AssetVersion,RECOMPUTE,DAG descendant invalidation,REVIEW,False
+approval_invalidation,Conventional DAG Incremental,legal_export,AssetVersion,RECOMPUTE,DAG descendant invalidation,REVIEW,False
+approval_invalidation,Conventional DAG Incremental,moodboard,AssetVersion,KEEP,DAG descendant invalidation,NONE,False
+approval_invalidation,GAMO-CA,evidence-approval_invalidation,Evidence,KEEP,no affected dependency,NONE,False
+approval_invalidation,GAMO-CA,req_legal,Requirement,KEEP,no affected dependency,NONE,False
+approval_invalidation,GAMO-CA,req_mood,Requirement,KEEP,no affected dependency,NONE,False
+approval_invalidation,GAMO-CA,compliance_copy,AssetVersion,RECOMPUTE,edge-req_legal-compliance_copy: changed HARD input/version,RECOMPUTE,False
+approval_invalidation,GAMO-CA,legal_montage,AssetVersion,REVIEW,edge-req_legal-legal_montage: SOFT impact unknown; human review required,REVIEW,False
+approval_invalidation,GAMO-CA,legal_export,AssetVersion,REVIEW,edge-legal_montage-legal_export: HARD input pending human review,REVIEW,False
+approval_invalidation,GAMO-CA,moodboard,AssetVersion,KEEP,edge-req_mood-moodboard: upstream unchanged; retain,NONE,False
+all_hard_fanout_no_advantage,Full Recompute,evidence-all_hard_fanout_no_advantage,Evidence,KEEP,full replay baseline,NONE,False
+all_hard_fanout_no_advantage,Full Recompute,req_slogan,Requirement,KEEP,full replay baseline,NONE,False
+all_hard_fanout_no_advantage,Full Recompute,copy,AssetVersion,RECOMPUTE,full replay baseline,RECOMPUTE,False
+all_hard_fanout_no_advantage,Full Recompute,captions,AssetVersion,RECOMPUTE,full replay baseline,RECOMPUTE,False
+all_hard_fanout_no_advantage,Full Recompute,storyboard,AssetVersion,RECOMPUTE,full replay baseline,RECOMPUTE,False
+all_hard_fanout_no_advantage,Full Recompute,banner,AssetVersion,RECOMPUTE,full replay baseline,RECOMPUTE,False
+all_hard_fanout_no_advantage,Conventional DAG Incremental,evidence-all_hard_fanout_no_advantage,Evidence,KEEP,DAG descendant invalidation,NONE,False
+all_hard_fanout_no_advantage,Conventional DAG Incremental,req_slogan,Requirement,KEEP,DAG descendant invalidation,NONE,False
+all_hard_fanout_no_advantage,Conventional DAG Incremental,copy,AssetVersion,RECOMPUTE,DAG descendant invalidation,RECOMPUTE,False
+all_hard_fanout_no_advantage,Conventional DAG Incremental,captions,AssetVersion,RECOMPUTE,DAG descendant invalidation,RECOMPUTE,False
+all_hard_fanout_no_advantage,Conventional DAG Incremental,storyboard,AssetVersion,RECOMPUTE,DAG descendant invalidation,RECOMPUTE,False
+all_hard_fanout_no_advantage,Conventional DAG Incremental,banner,AssetVersion,RECOMPUTE,DAG descendant invalidation,RECOMPUTE,False
+all_hard_fanout_no_advantage,GAMO-CA,evidence-all_hard_fanout_no_advantage,Evidence,KEEP,no affected dependency,NONE,False
+all_hard_fanout_no_advantage,GAMO-CA,req_slogan,Requirement,KEEP,no affected dependency,NONE,False
+all_hard_fanout_no_advantage,GAMO-CA,copy,AssetVersion,RECOMPUTE,edge-req_slogan-copy: changed HARD input/version,RECOMPUTE,False
+all_hard_fanout_no_advantage,GAMO-CA,captions,AssetVersion,RECOMPUTE,edge-copy-captions: changed HARD input/version,RECOMPUTE,False
+all_hard_fanout_no_advantage,GAMO-CA,storyboard,AssetVersion,RECOMPUTE,edge-copy-storyboard: changed HARD input/version,RECOMPUTE,False
+all_hard_fanout_no_advantage,GAMO-CA,banner,AssetVersion,RECOMPUTE,edge-req_slogan-banner: changed HARD input/version,RECOMPUTE,False

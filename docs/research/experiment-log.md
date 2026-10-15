@@ -362,3 +362,354 @@ smoke workflow retains test projects and append-only records, so use a disposabl
 database or unique run IDs. The seed baseline refuses to overwrite an advanced project.
 These finite engineering checks do not prove universal safety, production readiness,
 scientific novelty, or performance improvement.
+
+## 2026-10-14 — Phase 3A authenticated read-only Graph & Impact Explorer
+
+Observation category: local engineering and UI checks, not a scientific benchmark or
+usability study. The existing API contract was inspected before frontend work. The
+contract already had authenticated project listing, PostgreSQL graph snapshot reads,
+planner preview, artifact detail, and authoritative artifact eligibility. Three
+minimal read capabilities were missing for a usable authorized explorer: list active
+tenant memberships of the credential's server-verified actor, list immutable
+project-scoped artifacts, and list project-scoped append-only approval history. These
+routes use the existing membership check and database scope; no migration was needed.
+FastAPI OpenAPI was regenerated and used to generate the frontend's TypeScript
+contracts.
+
+The React application holds its development bearer token only in component memory and
+uses it only in the `Authorization` header. It does not write browser storage, URLs,
+or application logs. Tenant/project selection is populated from authorized API reads.
+React Flow displays deterministic positions for the authoritative graph snapshot,
+active typed dependencies, versions, evidence/provenance, and confirmed requirement
+state. The change form permits only a non-mutating planner preview and only offers
+confirmed requirements and confirmed evidence. Decision labels and explanations are
+rendered from API output. The interface explicitly says KEEP is a reuse decision and
+does not grant approval. Artifact approval history is matched to exact node/version
+and displays its requirement fingerprint/policy binding; eligibility is read from
+PostgreSQL-backed API responses. Failed eligibility or approval reads display as
+unavailable. There are no graph-write, artifact-write, approval-transition,
+execution, or publication controls.
+
+| Executed command/check | Observed result |
+| --- | --- |
+| `.venv/Scripts/python scripts/export_openapi.py`; `npm run web:types` | OpenAPI contract regenerated; TypeScript client types generated from `docs/api/openapi.json` |
+| `.venv/Scripts/python scripts/tasks.py check-python` | Ruff passed; 78 Python files formatted; strict mypy passed for 31 source files; 89 passed, 7 skipped from 96 tests; one Starlette TestClient deprecation warning |
+| `services/api/tests/test_authenticated_api.py` within the full suite | 12 passed, including active tenant membership selection, allow-listed CORS, artifact listing, and approval history reads; these route tests use the isolated SQLite fixture |
+| `npm ci --no-audit --no-fund` | Passed; 323 packages installed. npm reported the esbuild post-install script was blocked by its install-script allow-list; the subsequent tests and production build still passed |
+| `npm run format:check`; `npm run lint`; `npm run typecheck`; `npm test` | All passed. The root contract runner passed 3 tests; Vitest passed 7 tests across 2 files for graph layout/rendering, active edges, API auth/errors, decision explanations, and exact-version artifact binding/eligibility |
+| `npm run web:build` | Production Vite build passed; JavaScript output split into application, graph-vendor, and react-vendor chunks; no chunk-size warning |
+| `.venv/Scripts/python scripts/tasks.py schemas --check`; `scripts/tasks.py verify-test-gate`; `python -m pip check`; `git diff --check` | Passed; the deliberate broken-test probe was rejected as expected; no dependency conflicts or whitespace errors |
+| `.venv/Scripts/python scripts/tasks.py demo` | Exited 0; output labeled `SIMULATED`, publication `NOT_IMPLEMENTED`; offline demonstration output only |
+
+The 7 PostgreSQL/Neo4j tests were skipped because this session did not configure
+`ORCIFY_TEST_DATABASE_URL` or `ORCIFY_TEST_NEO4J_*`; no live database run is claimed
+for the new read routes. The frontend calls through Vite's same-origin API proxy in
+development. Cross-origin hosting requires an explicit `ORCIFY_WEB_ORIGINS` allow-list.
+The UI has no historical graph picker, artifact diff, pagination, interactive login,
+SSO/MFA, or usability evaluation. These engineering checks do not establish universal
+safety, production readiness, scientific novelty, or performance improvement.
+
+## 2026-10-14 — Student research scope reset
+
+This is a project-scope decision, not an experiment or research result. The intended
+project is a high-school scientific research prototype for Kazakhstan's Republican
+Scientific Projects Competition. Existing API, PostgreSQL, Neo4j, and React components
+are retained as demonstration infrastructure and are frozen against feature expansion.
+The next work is to create a bounded, reproducible synthetic pilot and compare the pure
+GAMO-CA planner with simple full-replay and ordinary-DAG-cache baselines using identical
+inputs. Student annotation capacity should set the pilot size; the earlier proposed
+144-case count remains a planning target only.
+
+No scientific measurements, independent annotation, benchmark run, or result was
+produced by this scope change. Existing tests and live service checks remain engineering
+evidence only. Future dependencies or infrastructure require a documented direct need
+for the research question and an explanation of the simpler option considered. This
+decision is recorded in [ADR-012](../adr/012-student-research-scope.md).
+
+## 2026-10-14 — Phase R1.1 minimal scientific pilot
+
+Observation category: five hand-authored synthetic cases; small exploratory pilot. The
+independent (of the algorithms) correctness oracle was written as scenario obligations
+before the algorithm runs: specified HARD descendants must recompute, specified
+uncertain SOFT descendants must not be silently kept, and exact asset-version plus
+requirement-snapshot approvals must not be treated as current after invalidation. It
+has not been independently reviewed by a second human. All methods received the same
+immutable graph and change event per scenario. Full Recompute and Conventional DAG
+Incremental were implemented independently in `scripts/r1_1_pilot.py`; GAMO-CA reused
+the existing pure `plan_change` function. The DAG baseline invalidates HARD and SOFT
+descendants and ignores INFORMATIONAL links.
+
+| Scenario | Full recomputes | DAG recomputes | GAMO-CA recomputes | Review operations Full / DAG / GAMO-CA |
+| --- | ---: | ---: | ---: | ---: |
+| slogan change | 6 | 6 | 3 | 6 / 6 / 6 |
+| brand guideline change | 5 | 4 | 2 | 5 / 5 / 5 |
+| asset version update | 5 | 4 | 2 | 6 / 5 / 5 |
+| approval invalidation | 4 | 3 | 1 | 4 / 4 / 4 |
+| all-HARD fanout (no advantage) | 4 | 4 | 4 | 4 / 4 / 4 |
+| **Total over these five authored cases** | **24** | **21** | **12** | **25 / 24 / 24** |
+
+All 15 scenario-method plans passed the predeclared oracle; zero stale approvals were
+accepted. Requirement changes invalidate all modeled approvals because the current
+domain binds them to the full requirement fingerprint. The unrelated moodboard in the
+approval-invalidation scenario was kept computationally but still required review;
+this directly tests that KEEP does not grant approval. In the all-HARD scenario all
+methods recomputed the same four outputs.
+
+Planning time was measured with `time.perf_counter_ns`, 101 calls per method/scenario,
+and reported as each scenario's median. The medians across the five scenario medians
+were 0.0027 ms for Full Recompute, 0.0078 ms for DAG Incremental, and 3.1627 ms for
+GAMO-CA, on Python 3.14.6 in the local Windows environment. This times plan creation
+only: no content generation, database/API overhead, or human review time. GAMO-CA's
+time includes graph validation, hashing, decisions, and explanations, which the simple
+baselines do less work to produce. These tiny timing values are descriptive only and
+do not support statistical or general performance claims.
+
+| Executed command/check | Observed result |
+| --- | --- |
+| `.venv/Scripts/python scripts/r1_1_pilot.py --seed 20261014 --timing-repeats 101` | 15 scenario-method results; 15/15 correctness PASS; outputs written to `docs/research/r1_1-pilot/` |
+| `.venv/Scripts/python -m pytest -q tests/test_r1_1_pilot.py` | 7 passed after adding fixed-seed, stale-approval, HARD/SOFT, and no-advantage regressions |
+
+Raw results are in `r1_1-pilot/results.csv` and `node_decisions.csv`; exact input
+hashes, oracle obligations, seed, and environment are in `manifest.json`. Three SVG
+plots separately display recomputation operations, review operations, and planning
+time. Operation counts are distinct workload proxies; monetary and human-time costs
+were not measured. The pilot uses synthetic, author-labeled cases and one seed; no
+second annotator, significance testing, or larger benchmark was run. The next gate is
+human review of the cases, oracle, and baseline assumptions before expanding the
+dataset. See [`r1_1-pilot/README.md`](r1_1-pilot/README.md).
+
+## 2026-10-14 — Phase R1.2 audit of the saved R1.1 pilot
+
+Observation category: reproducible accounting audit of existing R1.1 artifacts. No
+planner was rerun, no synthetic workload was expanded, and the R1.1 CSVs and plots
+were left unchanged. `scripts/audit_r1_1.py` reads the saved results and node decisions,
+checks the expected 15 result rows, 114 node rows, method labels and PASS states, and
+writes only under `docs/research/r1_2-audit/`. Its manifest records SHA-256 hashes of
+the two input CSVs.
+
+The oracle is implementation-independent in a narrow sense: authored scenario
+obligations are checked without calling GAMO-CA. It is not independently annotated:
+the same team authored the scenarios, edges, labels and checker, and no second human
+review has occurred. The checker enforces 12 listed HARD recomputations and safe
+actions for uncertain SOFT items, but allows three different safe actions for SOFT
+cases. It does not establish complete ground truth, future review resolution or
+general correctness. All methods received each scenario's same graph and event, but
+the two baselines do not produce a REVIEW action; the common scorer still checks
+approval eligibility and counts regenerated items as needing new exact-version review.
+
+| Scenario | DAG immediate recomputes | GAMO-CA immediate recomputes | Audit classification |
+| --- | ---: | ---: | --- |
+| Slogan change | 6 | 3 | Three required HARD assets recompute; `social_visual` is kept because its SOFT edge names palette while the event changes text; `social_export` and its HARD child `logo` wait for review. |
+| Brand guideline change | 4 | 2 | Two color-relevant outputs recompute; unknown `layout_review` and HARD child `final_export` wait. |
+| Asset version update | 4 | 2 | Two HARD crops recompute; uncertain `caption` and HARD child `caption_export` wait; unrelated copy is kept. |
+| Approval invalidation | 3 | 1 | Required compliance copy recomputes; `legal_montage` and HARD child `legal_export` wait; unrelated moodboard content is kept but its approval is stale under the global requirement fingerprint. |
+| All-HARD fanout | 4 | 4 | All methods recompute all four outputs; no advantage. |
+
+Across cases, all 12 nodes listed as mandatory HARD recomputations were in fact
+`RECOMPUTE`; none was incorrectly substituted with `REVIEW`. Four other HARD
+descendants (`logo`, `final_export`, `caption_export`, `legal_export`) were `REVIEW`
+because their upstream SOFT asset was unresolved. This is a fail-closed hold, but it
+requires human resolution followed by replanning. Together with the four uncertain
+SOFT roots, these represent eight conditional future recomputations. Therefore nine
+fewer immediate GAMO-CA recomputations than DAG means eight deferred behind review
+and one field-specific KEEP, not nine demonstrated eliminated tasks. If all four
+branches later prove material, the conservative GAMO-CA count is 20 versus DAG's 21;
+if none proves material, the eight may remain reusable. No human outcomes were
+observed.
+
+Review operations total Full 25, DAG 24, GAMO-CA 24; counts are distinct review or
+approval-work proxies, not person-minutes. The cost sensitivity keeps three terms
+separate: recomputations, review operations and planner milliseconds. Unit weights
+and `q` (the assumed fraction of uncertain branches later found material) are
+hypothetical. From the saved five per-case timing medians, GAMO-CA sums to 13.4922 ms,
+DAG to 0.0352 ms, a 13.4570 ms difference. The measured R1.1 median-of-case-medians
+values were Full 0.0027 ms, DAG 0.0078 ms, and GAMO-CA 3.1627 ms. This unfavorable
+GAMO-CA result is disclosed. It is not a like-for-like runtime benchmark: the simple
+baselines do less validation and explanation work than GAMO-CA, and the tiny
+plan-only timings omit generation, human review and I/O.
+
+The break-even sensitivity is `(9 - 8q) / 13.457` assumed planner work units per ms
+per recomputation work unit: 0.669 at `q=0`, 0.372 at `q=0.5`, and 0.074 at `q=1`.
+Below the threshold GAMO-CA has lower hypothetical total cost; above it, DAG does.
+This does not estimate real costs or `q`; the audit CSV includes the assumptions
+and separate cost components. See [`r1_2-audit/README.md`](r1_2-audit/README.md),
+`scenario-accounting.csv`, `cost-sensitivity.csv`, `break-even.csv`, and
+`break-even.svg`.
+
+| Executed command | Observed result |
+| --- | --- |
+| `.venv/Scripts/python scripts/audit_r1_1.py` | Accepted the 15 saved R1.1 rows; reported GAMO-CA 12, DAG 21, eight review-gated asset versions; wrote five R1.2 audit outputs without writing under R1.1. |
+| `.venv/Scripts/python -m pytest -q tests/test_r1_1_pilot.py tests/test_r1_2_audit.py` | 11 passed, including checks for mandatory HARD nodes, conditional-work accounting, sensitivity thresholds and shared scenarios. |
+
+Recommendation: no-go for a larger benchmark until a second human reviews the graph
+labels, oracle, global approval-fingerprint assumption and baseline fairness. The
+follow-up test for review resolution and replanning also remains open. No statistical
+significance, scientific novelty, actual review savings or real-world cost benefit is
+claimed.
+
+## 2026-10-15 — Phase R1.3 synthetic workflow and blinded review preparation
+
+Observation category: a small deterministic workflow test with synthetic outcome
+inputs, plus preparation of a blank independent-review worksheet. No second reviewer
+has completed the worksheet. No human response, probability, or review duration was
+generated. The R1.1 and R1.2 directories were not modified by the R1.3 script.
+
+The worksheet has 25 blank asset-label rows for five anonymized scenarios. It shows
+original confirmed requirements, the change and fields, asset inputs and typed edges,
+and separate blank impact and approval labels. It contains no algorithm names or
+decisions. The written protocol says to provide only that worksheet before unblinding
+the R1.1/R1.2 results, save the response separately, record disagreements, and not
+silently overwrite labels.
+
+Four unresolved SOFT branches each have two modeled outcomes. The script enumerated
+all 16 combinations. A material outcome set the edge's relevant fields to the changed
+fields; a non-material outcome set them to a non-overlapping field. It created a new
+snapshot hash and event binding, then called the pure GAMO-CA planner again. Each
+material root and HARD child became RECOMPUTE; each non-material pair became KEEP.
+These are explicitly synthetic fixture outcomes, not human judgments.
+
+Across the 16 combinations, GAMO-CA final planned recomputations were 12, 14, 16, 18,
+and 20 when respectively 0, 1, 2, 3, or 4 branches were material. Each combination
+requires four SOFT resolution reviews and uses four separate replan rounds after five
+initial scenario plans (nine plan calls total). Projected exact-version approval or
+renewal reviews were 22 or 24, depending on whether the S03 photo-caption branch was
+material; the three requirement-change cases invalidate approvals through the current
+global requirement fingerprint. Projected total review requirements were 26 or 28.
+These are count proxies under synthetic outcomes, not performed human reviews or
+measured effort; no approval records were created. Conventional DAG stayed at 21
+recomputations and Full Recompute at 24.
+
+R1.3 also implemented an independent field-aware DAG traversal using the same
+`relevant_fields` and event `changed_fields`. It followed the same 16 resolved inputs
+and matched GAMO-CA's final actions and recomputation counts on all five tiny fixtures.
+This shows that a conventional DAG can use the field metadata already present and
+that these cases do not demonstrate a unique recomputation advantage for GAMO-CA.
+The field-aware implementation assumes valid fixtures and omits GAMO-CA's graph,
+provenance, and safety validation; action matching is not safety equivalence.
+
+Plan-only timing used 21 complete workflow repetitions per outcome set. Across the
+16 outcome sets, medians of the initial, replanning, and combined durations were
+31.9357 ms, 25.8518 ms, and 58.7511 ms for GAMO-CA; 0.2641 ms, 0.1804 ms, and
+0.4525 ms for the field-aware DAG; 0.0917 ms initial for eager DAG; and 0.0278 ms
+initial for Full Recompute. The combined median is computed per repeated sample, so
+it need not equal the sum of the separate medians. These unfavorable timing gaps
+disclose unequal code work: GAMO-CA validates/hashes/explains while the short
+baselines assume trusted fixtures. In this run, GAMO-CA's total is about 130 times
+the field-aware DAG and 641 times the eager DAG. Timing excludes human review and
+asset generation; it is not a fair algorithm-complexity comparison.
+
+The cost CSV separates final planned recomputations, SOFT resolution reviews,
+approval/renewal reviews, initial planner milliseconds, and replanning milliseconds.
+Per-operation weights are hypothetical work units only; no money or human minutes
+were measured. All cost rows and all material/non-material outcomes are marked as
+assumptions.
+
+| Executed command | Observed result |
+| --- | --- |
+| `.venv/Scripts/python scripts/r1_3_workflow.py --seed 20261014 --timing-repeats 21` | 25 blank worksheet rows; 64 branch rows covering 16 combinations; 64 method/workflow summaries; 768 hypothetical cost rows. Python 3.14.6 on Windows 11. No human responses. |
+| `.venv/Scripts/python -m pytest -q tests/test_r1_3_workflow.py` | 3 passed; all 16 synthetic transitions, approval/review counts, and worksheet blinding were checked. |
+
+The report and raw files are under [`r1_3-workflow/`](r1_3-workflow/). The binary test
+does not model a reviewer who remains uncertain after a review; a real workflow must
+keep that asset under REVIEW or BLOCK. Independent validation and the larger benchmark
+remain blocked on a real second human completing the worksheet and review of the
+labels. No significance, novelty, universal safety, or real-world savings claim is
+made.
+
+## 2026-10-15 — Phase R1.4 independent-review preparation
+
+Observation category: reviewer instructions, validation/import tooling, and importer
+engineering tests. **No completed human worksheets were present or generated.** The
+R1.1, R1.2, and R1.3 source artifacts were not edited. The blank R1.3 worksheet
+remains the template.
+
+Added a student-friendly guide defining `RECOMPUTE`, `REVIEW`, and `KEEP`, separating
+impact from approval, and instructing reviewers to work independently before
+unblinding. Added `scripts/import_r1_4_reviews.py` to require two distinct complete
+worksheet files, validate expected asset rows, labels, reasons, confidence values,
+and duplicate keys, then write source hashes, separate reviewer scores,
+agreement-only scores, and unresolved disagreements into a new output directory. It
+does not adjudicate, rewrite, or silently choose among labels.
+
+The descriptive measures are exact action agreement, recomputations on reviewer-`KEEP`
+rows (unnecessary under this comparison), recomputations on reviewer-`REVIEW` rows
+(reported separately because necessity is unresolved), missed required
+recomputations, and approval-safety violations. The last measure flags a shared R1.1
+correctness-oracle eligibility result marked true while the reviewer says
+`REAPPROVE` or `UNCERTAIN`; it is not an observed publication attempt. Field-aware DAG has no approval or
+eligibility implementation, so its safety rows are unassessed. Disagreements remain
+unresolved; agreement-only metrics exclude contested rows without assigning a label.
+
+R1.3 found Field-aware DAG matched GAMO-CA actions and recomputation counts across 16
+synthetic outcome combinations. These five workflows cannot establish algorithmic
+novelty or superiority. PostgreSQL approvals, provenance, and recovery are system
+engineering capabilities. A fair future comparison would give an ordinary DAG the
+same safeguards and test whether GAMO-CA changes outcomes or human effort. No such
+measured benefit is available; practical usefulness and usability were not evaluated.
+
+| Executed command | Observed result |
+| --- | --- |
+| `.venv/Scripts/python -m pytest -q tests/test_r1_4_review_import.py` | 6 passed; temporary synthetic rows exercised validation, comparison, and disagreement export only. |
+| `.venv/Scripts/python scripts/tasks.py check-python` | Ruff passed; 93 files formatted; mypy passed for 35 source files; full Python suite: 110 passed, 7 skipped, 1 deprecation warning. The seven skips require live PostgreSQL and/or Neo4j connection variables, which were unset. |
+| `.venv/Scripts/python scripts/import_r1_4_reviews.py --help` | CLI inspection only; no import or scoring of human data. |
+| `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run web:build` | All passed as unchanged-workspace regression checks. The npm test command passed 3 contract tests and 7 web tests; production build completed. No frontend files were changed for R1.4. |
+| `git diff --check` | Passed; Git reported only existing LF/CRLF conversion notices for tracked files. |
+
+Independent validation is incomplete. Do not report reviewer accuracy or begin a
+larger benchmark until two real worksheets are received, validated, and inspected.
+No statistical significance, novelty, or universal safety claim is made.
+
+## 2026-10-15 — Final research presentation build
+
+Observation category: frontend completion, preservation checks, and engineering QA.
+No new research phase, timed trial, benchmark, AI generation, or human annotation was
+run. Existing R1.1–R1.4 files were frozen by hashes before implementation; all 22
+still match the final preservation check. Backend services, APIs, database schemas,
+and the pure GAMO-CA kernel were not changed.
+
+Extended the existing React app with Research overview, Graph & impact, and Experiments
+& results. Reused its canvas, inspector, in-memory bearer login, and live API explorer.
+The default mode is explicitly SIMULATED / OFFLINE, using the original slogan fixture
+and an exported Python plan verified against saved R1.1 node actions. Reset clears
+the local preview; no version advance, generation, approval, or publication occurs.
+Live mode is explicit, retains API errors, and has no automatic offline fallback.
+
+Results read original CSVs directly for initial counts/review proxies/timing,
+hypothetical cost sensitivity, and all 16 synthetic review/replan outcomes. The
+showcase states that Field-aware DAG matched GAMO-CA's final actions and counts,
+planning overhead is higher/asymmetric, and human validation is incomplete. The final
+data check identified a historical R1.1 prose discrepancy: the CSV yields aggregate
+medians 0.0019 / 0.0059 / 2.9535 ms (Full / DAG / GAMO), while its README states
+0.0027 / 0.0078 / 3.1627 ms. The dashboard uses CSV values; original files are unchanged.
+R1.2's saved model uses the matching CSV sums, so it is retained as recorded.
+
+Added `docs/final-presentation/` with judge overview, methodology, three-minute demo,
+ten jury questions, startup, preservation lock, and verification report. ADR-013
+records the explicit offline/live boundary. No project dependency was added.
+
+| Executed command | Actual result |
+| --- | --- |
+| `npm run format:check`, `npm run lint`, `npm run typecheck` | Passed |
+| `npm test` | 3 contract tests + 15 web tests passed (4 web test files) |
+| `npm run web:build` | Passed; Vite production assets built |
+| `.venv/Scripts/python scripts/tasks.py check-python` | Ruff passed; 101 files formatted; mypy passed for 36 source files; 112 passed, 7 skipped, 1 existing Starlette/httpx deprecation warning |
+| `.venv/Scripts/python scripts/tasks.py schemas --check` | Passed; contracts unchanged |
+| `.venv/Scripts/python scripts/export_presentation.py --check` | 22 preserved file hashes matched; fixture matched pure planner and original R1.1 decisions |
+| `.venv/Scripts/python scripts/tasks.py verify-test-gate` | Verified deliberately broken temporary test is rejected with pytest exit 1; gate command passed |
+| `.venv/Scripts/python scripts/tasks.py demo` | Existing two-scenario pure-kernel demo executed with SIMULATED / publication NOT_IMPLEMENTED labels |
+| `node scripts/check_presentation_browser.cjs` with available Playwright and installed Chrome | Passed on dev and production preview; final production run checked all 16 outcome settings, reset/repeat, actual graph reasons, sensitivity, byte-identical source CSV download, responsive overflow, explicit live login, no offline API requests, and no page errors |
+
+The seven skips were live artifact PostgreSQL, authenticated API PostgreSQL, Phase 2E
+live HTTP, three PostgreSQL concurrency cases, and Neo4j projection integration.
+Required test connection variables were unset. These skips are not live passes;
+PostgreSQL/Neo4j integration was not revalidated in this build. Browser QA used
+headless Chrome 154.0.8037.98 at desktop 1440×1000, laptop 1280×800, and mobile
+390×844. Screenshots were actually inspected and UI readability/layout refined.
+The production preview ran at `http://127.0.0.1:4173/`; local screenshots and the
+download are under ignored `var/presentation-qa/`. Hosted CI was not run.
+
+The presentation implementation is ready to demonstrate. Student/judge comprehension
+and the three-minute delivery have not been measured with humans. Independent
+validation and equally safeguarded baseline comparisons remain open. No superiority,
+novelty, significance, universal safety, real generation, or real savings claim is
+made. See [`../final-presentation/verification.md`](../final-presentation/verification.md).

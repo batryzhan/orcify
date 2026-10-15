@@ -1,0 +1,6 @@
+review_branches_resolved_as_material_fraction_assumption,gamo_expected_recomputes_assumption,dag_recomputes_observed,gamo_minus_dag_planning_ms_measured,break_even_planning_work_units_per_ms_per_recompute_work_unit,interpretation
+0.0,12.0,21,13.457000,0.668797,"GAMO total cost is lower below this assumed planning-cost ratio; DAG is lower above it, under this q assumption."
+0.25,14.0,21,13.457000,0.520175,"GAMO total cost is lower below this assumed planning-cost ratio; DAG is lower above it, under this q assumption."
+0.5,16.0,21,13.457000,0.371554,"GAMO total cost is lower below this assumed planning-cost ratio; DAG is lower above it, under this q assumption."
+0.75,18.0,21,13.457000,0.222932,"GAMO total cost is lower below this assumed planning-cost ratio; DAG is lower above it, under this q assumption."
+1.0,20.0,21,13.457000,0.074311,"GAMO total cost is lower below this assumed planning-cost ratio; DAG is lower above it, under this q assumption."

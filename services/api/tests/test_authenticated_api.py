@@ -125,8 +125,44 @@ def test_openapi_exposes_versioned_typed_api_and_bearer_auth(api_fixture) -> Non
     client, _, _ = api_fixture
     schema = client.get("/openapi.json").json()
     assert "/api/v1/tenants/{tenant_id}/projects/{project_id}/graph" in schema["paths"]
+    assert "/api/v1/tenants" in schema["paths"]
+    assert "/api/v1/tenants/{tenant_id}/projects/{project_id}/artifacts" in schema["paths"]
     assert "HTTPBearer" in schema["components"]["securitySchemes"]
     assert client.get("/api/v1/health").json() == {"status": "ok"}
+
+
+def test_tenant_picker_returns_only_active_memberships(api_fixture) -> None:
+    client, _, graph = api_fixture
+    response = client.get(
+        "/api/v1/tenants",
+        headers={"Authorization": "Bearer orc_review-token-secret-value-000000000000"},
+    )
+    assert response.status_code == 200
+    assert response.json() == [{"tenant_id": graph.tenant_id, "role": "reviewer"}]
+    assert client.get("/api/v1/tenants").status_code == 401
+
+
+def test_cors_allows_only_configured_development_origins(api_fixture) -> None:
+    client, _, _ = api_fixture
+    response = client.options(
+        "/api/v1/tenants",
+        headers={
+            "Origin": "http://localhost:5173",
+            "Access-Control-Request-Method": "GET",
+            "Access-Control-Request-Headers": "authorization",
+        },
+    )
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://localhost:5173"
+    denied = client.options(
+        "/api/v1/tenants",
+        headers={
+            "Origin": "https://untrusted.example",
+            "Access-Control-Request-Method": "GET",
+            "Access-Control-Request-Headers": "authorization",
+        },
+    )
+    assert "access-control-allow-origin" not in denied.headers
 
 
 def test_tenant_admin_can_create_project_with_validated_graph_scope(api_fixture) -> None:
@@ -339,6 +375,12 @@ def test_artifact_api_recomputes_plan_and_returns_typed_authoritative_record(api
         ).status_code
         == 200
     )
+    listed = client.get(
+        f"/api/v1/tenants/{graph.tenant_id}/projects/{graph.project_id}/artifacts",
+        headers={"Authorization": "Bearer orc_reader-token-secret-value-000000000000"},
+    )
+    assert listed.status_code == 200
+    assert [row["artifact_version_id"] for row in listed.json()] == ["api-artifact-v1"]
 
 
 def test_execution_api_persists_and_reads_run_history(api_fixture) -> None:
@@ -439,3 +481,12 @@ def test_approval_transitions_use_membership_actor_and_exact_snapshots(api_fixtu
     assert response.status_code == 201, response.text
     assert response.json()["approval"]["actor_id"] == "actor-reviewer"
     assert response.json()["approval"]["decision"] == ApprovalDecision.APPROVED.value
+    history = client.get(
+        base,
+        headers={"Authorization": "Bearer orc_reader-token-secret-value-000000000000"},
+    )
+    assert history.status_code == 200
+    assert [row["decision"] for row in history.json()["approvals"]] == [
+        ApprovalDecision.SUBMITTED.value,
+        ApprovalDecision.APPROVED.value,
+    ]
