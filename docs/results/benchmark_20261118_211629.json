@@ -1,0 +1,845 @@
+{
+  "started_at": "2026-11-18T21:10:35",
+  "model": "unsloth/gemma-4-E4B-it-GGUF",
+  "endpoint": "Unsloth Studio (llama.cpp), local",
+  "llm_health": {
+    "reachable": true,
+    "model": "unsloth/gemma-4-E4B-it-GGUF",
+    "loaded": true,
+    "context_length": 8192,
+    "latency_ms": 195,
+    "error_code": null
+  },
+  "routing": {
+    "summary": {
+      "n": 20,
+      "accuracy": 1.0,
+      "json_valid_first_attempt": 1.0,
+      "failed_calls": 0,
+      "latency_ms_mean": 4884,
+      "latency_ms_p50": 5046,
+      "latency_ms_p95": 5651,
+      "prompt_tokens_mean": 337,
+      "completion_tokens_mean": 299
+    },
+    "records": [
+      {
+        "ok": true,
+        "correct": true,
+        "latency_ms": 5651,
+        "server_predicted_ms": 5106,
+        "prompt_tokens": 350,
+        "completion_tokens": 332,
+        "first_attempt_valid": true,
+        "error_code": null,
+        "expected": "Legal",
+        "got": "Legal"
+      },
+      {
+        "ok": true,
+        "correct": true,
+        "latency_ms": 5163,
+        "server_predicted_ms": 4900,
+        "prompt_tokens": 341,
+        "completion_tokens": 301,
+        "first_attempt_valid": true,
+        "error_code": null,
+        "expected": "Legal",
+        "got": "Legal"
+      },
+      {
+        "ok": true,
+        "correct": true,
+        "latency_ms": 4904,
+        "server_predicted_ms": 4650,
+        "prompt_tokens": 336,
+        "completion_tokens": 322,
+        "first_attempt_valid": true,
+        "error_code": null,
+        "expected": "Legal",
+        "got": "Legal"
+      },
+      {
+        "ok": true,
+        "correct": true,
+        "latency_ms": 5715,
+        "server_predicted_ms": 5473,
+        "prompt_tokens": 333,
+        "completion_tokens": 333,
+        "first_attempt_valid": true,
+        "error_code": null,
+        "expected": "Legal",
+        "got": "Legal"
+      },
+      {
+        "ok": true,
+        "correct": true,
+        "latency_ms": 3620,
+        "server_predicted_ms": 3381,
+        "prompt_tokens": 349,
+        "completion_tokens": 251,
+        "first_attempt_valid": true,
+        "error_code": null,
+        "expected": "Legal",
+        "got": "Legal"
+      },
+      {
+        "ok": true,
+        "correct": true,
+        "latency_ms": 3749,
+        "server_predicted_ms": 3555,
+        "prompt_tokens": 334,
+        "completion_tokens": 260,
+        "first_attempt_valid": true,
+        "error_code": null,
+        "expected": "SMM",
+        "got": "SMM"
+      },
+      {
+        "ok": true,
+        "correct": true,
+        "latency_ms": 4842,
+        "server_predicted_ms": 4647,
+        "prompt_tokens": 337,
+        "completion_tokens": 313,
+        "first_attempt_valid": true,
+        "error_code": null,
+        "expected": "SMM",
+        "got": "SMM"
+      },
+      {
+        "ok": true,
+        "correct": true,
+        "latency_ms": 5304,
+        "server_predicted_ms": 5070,
+        "prompt_tokens": 333,
+        "completion_tokens": 295,
+        "first_attempt_valid": true,
+        "error_code": null,
+        "expected": "SMM",
+        "got": "SMM"
+      },
+      {
+        "ok": true,
+        "correct": true,
+        "latency_ms": 5275,
+        "server_predicted_ms": 5031,
+        "prompt_tokens": 333,
+        "completion_tokens": 307,
+        "first_attempt_valid": true,
+        "error_code": null,
+        "expected": "SMM",
+        "got": "SMM"
+      },
+      {
+        "ok": true,
+        "correct": true,
+        "latency_ms": 4195,
+        "server_predicted_ms": 3962,
+        "prompt_tokens": 338,
+        "completion_tokens": 263,
+        "first_attempt_valid": true,
+        "error_code": null,
+        "expected": "SMM",
+        "got": "SMM"
+      },
+      {
+        "ok": true,
+        "correct": true,
+        "latency_ms": 5532,
+        "server_predicted_ms": 5324,
+        "prompt_tokens": 339,
+        "completion_tokens": 344,
+        "first_attempt_valid": true,
+        "error_code": null,
+        "expected": "Finance",
+        "got": "Finance"
+      },
+      {
+        "ok": true,
+        "correct": true,
+        "latency_ms": 4908,
+        "server_predicted_ms": 4679,
+        "prompt_tokens": 339,
+        "completion_tokens": 317,
+        "first_attempt_valid": true,
+        "error_code": null,
+        "expected": "Finance",
+        "got": "Finance"
+      },
+      {
+        "ok": true,
+        "correct": true,
+        "latency_ms": 5086,
+        "server_predicted_ms": 4855,
+        "prompt_tokens": 335,
+        "completion_tokens": 313,
+        "first_attempt_valid": true,
+        "error_code": null,
+        "expected": "Finance",
+        "got": "Finance"
+      },
+      {
+        "ok": true,
+        "correct": true,
+        "latency_ms": 5046,
+        "server_predicted_ms": 4813,
+        "prompt_tokens": 334,
+        "completion_tokens": 306,
+        "first_attempt_valid": true,
+        "error_code": null,
+        "expected": "Finance",
+        "got": "Finance"
+      },
+      {
+        "ok": true,
+        "correct": true,
+        "latency_ms": 4614,
+        "server_predicted_ms": 4378,
+        "prompt_tokens": 334,
+        "completion_tokens": 298,
+        "first_attempt_valid": true,
+        "error_code": null,
+        "expected": "Finance",
+        "got": "Finance"
+      },
+      {
+        "ok": true,
+        "correct": true,
+        "latency_ms": 5434,
+        "server_predicted_ms": 5174,
+        "prompt_tokens": 337,
+        "completion_tokens": 314,
+        "first_attempt_valid": true,
+        "error_code": null,
+        "expected": "HR",
+        "got": "HR"
+      },
+      {
+        "ok": true,
+        "correct": true,
+        "latency_ms": 4267,
+        "server_predicted_ms": 4039,
+        "prompt_tokens": 333,
+        "completion_tokens": 277,
+        "first_attempt_valid": true,
+        "error_code": null,
+        "expected": "HR",
+        "got": "HR"
+      },
+      {
+        "ok": true,
+        "correct": true,
+        "latency_ms": 4457,
+        "server_predicted_ms": 4240,
+        "prompt_tokens": 335,
+        "completion_tokens": 287,
+        "first_attempt_valid": true,
+        "error_code": null,
+        "expected": "HR",
+        "got": "HR"
+      },
+      {
+        "ok": true,
+        "correct": true,
+        "latency_ms": 5314,
+        "server_predicted_ms": 5068,
+        "prompt_tokens": 333,
+        "completion_tokens": 284,
+        "first_attempt_valid": true,
+        "error_code": null,
+        "expected": "HR",
+        "got": "HR"
+      },
+      {
+        "ok": true,
+        "correct": true,
+        "latency_ms": 4606,
+        "server_predicted_ms": 4350,
+        "prompt_tokens": 332,
+        "completion_tokens": 267,
+        "first_attempt_valid": true,
+        "error_code": null,
+        "expected": "HR",
+        "got": "HR"
+      }
+    ]
+  },
+  "tool_selection": {
+    "catalog_size": 16,
+    "scoped": {
+      "summary": {
+        "n": 16,
+        "accuracy": 1.0,
+        "json_valid_first_attempt": 1.0,
+        "failed_calls": 0,
+        "latency_ms_mean": 3012,
+        "latency_ms_p50": 3025,
+        "latency_ms_p95": 3852,
+        "prompt_tokens_mean": 193,
+        "completion_tokens_mean": 189
+      },
+      "records": [
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 3852,
+          "server_predicted_ms": 3442,
+          "prompt_tokens": 205,
+          "completion_tokens": 252,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "render_service_contract",
+          "got": "render_service_contract"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 2580,
+          "server_predicted_ms": 2336,
+          "prompt_tokens": 206,
+          "completion_tokens": 166,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "check_counterparty",
+          "got": "check_counterparty"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 3105,
+          "server_predicted_ms": 2877,
+          "prompt_tokens": 192,
+          "completion_tokens": 186,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "draft_claim_letter",
+          "got": "draft_claim_letter"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 2337,
+          "server_predicted_ms": 2103,
+          "prompt_tokens": 190,
+          "completion_tokens": 155,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "render_supplementary_agreement",
+          "got": "render_supplementary_agreement"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 2573,
+          "server_predicted_ms": 2278,
+          "prompt_tokens": 204,
+          "completion_tokens": 165,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "generate_video",
+          "got": "generate_video"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 2720,
+          "server_predicted_ms": 2500,
+          "prompt_tokens": 196,
+          "completion_tokens": 173,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "create_jira_issue",
+          "got": "create_jira_issue"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 3441,
+          "server_predicted_ms": 3225,
+          "prompt_tokens": 196,
+          "completion_tokens": 219,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "trigger_n8n_workflow",
+          "got": "trigger_n8n_workflow"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 2360,
+          "server_predicted_ms": 2110,
+          "prompt_tokens": 194,
+          "completion_tokens": 155,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "build_content_plan",
+          "got": "build_content_plan"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 2951,
+          "server_predicted_ms": 2633,
+          "prompt_tokens": 193,
+          "completion_tokens": 178,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "analyze_transactions",
+          "got": "analyze_transactions"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 3084,
+          "server_predicted_ms": 2855,
+          "prompt_tokens": 191,
+          "completion_tokens": 186,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "category_expense_summary",
+          "got": "category_expense_summary"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 2977,
+          "server_predicted_ms": 2706,
+          "prompt_tokens": 189,
+          "completion_tokens": 171,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "top_counterparties",
+          "got": "top_counterparties"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 3290,
+          "server_predicted_ms": 3072,
+          "prompt_tokens": 191,
+          "completion_tokens": 203,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "detect_anomalies",
+          "got": "detect_anomalies"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 3956,
+          "server_predicted_ms": 3662,
+          "prompt_tokens": 183,
+          "completion_tokens": 244,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "render_hr_order",
+          "got": "render_hr_order"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 3150,
+          "server_predicted_ms": 2933,
+          "prompt_tokens": 185,
+          "completion_tokens": 202,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "track_onboarding",
+          "got": "track_onboarding"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 3025,
+          "server_predicted_ms": 2809,
+          "prompt_tokens": 183,
+          "completion_tokens": 190,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "update_staff_schedule",
+          "got": "update_staff_schedule"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 2798,
+          "server_predicted_ms": 2608,
+          "prompt_tokens": 185,
+          "completion_tokens": 185,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "create_confluence_page",
+          "got": "create_confluence_page"
+        }
+      ]
+    },
+    "full_context": {
+      "summary": {
+        "n": 16,
+        "accuracy": 1.0,
+        "json_valid_first_attempt": 1.0,
+        "failed_calls": 0,
+        "latency_ms_mean": 5435,
+        "latency_ms_p50": 5577,
+        "latency_ms_p95": 6422,
+        "prompt_tokens_mean": 459,
+        "completion_tokens_mean": 372
+      },
+      "records": [
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 6360,
+          "server_predicted_ms": 5948,
+          "prompt_tokens": 471,
+          "completion_tokens": 431,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "render_service_contract",
+          "got": "render_service_contract"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 5608,
+          "server_predicted_ms": 5339,
+          "prompt_tokens": 472,
+          "completion_tokens": 394,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "check_counterparty",
+          "got": "check_counterparty"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 4866,
+          "server_predicted_ms": 4664,
+          "prompt_tokens": 458,
+          "completion_tokens": 331,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "draft_claim_letter",
+          "got": "draft_claim_letter"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 4105,
+          "server_predicted_ms": 3901,
+          "prompt_tokens": 456,
+          "completion_tokens": 290,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "render_supplementary_agreement",
+          "got": "render_supplementary_agreement"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 5656,
+          "server_predicted_ms": 5405,
+          "prompt_tokens": 465,
+          "completion_tokens": 392,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "generate_video",
+          "got": "generate_video"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 5577,
+          "server_predicted_ms": 5373,
+          "prompt_tokens": 457,
+          "completion_tokens": 381,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "create_jira_issue",
+          "got": "create_jira_issue"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 5819,
+          "server_predicted_ms": 5578,
+          "prompt_tokens": 457,
+          "completion_tokens": 409,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "trigger_n8n_workflow",
+          "got": "trigger_n8n_workflow"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 4900,
+          "server_predicted_ms": 4624,
+          "prompt_tokens": 455,
+          "completion_tokens": 347,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "build_content_plan",
+          "got": "build_content_plan"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 5687,
+          "server_predicted_ms": 5461,
+          "prompt_tokens": 458,
+          "completion_tokens": 381,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "analyze_transactions",
+          "got": "analyze_transactions"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 5078,
+          "server_predicted_ms": 4874,
+          "prompt_tokens": 456,
+          "completion_tokens": 358,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "category_expense_summary",
+          "got": "category_expense_summary"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 3696,
+          "server_predicted_ms": 3470,
+          "prompt_tokens": 454,
+          "completion_tokens": 218,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "top_counterparties",
+          "got": "top_counterparties"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 7387,
+          "server_predicted_ms": 7140,
+          "prompt_tokens": 456,
+          "completion_tokens": 469,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "detect_anomalies",
+          "got": "detect_anomalies"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 5542,
+          "server_predicted_ms": 5342,
+          "prompt_tokens": 456,
+          "completion_tokens": 376,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "render_hr_order",
+          "got": "render_hr_order"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 5406,
+          "server_predicted_ms": 5190,
+          "prompt_tokens": 458,
+          "completion_tokens": 392,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "track_onboarding",
+          "got": "track_onboarding"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 6422,
+          "server_predicted_ms": 6210,
+          "prompt_tokens": 456,
+          "completion_tokens": 436,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "update_staff_schedule",
+          "got": "update_staff_schedule"
+        },
+        {
+          "ok": true,
+          "correct": true,
+          "latency_ms": 4847,
+          "server_predicted_ms": 4634,
+          "prompt_tokens": 458,
+          "completion_tokens": 348,
+          "first_attempt_valid": true,
+          "error_code": null,
+          "expected": "create_confluence_page",
+          "got": "create_confluence_page"
+        }
+      ]
+    }
+  },
+  "pii": {
+    "regex_only": {
+      "mode": "regex_only",
+      "pii_values_total": 34,
+      "pii_values_leaked": 11,
+      "pii_leakage_rate": 0.3235,
+      "elapsed_s": 0.0,
+      "per_item": [
+        {
+          "values": 4,
+          "leaked": 1,
+          "missed": [
+            "Иванов Пётр"
+          ]
+        },
+        {
+          "values": 3,
+          "leaked": 0,
+          "missed": []
+        },
+        {
+          "values": 4,
+          "leaked": 2,
+          "missed": [
+            "Алматы, ул. Абая 150",
+            "Ахметова Айгерим"
+          ]
+        },
+        {
+          "values": 4,
+          "leaked": 0,
+          "missed": []
+        },
+        {
+          "values": 3,
+          "leaked": 1,
+          "missed": [
+            "Ким Елена"
+          ]
+        },
+        {
+          "values": 3,
+          "leaked": 3,
+          "missed": [
+            "Тамақ Әлемі",
+            "Нурланов Арман",
+            "пр. Достык 5"
+          ]
+        },
+        {
+          "values": 2,
+          "leaked": 1,
+          "missed": [
+            "Петрова Мария"
+          ]
+        },
+        {
+          "values": 4,
+          "leaked": 1,
+          "missed": [
+            "Жумабеков Ерлан"
+          ]
+        },
+        {
+          "values": 4,
+          "leaked": 1,
+          "missed": [
+            "Smith John"
+          ]
+        },
+        {
+          "values": 3,
+          "leaked": 1,
+          "missed": [
+            "Бариста Хаус"
+          ]
+        }
+      ]
+    },
+    "regex_llm": {
+      "mode": "regex+llm",
+      "pii_values_total": 34,
+      "pii_values_leaked": 0,
+      "pii_leakage_rate": 0.0,
+      "elapsed_s": 75.4,
+      "per_item": [
+        {
+          "values": 4,
+          "leaked": 0,
+          "missed": []
+        },
+        {
+          "values": 3,
+          "leaked": 0,
+          "missed": []
+        },
+        {
+          "values": 4,
+          "leaked": 0,
+          "missed": []
+        },
+        {
+          "values": 4,
+          "leaked": 0,
+          "missed": []
+        },
+        {
+          "values": 3,
+          "leaked": 0,
+          "missed": []
+        },
+        {
+          "values": 3,
+          "leaked": 0,
+          "missed": []
+        },
+        {
+          "values": 2,
+          "leaked": 0,
+          "missed": []
+        },
+        {
+          "values": 4,
+          "leaked": 0,
+          "missed": []
+        },
+        {
+          "values": 4,
+          "leaked": 0,
+          "missed": []
+        },
+        {
+          "values": 3,
+          "leaked": 0,
+          "missed": []
+        }
+      ]
+    }
+  },
+  "legal": {
+    "summary": {
+      "n": 6,
+      "accuracy": 1.0,
+      "json_valid_first_attempt": 1.0,
+      "failed_calls": 0,
+      "latency_ms_mean": 7561,
+      "latency_ms_p50": 7119,
+      "latency_ms_p95": 8813,
+      "prompt_tokens_mean": 422,
+      "completion_tokens_mean": 539
+    },
+    "field_accuracy": {
+      "bin_iin": 1.0,
+      "contract_amount": 1.0,
+      "currency": 1.0,
+      "deadline_date": 1.0
+    },
+    "documents_fully_correct": 1.0
+  },
+  "finished_at": "2026-11-18T21:16:29"
+}

@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "backend",
+      "runtimeExecutable": "C:\\Users\\Batyrzhan\\Documents\\projects\\orcify\\backend\\.venv\\Scripts\\python.exe",
+      "runtimeArgs": ["-m", "uvicorn", "app.main:app", "--app-dir", "C:\\Users\\Batyrzhan\\Documents\\projects\\orcify\\backend", "--port", "8000"],
+      "cwd": "C:\\Users\\Batyrzhan\\Documents\\projects\\orcify\\backend",
+      "port": 8000
+    },
+    {
+      "name": "frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "C:\\Users\\Batyrzhan\\Documents\\projects\\orcify\\frontend", "run", "dev"],
+      "port": 5173
+    }
+  ]
+}

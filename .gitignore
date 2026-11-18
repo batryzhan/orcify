@@ -16,3 +16,6 @@ dist/
 
 # generated documents
 backend/output/
+
+# local runtime data (anonymized sync queue)
+backend/var/

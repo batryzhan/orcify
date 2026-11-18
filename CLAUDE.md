@@ -93,15 +93,22 @@ orcify/
 │   │   │   ├── llm_client.py        # Клиент Unsloth Studio, OpenAI API (Structured Outputs + Tool Calling)
 │   │   │   ├── anonymizer.py        # Local Anonymizer (маскирование PII в [PERSON_1], [COMPANY_1])
 │   │   │   ├── doc_engine.py        # Deterministic Core (рендеринг шаблонов через docxtpl)
+│   │   │   ├── pipeline.py          # Оркестрация задачи: роутинг -> домен -> SSE-события
+│   │   │   ├── legal_service.py     # Сценарий А
+│   │   │   ├── smm_service.py       # Сценарий Б
+│   │   │   ├── finance_service.py   # Сценарий В
+│   │   │   ├── task_store.py / document_store.py  # In-memory хранилища (TTL, без диска)
 │   │   │   └── logger.py            # Безопасный логгер (только хэши и session_id)
 │   │   ├── mcp/
 │   │   │   ├── manager.py           # MCPServerManager (реестр, фильтрация по доменам, fallback)
-│   │   │   └── clients/             # Коннекторы к n8n, Atlassian, Higgsfield, Local Tools
+│   │   │   └── sync_queue.py        # Очередь отложенной синхронизации (только анонимизированные payload)
 │   │   └── schemas/                 # Строгие Pydantic-модели
 │   │       ├── intent.py            # Схемы классификации намерений
 │   │       ├── legal.py             # Схемы контрактов (ИИН, БИН, Суммы, Сроки, Стороны)
 │   │       ├── smm.py               # Схемы сценариев, промптов видео и задач
 │   │       ├── finance.py           # Схемы финансовых отчетов и метрик
+│   │       ├── privacy.py           # Схемы LocalAnonymizer (категории PII, отчёт без значений)
+│   │       ├── mcp.py               # Схемы MCP-реестра и результатов вызова
 │   │       └── sse.py               # Схемы событий прогресса SSE
 │   ├── prompts/                     # Внешние системные промпты (шаблоны .txt / .md / .j2)
 │   │   ├── intent_classifier.md
@@ -110,7 +117,9 @@ orcify/
 │   │   └── finance_analyst.md
 │   ├── templates/                   # Юридические и кадровые шаблоны .docx для docxtpl
 │   │   └── service_contract_kz.docx
-│   └── tests/                       # Unit и интеграционные тесты
+│   ├── scripts/                     # build_contract_template.py, benchmark.py (замеры для docs/)
+│   ├── benchmarks/dataset.json      # Синтетический набор для экспериментов
+│   └── tests/                       # Unit и интеграционные тесты (live-тесты: ORCIFY_LIVE_TESTS=1)
 ├── frontend/                        # Клиентское приложение (React + Vite + TypeScript + TailwindCSS)
 │   ├── src/
 │   │   ├── hooks/
@@ -124,8 +133,8 @@ orcify/
 │   ├── package.json
 │   └── vite.config.ts
 ├── mcp_servers/                     # Кастомные локальные MCP-серверы
-│   ├── local_doc_server/            # MCP-сервер генерации DOCX (docxtpl) и парсинга PDF
-│   └── local_finance_server/        # MCP-сервер локального анализа CSV/Excel
+│   ├── local_doc_server/            # (план) MCP-сервер DOCX/PDF; сейчас рендер выполняется in-process в doc_engine.py
+│   └── local_finance_server/        # MCP-сервер локального анализа CSV (stdio, pandas): analysis.py + server.py
 └── docs/                            # Материалы для научной работы и конкурсной защиты
     ├── metrics.md                   # Замеры Latency, RAM/VRAM, точности Tool Calling (Gemma 4 vs Cloud)
     ├── experiments.md               # Протоколы экспериментов: Smart Routing vs Full Context
@@ -177,7 +186,8 @@ orcify/
    * Вызывается `Higgsfield MCP` для генерации видео (SSE: `{"status": "generating_video", "progress": 55}`).
    * *Если сервер доступен:* возвращается URL/файл сгенерированного видео.
    * *Если сервер недоступен (Fallback):* `MCPServerManager` перехватывает ошибку и формирует детализированный текстовый storyboard-сценарий для ручного продакшена.
-5. **Этап 4 (Atlassian MCP):** Автоматически создается задача в Jira через `Atlassian MCP` с прикрепленным видео (или fallback-сценарием), де-анонимизированным локально для внутреннего трекера (SSE: `{"status": "creating_jira_issue", "progress": 85}` -> `{"status": "completed", "progress": 100}`).
+5. **Этап 4 (Atlassian MCP):** Автоматически создается задача в Jira через `Atlassian MCP` с прикрепленным видео (или fallback-сценарием) (SSE: `{"status": "creating_jira_issue", "progress": 85}` -> `{"status": "completed", "progress": 100}`).
+   * *Решение по приватности:* Atlassian зарегистрирован как `is_external=True`, поэтому описание задачи уходит **анонимизированным** (правило §5.4 приоритетнее). Де-анонимизированная версия сценария показывается только локально в UI. Если Jira недоступна, payload (уже с токенами) сохраняется в `backend/var/sync_queue.jsonl`; таблица соответствия на диск не пишется.
 
 ### Сценарий В: Finance — Локальный финансовый анализ CSV и генерация отчета
 1. **Вход:** Пользователь загружает CSV-выгрузку банковских транзакций или финансовой отчетности.

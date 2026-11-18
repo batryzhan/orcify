@@ -9,6 +9,7 @@ from app.core.legal_service import LegalService
 from app.core.llm_client import LLMClient
 from app.core.pipeline import TaskPipeline
 from app.core.task_store import TaskStore
+from app.mcp.manager import MCPServerManager
 
 
 def get_llm_client(request: Request) -> LLMClient:
@@ -34,3 +35,8 @@ def get_legal_service(request: Request) -> LegalService:
 def get_document_store(request: Request) -> DocumentStore:
     documents: DocumentStore = request.app.state.documents
     return documents
+
+
+def get_mcp_manager(request: Request) -> MCPServerManager:
+    manager: MCPServerManager = request.app.state.mcp
+    return manager

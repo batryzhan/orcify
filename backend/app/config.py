@@ -54,6 +54,25 @@ class Settings(BaseSettings):
     executor_signatory: str = "____________________"
     executor_basis: str = "Устава"
 
+    # --- MCP-серверы (регистрируются в app/mcp/manager.py) ---
+    mcp_timeout_s: float = Field(default=60.0, gt=0)
+    # Локальный финансовый MCP (stdio, запускается этим же интерпретатором).
+    finance_mcp_enabled: bool = True
+    finance_mcp_script: Path = BACKEND_DIR.parent / "mcp_servers" / "local_finance_server" / "server.py"
+    # Внешние MCP: пустой URL = сервер не настроен -> graceful degradation.
+    higgsfield_mcp_url: str = ""
+    higgsfield_mcp_token: SecretStr = SecretStr("")
+    higgsfield_tool: str = "generate_video"
+    higgsfield_timeout_s: float = Field(default=300.0, gt=0)
+    atlassian_mcp_url: str = ""
+    atlassian_mcp_token: SecretStr = SecretStr("")
+    atlassian_tool: str = "createJiraIssue"
+    atlassian_project_key: str = "MKT"
+    n8n_mcp_url: str = ""
+    n8n_mcp_token: SecretStr = SecretStr("")
+    # Очередь отложенной синхронизации: хранит только анонимизированные payload.
+    sync_queue_path: Path = BACKEND_DIR / "var" / "sync_queue.jsonl"
+
     prompts_dir: Path = BACKEND_DIR / "prompts"
     templates_dir: Path = BACKEND_DIR / "templates"
     cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]

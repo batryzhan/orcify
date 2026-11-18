@@ -127,7 +127,7 @@ def test_stream_is_single_use(settings: Settings) -> None:
 
 
 def test_low_confidence_flag(settings: Settings) -> None:
-    with make_test_client(settings, lambda _req: chat_response(intent_json("SMM", 0.3))) as client:
+    with make_test_client(settings, lambda _req: chat_response(intent_json("HR", 0.3))) as client:
         final = run_task(client, "что-нибудь")[-1]
     assert final["result"]["low_confidence"] is True  # type: ignore[index]
 

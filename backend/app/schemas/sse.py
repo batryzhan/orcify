@@ -6,8 +6,11 @@ from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.schemas.intent import IntentClassificationResult
+from app.schemas.intent import DomainEnum, IntentClassificationResult
+from app.schemas.finance import FinanceResult
 from app.schemas.legal import LegalResult
+from app.schemas.privacy import AnonymizationReport
+from app.schemas.smm import SmmResult
 
 
 class TaskStatus(StrEnum):
@@ -41,6 +44,8 @@ class TaskResult(BaseModel):
     intent: IntentClassificationResult
     low_confidence: bool
     legal: LegalResult | None = None
+    finance: FinanceResult | None = None
+    smm: SmmResult | None = None
 
 
 class ProgressEvent(BaseModel):
@@ -48,7 +53,11 @@ class ProgressEvent(BaseModel):
 
     status: TaskStatus
     progress: int = Field(ge=0, le=100)
+    # Известен после Этапа 1 и приходит во всех следующих событиях.
+    domain: DomainEnum | None = None
     message: str | None = None
+    # Счётчики маскирования (без значений) — для PrivacyBadge/ProgressStepper.
+    anonymization: AnonymizationReport | None = None
     result: TaskResult | None = None
     error: ErrorInfo | None = None
 

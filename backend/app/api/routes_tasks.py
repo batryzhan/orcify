@@ -32,8 +32,13 @@ SSE_HEADERS = {"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
 async def create_task(
     body: TaskCreateRequest, store: Annotated[TaskStore, Depends(get_task_store)]
 ) -> TaskCreatedResponse:
-    task_id = store.put(body.text)
-    log.info("task_created", task_id=str(task_id), payload_hash=payload_hash(body.text))
+    task_id = store.put(body)
+    log.info(
+        "task_created",
+        task_id=str(task_id),
+        payload_hash=payload_hash(body.text + (body.attachment.content if body.attachment else "")),
+        size_bytes=len(body.attachment.content) if body.attachment else 0,
+    )
     return TaskCreatedResponse(task_id=task_id, events_url=f"/api/tasks/{task_id}/events")
 
 
@@ -43,12 +48,12 @@ async def stream_task_events(
     store: Annotated[TaskStore, Depends(get_task_store)],
     pipeline: Annotated[TaskPipeline, Depends(get_pipeline)],
 ) -> StreamingResponse:
-    text = store.pop(task_id)
-    if text is None:
+    request = store.pop(task_id)
+    if request is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="task not found or already started")
 
     async def events() -> AsyncIterator[str]:
-        async for event in pipeline.run(task_id, text):
+        async for event in pipeline.run(task_id, request):
             yield event.to_sse()
 
     return StreamingResponse(events(), media_type="text/event-stream", headers=SSE_HEADERS)
