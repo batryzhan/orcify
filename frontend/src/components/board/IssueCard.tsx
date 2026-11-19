@@ -7,7 +7,7 @@ import { Avatar, IssueTypeIcon, PriorityIcon } from "../icons";
 
 interface Props {
   issue: JiraIssue;
-  /** Карточку сейчас «строят» агенты: подсветка и печать заголовка. */
+  /** Карточканы қазір агенттер «құрып жатыр»: жарықтандыру және тақырыпты теру. */
   active: boolean;
   onOpen: (key: string) => void;
   register: (key: string, el: HTMLElement | null) => void;
@@ -17,11 +17,11 @@ interface Props {
 
 const RESULT_LABEL: Record<"post" | "document" | "report", string> = {
   post: "пост",
-  report: "PDF-отчёт",
-  document: "договор",
+  report: "PDF-есеп",
+  document: "келісімшарт",
 };
 
-/** Карточка задачи: только текст (результаты агентов живут в своих окнах). */
+/** Тапсырма карточкасы: тек мәтін (агент нәтижелері өз терезелерінде тұрады). */
 export const IssueCard = memo(function IssueCard({ issue, active, onOpen, register, onDragStart, onDragEnd }: Props) {
   const { shown, typing } = useTypewriter(issue.summary, active);
   const result = issue.attachments[0];
@@ -74,7 +74,7 @@ export const IssueCard = memo(function IssueCard({ issue, active, onOpen, regist
         )}
         {issue.parent_key && <span className="truncate text-[11px] text-ink-mute">↳ {issue.parent_key}</span>}
         {result && (
-          <span className="flex items-center gap-0.5 truncate text-[11px] text-ink-mute" title="Результат агента — в окне домена">
+          <span className="flex items-center gap-0.5 truncate text-[11px] text-ink-mute" title="Агент нәтижесі — домен терезесінде">
             <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
               <path d="M10.5 4.5L5.8 9.2a1.4 1.4 0 002 2l5-5a2.8 2.8 0 00-4-4L3.6 7.4a4.2 4.2 0 006 6l4-4" strokeLinecap="round" />
             </svg>

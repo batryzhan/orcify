@@ -4,7 +4,7 @@ import { AGENTS, DOMAIN_LEADS, SWARM_COLORS } from "../../lib/agents";
 import type { Domain, TaskStatus } from "../../types/api";
 import { AgentCursorShape } from "../icons";
 
-/** Сколько курсоров в рое (показывается и в нижней плашке). */
+/** Жүйедегі курсорлар саны (төменгі тақтайшада да көрсетіледі). */
 export const SWARM_SIZE = 16;
 const LEAD_SLOTS = 3;
 const TRANSIENT_BOXES = 3;
@@ -36,11 +36,11 @@ interface BoxState {
 interface Props {
   status: TaskStatus | null;
   domain: Domain | null;
-  /** CSS-селектор элемента, который «строят» агенты (карточка, превью поста, отчёт). */
+  /** Агенттер «құрып жатқан» элементтің CSS-селекторы (карточка, пост превьюі, есеп). */
   focusSelector: string | null;
-  /** Смена значения = рывок роя к элементу (перенос карточки, новый этап). */
+  /** Мәннің өзгеруі = жүйенің элементке қарай серпілуі (карточканы көшіру, жаңа кезең). */
   pulse: string | null;
-  /** Контейнер, вокруг центра которого рой кружит, пока фокуса нет. */
+  /** Фокус жоқ кезде жүйе орталығының айналасында айналатын контейнер. */
   scopeSelector: string;
   onFinished: () => void;
 }
@@ -73,14 +73,14 @@ function lerpAngle(a: number, b: number, t: number): number {
 }
 
 /**
- * Рой агентов-курсоров (как «swarm of cursors» в редакторах сайтов): пока агенты
- * думают — курсоры кружат вокруг центра окна; когда появляется элемент работы
- * (карточка Jira, превью поста, отчёт) — слетаются к нему и рисуют рамку
- * выделения с размерами; на каждом новом этапе делают рывок к элементу; в работе
- * часть роя «сканирует» окно и выделяет другие элементы. По завершении разлетаются.
+ * Агент-курсорлар жүйесі (сайт редакторларындағы «swarm of cursors» сияқты): агенттер
+ * ойланып жатқанда — курсорлар терезе орталығының айналасында айналады; жұмыс элементі
+ * (Jira карточкасы, пост превьюі, есеп) пайда болғанда — оған ұшып барып, өлшемдері бар
+ * бөлектеу жақтауын салады; әр жаңа кезеңде элементке серпіліс жасайды; жұмыс кезінде
+ * жүйенің бір бөлігі терезені «сканерлеп», басқа элементтерді бөлектейді. Аяқталған соң тарап кетеді.
  *
- * Позиции считаются в requestAnimationFrame и пишутся прямо в style.transform —
- * без ре-рендеров React на каждый кадр.
+ * Позициялар requestAnimationFrame-де есептеліп, тікелей style.transform-ға жазылады —
+ * әр кадрға React қайта рендерінсіз.
  */
 export function AgentSwarm({ status, domain, focusSelector, pulse, scopeSelector, onFinished }: Props) {
   const specs = useMemo<AgentSpec[]>(() => {
@@ -102,7 +102,7 @@ export function AgentSwarm({ status, domain, focusSelector, pulse, scopeSelector
   const finished = useRef(onFinished);
   finished.current = onFinished;
 
-  // Режим роя из событий пайплайна.
+  // Пайплайн оқиғаларынан жүйе режимі.
   const lastPulse = useRef<string | null>(null);
   useEffect(() => {
     const now = performance.now();
@@ -121,7 +121,7 @@ export function AgentSwarm({ status, domain, focusSelector, pulse, scopeSelector
   }, [status, focusSelector, pulse]);
 
   useEffect(() => {
-    // Старт из кнопки «Запустить» (или из центра экрана).
+    // «Іске қосу» батырмасынан (немесе экран орталығынан) бастау.
     const origin = rectOf("[data-swarm-origin]");
     const ox = origin ? origin.left + origin.width / 2 : window.innerWidth / 2;
     const oy = origin ? origin.top + origin.height / 2 : window.innerHeight * 0.7;
@@ -191,7 +191,7 @@ export function AgentSwarm({ status, domain, focusSelector, pulse, scopeSelector
           }
           if (m.kind === "drag") stiffness *= 2.2;
         } else {
-          // work: ведущие у карточки, остальные — сканируют доску.
+          // work: жетекшілер карточка жанында, қалғандары тақтаны сканерлейді.
           const scanner = !spec.lead && i % 3 !== 0;
           if (!scanner) {
             if (spec.lead) {
@@ -240,7 +240,7 @@ export function AgentSwarm({ status, domain, focusSelector, pulse, scopeSelector
         a.y += a.vy * dt;
         const speed = Math.hypot(a.vx, a.vy);
         if (speed > 0.04) a.angle = lerpAngle(a.angle, Math.atan2(a.vy, a.vx), Math.min(1, dt * 0.012));
-        // Острие курсора смотрит в (-135°) — поворачиваем по направлению движения.
+        // Курсор ұшы (-135°) қарайды — қозғалыс бағытына қарай бұрамыз.
         const deg = (a.angle * 180) / Math.PI + 135;
         el.style.transform = `translate3d(${a.x - 2}px, ${a.y - 2}px, 0)`;
         el.style.opacity = String(fade);
@@ -248,7 +248,7 @@ export function AgentSwarm({ status, domain, focusSelector, pulse, scopeSelector
         if (shape) shape.style.transform = `rotate(${deg.toFixed(1)}deg)`;
       });
 
-      // Рамка выделения вокруг карточки, которую «строят» агенты.
+      // Агенттер «құрып жатқан» карточка айналасындағы бөлектеу жақтауы.
       const focusBox = boxEls.current[0];
       if (focusBox) {
         if (focus && m.kind !== "disperse" && m.kind !== "gather") {

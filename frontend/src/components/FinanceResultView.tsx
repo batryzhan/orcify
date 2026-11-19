@@ -4,12 +4,12 @@ import { formatDate, formatMoney, formatPercent } from "../lib/format";
 import type { FinanceMetrics, FinanceResult, MonthlyFlow, RiskLevel } from "../types/api";
 
 const RISK_STYLE: Record<RiskLevel, { label: string; className: string; icon: string }> = {
-  high: { label: "высокий", className: "bg-fail-soft text-fail", icon: "▲" },
-  medium: { label: "средний", className: "bg-warn-soft text-warn", icon: "●" },
-  low: { label: "низкий", className: "bg-paper text-ink-soft", icon: "○" },
+  high: { label: "жоғары", className: "bg-fail-soft text-fail", icon: "▲" },
+  medium: { label: "орташа", className: "bg-warn-soft text-warn", icon: "●" },
+  low: { label: "төмен", className: "bg-paper text-ink-soft", icon: "○" },
 };
 
-const MONTHS = ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
+const MONTHS = ["қаң", "ақп", "нау", "сәу", "мам", "мау", "шіл", "там", "қыр", "қаз", "қар", "жел"];
 
 function monthLabel(month: string): string {
   const [year, m] = month.split("-");
@@ -22,10 +22,10 @@ export function FinanceResultView({ result }: { result: FinanceResult }) {
     <section className="space-y-5">
       <div className="rounded-lg bg-white p-5 shadow-card">
         <header className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-lg font-semibold">Финансовая сводка</h2>
+          <h2 className="text-lg font-semibold">Қаржылық қорытынды</h2>
           <span className="text-xs text-ink-mute">
-            {formatDate(metrics.period_start)} — {formatDate(metrics.period_end)} · {metrics.rows} операций · анализ
-            локально за {(result.mcp_latency_ms / 1000).toFixed(1)} с
+            {formatDate(metrics.period_start)} — {formatDate(metrics.period_end)} · {metrics.rows} операция · талдау
+            жергілікті {(result.mcp_latency_ms / 1000).toFixed(1)} с
           </span>
         </header>
         <StatTiles metrics={metrics} />
@@ -41,7 +41,7 @@ export function FinanceResultView({ result }: { result: FinanceResult }) {
           </ul>
           {report.risks.length > 0 && (
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-ink-soft">Риски</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-ink-soft">Тәуекелдер</h3>
               {report.risks.map((r) => {
                 const style = RISK_STYLE[r.level];
                 return (
@@ -59,7 +59,7 @@ export function FinanceResultView({ result }: { result: FinanceResult }) {
             </div>
           )}
           <div>
-            <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-ink-soft">Рекомендации</h3>
+            <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-ink-soft">Ұсыныстар</h3>
             <ol className="list-decimal space-y-1 pl-5 text-sm">
               {report.recommendations.map((r) => (
                 <li key={r}>{r}</li>
@@ -67,12 +67,12 @@ export function FinanceResultView({ result }: { result: FinanceResult }) {
             </ol>
           </div>
           <p className="text-xs text-ink-mute">
-            Резюме составлено Gemma только по агрегатам — строки выписки в модель не передавались.
+            Қорытындыны Gemma тек агрегаттар бойынша жасады — үзінді жолдары модельге берілмеді.
           </p>
         </div>
       ) : (
         <p className="rounded-xl bg-warn-soft p-4 text-sm text-warn">
-          Резюме модели недоступно ({result.report_error_code}); метрики ниже посчитаны локально и точны.
+          Модель қорытындысы қолжетімсіз ({result.report_error_code}); төмендегі метрикалар жергілікті есептелген және дәл.
         </p>
       )}
 
@@ -82,21 +82,21 @@ export function FinanceResultView({ result }: { result: FinanceResult }) {
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         <div className="min-w-0 rounded-lg bg-white p-5 shadow-card">
-          <h3 className="mb-3 text-sm font-semibold">Расходы по категориям</h3>
+          <h3 className="mb-3 text-sm font-semibold">Санаттар бойынша шығыстар</h3>
           <CategoryBars metrics={metrics} />
         </div>
         <div className="min-w-0 space-y-4 rounded-lg bg-white p-5 shadow-card">
           <div>
-            <h3 className="mb-2 text-sm font-semibold">Кассовые разрывы</h3>
+            <h3 className="mb-2 text-sm font-semibold">Ақша ағынының үзілістері</h3>
             {metrics.cash_gaps.length === 0 ? (
-              <p className="text-sm text-ink-soft">Остаток не уходил в минус</p>
+              <p className="text-sm text-ink-soft">Қалдық минусқа кетпеген</p>
             ) : (
               <ul className="space-y-1.5 text-sm">
                 {metrics.cash_gaps.map((g) => (
                   <li key={g.start} className="flex justify-between gap-3">
                     <span>
                       <span aria-hidden className="text-fail">▲ </span>
-                      {formatDate(g.start)} — {formatDate(g.end)} ({g.days} дн.)
+                      {formatDate(g.start)} — {formatDate(g.end)} ({g.days} күн)
                     </span>
                     <span className="font-mono tabular-nums text-fail">{formatMoney(g.min_balance)}</span>
                   </li>
@@ -105,9 +105,9 @@ export function FinanceResultView({ result }: { result: FinanceResult }) {
             )}
           </div>
           <div>
-            <h3 className="mb-2 text-sm font-semibold">Аномальные операции</h3>
+            <h3 className="mb-2 text-sm font-semibold">Аномалиялық операциялар</h3>
             {metrics.anomalies.length === 0 ? (
-              <p className="text-sm text-ink-soft">Не обнаружены</p>
+              <p className="text-sm text-ink-soft">Анықталмады</p>
             ) : (
               <ul className="space-y-1.5 text-sm">
                 {metrics.anomalies.map((a) => (
@@ -130,10 +130,10 @@ export function FinanceResultView({ result }: { result: FinanceResult }) {
 
 function StatTiles({ metrics }: { metrics: FinanceMetrics }) {
   const tiles = [
-    { label: "Поступления", value: metrics.total_income },
-    { label: "Расходы", value: metrics.total_expense },
-    { label: "Чистый поток", value: metrics.net, signed: true },
-    { label: "Остаток на конец", value: metrics.closing_balance, signed: true },
+    { label: "Түсімдер", value: metrics.total_income },
+    { label: "Шығыстар", value: metrics.total_expense },
+    { label: "Таза ағын", value: metrics.net, signed: true },
+    { label: "Соңғы қалдық", value: metrics.closing_balance, signed: true },
   ];
   return (
     <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -149,7 +149,7 @@ function StatTiles({ metrics }: { metrics: FinanceMetrics }) {
   );
 }
 
-/** Сгруппированные столбцы поступления/расходы по месяцам: одна ось, ховер-тултип, табличный вид. */
+/** Айлар бойынша түсім/шығыс топталған бағандары: бір ось, ховер-тултип, кесте көрінісі. */
 function MonthlyChart({ monthly }: { monthly: MonthlyFlow[] }) {
   const [hovered, setHovered] = useState<string | null>(null);
   const [asTable, setAsTable] = useState(false);
@@ -160,20 +160,20 @@ function MonthlyChart({ monthly }: { monthly: MonthlyFlow[] }) {
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold">Денежный поток по месяцам</h3>
+        <h3 className="text-sm font-semibold">Айлар бойынша ақша ағыны</h3>
         <div className="flex items-center gap-4 text-xs text-ink-soft">
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-sm bg-series-1" /> Поступления
+            <span className="h-2.5 w-2.5 rounded-sm bg-series-1" /> Түсімдер
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-sm bg-series-2" /> Расходы
+            <span className="h-2.5 w-2.5 rounded-sm bg-series-2" /> Шығыстар
           </span>
           <button
             type="button"
             onClick={() => setAsTable((v) => !v)}
             className="rounded border border-paper-line px-2 py-0.5 hover:border-ink-mute"
           >
-            {asTable ? "График" : "Таблица"}
+            {asTable ? "График" : "Кесте"}
           </button>
         </div>
       </div>
@@ -182,10 +182,10 @@ function MonthlyChart({ monthly }: { monthly: MonthlyFlow[] }) {
         <table className="w-full text-sm">
           <thead className="text-left text-xs text-ink-mute">
             <tr>
-              <th className="py-1 font-normal">Месяц</th>
-              <th className="py-1 text-right font-normal">Поступления</th>
-              <th className="py-1 text-right font-normal">Расходы</th>
-              <th className="py-1 text-right font-normal">Итог</th>
+              <th className="py-1 font-normal">Ай</th>
+              <th className="py-1 text-right font-normal">Түсімдер</th>
+              <th className="py-1 text-right font-normal">Шығыстар</th>
+              <th className="py-1 text-right font-normal">Нәтиже</th>
             </tr>
           </thead>
           <tbody className="tabular-nums">
@@ -205,14 +205,14 @@ function MonthlyChart({ monthly }: { monthly: MonthlyFlow[] }) {
             {active ? (
               <div className="tabular-nums">
                 <span className="font-medium">{monthLabel(active.month)}</span>
-                <span className="ml-3 text-ink-soft">поступления {formatMoney(active.income)}</span>
-                <span className="ml-3 text-ink-soft">расходы {formatMoney(active.expense)}</span>
+                <span className="ml-3 text-ink-soft">түсімдер {formatMoney(active.income)}</span>
+                <span className="ml-3 text-ink-soft">шығыстар {formatMoney(active.expense)}</span>
                 <span className={`ml-3 font-medium ${active.net < 0 ? "text-fail" : ""}`}>
-                  итог {formatMoney(active.net)}
+                  нәтиже {formatMoney(active.net)}
                 </span>
               </div>
             ) : (
-              <span className="text-xs text-ink-mute">Наведите на месяц, чтобы увидеть суммы</span>
+              <span className="text-xs text-ink-mute">Сомаларды көру үшін айға меңзерді апарыңыз</span>
             )}
           </div>
           <div className="flex items-end gap-3 border-b border-paper-line" style={{ height: HEIGHT }}>
@@ -227,7 +227,7 @@ function MonthlyChart({ monthly }: { monthly: MonthlyFlow[] }) {
                 onFocus={() => setHovered(m.month)}
                 onBlur={() => setHovered(null)}
                 tabIndex={0}
-                aria-label={`${monthLabel(m.month)}: поступления ${formatMoney(m.income)}, расходы ${formatMoney(m.expense)}`}
+                aria-label={`${monthLabel(m.month)}: түсімдер ${formatMoney(m.income)}, шығыстар ${formatMoney(m.expense)}`}
               >
                 <div className="w-full max-w-6 rounded-t bg-series-1" style={{ height: `${(m.income / max) * 100}%` }} />
                 <div className="w-full max-w-6 rounded-t bg-series-2" style={{ height: `${(m.expense / max) * 100}%` }} />
@@ -249,7 +249,7 @@ function MonthlyChart({ monthly }: { monthly: MonthlyFlow[] }) {
 
 function CategoryBars({ metrics }: { metrics: FinanceMetrics }) {
   if (metrics.expense_by_category.length === 0) {
-    return <p className="text-sm text-ink-soft">В выписке нет колонки категорий</p>;
+    return <p className="text-sm text-ink-soft">Үзіндіде санаттар бағаны жоқ</p>;
   }
   const max = Math.max(...metrics.expense_by_category.map((c) => c.amount));
   return (

@@ -9,23 +9,23 @@ import { AgentComposer, AgentStage, Skeleton, WindowHeader, type ComposerSample 
 
 const SAMPLES: (ComposerSample & { template: PostTemplate })[] = [
   {
-    label: "Знакомство с командой",
+    label: "Командамен танысу",
     template: "cosmos",
-    text: "Сделай пост для Instagram: знакомство с командой Orcify. Мы пятеро инженеров и строим локальный ИИ, который автоматизирует бизнес-процессы без отправки данных в облако. Аккаунт @orcify.",
+    text: "Instagram үшін пост жаса: Orcify командасымен танысу. Біз бесеуміз — инженерміз, деректерді бұлтқа жібермей бизнес-процестерді автоматтандыратын жергілікті ЖИ құрамыз. Аккаунт @orcify.",
   },
   {
-    label: "Распродажа",
+    label: "Сатылым",
     template: "neon",
-    text: "Сделай пост для Instagram: чёрная пятница в сервисе доставки «Альфа Экспресс» — скидка 30% на все тарифы до воскресенья, промокод ALFA30. Аккаунт @alfa.express.",
+    text: "Instagram үшін пост жаса: «Альфа Экспресс» жеткізу сервисіндегі қара жұма — жексенбіге дейін барлық тарифтерге 30% жеңілдік, промокод ALFA30. Аккаунт @alfa.express.",
   },
   {
-    label: "Ценности",
+    label: "Құндылықтар",
     template: "summit",
-    text: "Сделай пост-цитату для Instagram о ценностях Orcify: данные клиента не покидают устройство, мы строим ИИ, которому можно доверить коммерческую тайну.",
+    text: "Orcify құндылықтары туралы Instagram үшін дәйексөз-пост жаса: клиент деректері құрылғыдан шықпайды, біз коммерциялық құпияны сеніп тапсыруға болатын ЖИ құрамыз.",
   },
 ];
 
-/** Окно «Awesome Posts»: постановка задачи копирайтеру, превью, которое собирает рой, и галерея. */
+/** «Awesome Posts» терезесі: копирайтерге тапсырма беру, агенттер жүйесі жинайтын превью және галерея. */
 export function PostsWindow({ runner, openPostId, onClosePost }: { runner: TaskRunner; openPostId: string | null; onClosePost: () => void }) {
   const [text, setText] = useState("");
   const [template, setTemplate] = useState<PostTemplate | null>(null);
@@ -47,17 +47,17 @@ export function PostsWindow({ runner, openPostId, onClosePost }: { runner: TaskR
   return (
     <div className="px-4 pb-28 pt-5 sm:px-8" data-swarm-scope="posts">
       <WindowHeader title="Awesome Posts">
-        Gemma пишет только тексты, а рендерер кладёт их на фон шаблона — получается готовый пост 1080×1350. Всё локально;
-        в Telegram пост уходит только по кнопке.
+        Gemma тек мәтіндерді жазады, ал рендерер оларды үлгі фонына салады — 1080×1350 дайын пост шығады. Бәрі жергілікті;
+        пост Telegram-ға тек батырма арқылы кетеді.
       </WindowHeader>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="min-w-0 space-y-5">
           <AgentComposer
             id="post-text"
-            label="Задача копирайтеру"
-            hint="о чём пост, для кого, аккаунт бренда"
-            placeholder="Например: пост про открытие новой кофейни, акция −20% в первую неделю, аккаунт @coffee.almaty"
+            label="Копирайтерге тапсырма"
+            hint="пост не туралы, кім үшін, бренд аккаунты"
+            placeholder="Мысалы: жаңа кофехананың ашылуы туралы пост, алғашқы аптада −20% акция, аккаунт @coffee.almaty"
             text={text}
             onText={setText}
             samples={SAMPLES}
@@ -66,13 +66,13 @@ export function PostsWindow({ runner, openPostId, onClosePost }: { runner: TaskR
               setTemplate(SAMPLES.find((x) => x.label === s.label)?.template ?? null);
             }}
             runner={runner}
-            submitLabel="Сделать пост"
+            submitLabel="Пост жасау"
             onSubmit={() => void runner.submit({ text: text.trim(), domain: "SMM", ...(template ? { post_template: template } : {}) })}
           >
             <fieldset>
-              <legend className="mb-2 text-xs font-semibold text-ink-soft">Шаблон</legend>
+              <legend className="mb-2 text-xs font-semibold text-ink-soft">Үлгі</legend>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" role="radiogroup">
-                <TemplateTile selected={template === null} onSelect={() => setTemplate(null)} title="Авто" note="выберет модель" />
+                <TemplateTile selected={template === null} onSelect={() => setTemplate(null)} title="Авто" note="модель таңдайды" />
                 {templates.map((t) => (
                   <TemplateTile key={t.id} selected={template === t.id} onSelect={() => setTemplate(t.id)} title={t.title} note={t.use_case} image={t.preview_url} />
                 ))}
@@ -82,7 +82,7 @@ export function PostsWindow({ runner, openPostId, onClosePost }: { runner: TaskR
 
           {result && runner.latest?.status === "completed" && (
             <section className="rounded-lg bg-white p-5 shadow-card animate-fade-up">
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-soft">Готово</h2>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-soft">Дайын</h2>
               <PostResultView post={result.post} content={result.content} hideImage />
             </section>
           )}
@@ -105,7 +105,7 @@ export function PostsWindow({ runner, openPostId, onClosePost }: { runner: TaskR
               <img src={result.post.image_url} alt={`${result.content.headline} ${result.content.headline_accent}`} className="h-full w-full animate-fade-up object-cover" />
             ) : (
               <div className="flex h-full flex-col items-center justify-center p-8 text-center text-sm text-white/60">
-                Здесь появится пост. Опишите задачу и нажмите «Сделать пост» — агенты соберут его прямо здесь.
+                Мұнда пост пайда болады. Тапсырманы сипаттап, «Пост жасау» батырмасын басыңыз — агенттер оны дәл осында жинайды.
               </div>
             )}
           </div>
@@ -113,12 +113,12 @@ export function PostsWindow({ runner, openPostId, onClosePost }: { runner: TaskR
       </div>
 
       <h2 className="mb-3 mt-10 text-sm font-semibold uppercase tracking-wide text-ink-soft">
-        Готовые посты {posts && posts.length > 0 ? <span className="font-normal">· {posts.length}</span> : null}
+        Дайын посттар {posts && posts.length > 0 ? <span className="font-normal">· {posts.length}</span> : null}
       </h2>
       {posts === null ? (
-        <p className="text-sm text-ink-mute">Загрузка…</p>
+        <p className="text-sm text-ink-mute">Жүктелуде…</p>
       ) : posts.length === 0 ? (
-        <p className="rounded-md border border-dashed border-paper-line p-6 text-sm text-ink-soft">Пока пусто — первый пост появится здесь.</p>
+        <p className="rounded-md border border-dashed border-paper-line p-6 text-sm text-ink-soft">Әзірге бос — алғашқы пост осында пайда болады.</p>
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {posts.map((record) => (
@@ -133,7 +133,7 @@ export function PostsWindow({ runner, openPostId, onClosePost }: { runner: TaskR
                 {record.content.headline} {record.content.headline_accent}
               </span>
               <span className="block px-3 pb-2.5 text-xs text-ink-mute">
-                {record.post.template} · {new Date(record.post.created_at).toLocaleDateString("ru-RU")}
+                {record.post.template} · {new Date(record.post.created_at).toLocaleDateString("kk-KZ")}
                 {record.issue_key ? ` · ${record.issue_key}` : ""}
               </span>
             </a>
@@ -149,7 +149,7 @@ export function PostsWindow({ runner, openPostId, onClosePost }: { runner: TaskR
                 {open.content.headline} {open.content.headline_accent}
               </p>
               <button type="button" onClick={onClosePost} className="btn-subtle">
-                Закрыть
+                Жабу
               </button>
             </div>
             <PostResultView post={open.post} content={open.content} />

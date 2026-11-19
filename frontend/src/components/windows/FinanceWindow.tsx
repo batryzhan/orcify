@@ -13,9 +13,9 @@ import { AgentComposer, AgentStage, Skeleton, TelegramButton, WindowHeader } fro
 
 const MAX_CSV_BYTES = 5_000_000;
 const DEMO_CSV_URL = "/samples/transactions_demo.csv";
-const DEFAULT_TASK = "Проанализируй выписку: кассовые разрывы, крупнейшие расходы, прогноз и что с этим делать.";
+const DEFAULT_TASK = "Үзіндіні талда: ақша ағынының үзілістері, ең ірі шығыстар, болжам және мұнымен не істеу керек.";
 
-/** Окно «Финансы»: CSV-выписка -> локальный анализ -> PDF-отчёт, бюджеты, прогноз, архив, Telegram. */
+/** «Қаржы» терезесі: CSV-үзінді -> жергілікті талдау -> PDF-есеп, бюджеттер, болжам, мұрағат, Telegram. */
 export function FinanceWindow({ runner, highlightReport }: { runner: TaskRunner; highlightReport: string | null }) {
   const [text, setText] = useState(DEFAULT_TASK);
   const [attachment, setAttachment] = useState<TaskAttachment | null>(null);
@@ -37,11 +37,11 @@ export function FinanceWindow({ runner, highlightReport }: { runner: TaskRunner;
     event.target.value = "";
     if (!file) return;
     if (file.size > MAX_CSV_BYTES) {
-      setFileError("Файл больше 5 МБ");
+      setFileError("Файл 5 МБ-тан үлкен");
       return;
     }
     setFileError(null);
-    // Файл читается в браузере и уходит только на локальный бэкенд.
+    // Файл браузерде оқылады және тек жергілікті бэкендке жіберіледі.
     setAttachment({ filename: file.name, media_type: "text/csv", content: await file.text() });
   };
 
@@ -67,22 +67,22 @@ export function FinanceWindow({ runner, highlightReport }: { runner: TaskRunner;
 
   return (
     <div className="px-4 pb-28 pt-5 sm:px-8" data-swarm-scope="finance">
-      <WindowHeader title="Финансы">
-        Выписка считается локально (pandas): в модель уходят только агрегаты. Отчёт — PDF в архиве; отправить его в Telegram
-        можно одной кнопкой.
+      <WindowHeader title="Қаржы">
+        Үзінді жергілікті есептеледі (pandas): модельге тек агрегаттар жіберіледі. Есеп — мұрағаттағы PDF; оны Telegram-ға
+        бір батырмамен жіберуге болады.
       </WindowHeader>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
         <AgentComposer
           id="finance-text"
-          label="Задача аналитику"
-          hint="что хотите узнать по выписке"
+          label="Талдаушыға тапсырма"
+          hint="үзінді бойынша нені білгіңіз келеді"
           placeholder={DEFAULT_TASK}
           text={text}
           onText={setText}
           rows={2}
           runner={runner}
-          submitLabel="Проанализировать"
+          submitLabel="Талдау"
           disabled={!attachment}
           onSubmit={submit}
         >
@@ -93,7 +93,7 @@ export function FinanceWindow({ runner, highlightReport }: { runner: TaskRunner;
                 {attachment.filename} · {formatBytes(attachment.content.length)}
               </span>
               <label className="flex items-center gap-1.5 text-xs text-ink-soft">
-                Остаток на начало, ₸
+                Кезең басындағы қалдық, ₸
                 <input
                   value={openingBalance}
                   onChange={(e) => setOpeningBalance(e.target.value)}
@@ -102,18 +102,18 @@ export function FinanceWindow({ runner, highlightReport }: { runner: TaskRunner;
                 />
               </label>
               <button type="button" onClick={() => setAttachment(null)} className="ml-auto text-xs text-ink-mute hover:text-fail">
-                Убрать файл
+                Файлды алып тастау
               </button>
             </div>
           ) : (
             <div className="flex flex-wrap items-center gap-2 rounded-[3px] border-2 border-dashed border-paper-line px-3 py-3 text-sm">
               <button type="button" onClick={() => fileInput.current?.click()} className="btn-subtle">
-                Выбрать CSV-выписку
+                CSV-үзіндіні таңдау
               </button>
               <button type="button" onClick={() => void useDemo()} className="btn text-brand hover:underline">
-                или демо-выписка
+                немесе демо-үзінді
               </button>
-              <span className="text-xs text-ink-mute">до 5 МБ, файл не покидает устройство</span>
+              <span className="text-xs text-ink-mute">5 МБ-қа дейін, файл құрылғыдан шықпайды</span>
             </div>
           )}
           {fileError && <p className="mt-2 text-sm text-fail">{fileError}</p>}
@@ -144,10 +144,10 @@ export function FinanceWindow({ runner, highlightReport }: { runner: TaskRunner;
                   <span className="ml-2 text-xs text-ink-mute">{formatBytes(finance.report_file.size_bytes)}</span>
                 </span>
                 <a href={finance.report_file.download_url} target="_blank" rel="noreferrer" className="btn-primary">
-                  Открыть PDF
+                  PDF ашу
                 </a>
                 <a href={finance.report_file.download_url} download={finance.report_file.filename} className="btn-subtle">
-                  Скачать
+                  Жүктеу
                 </a>
                 <TelegramButton send={() => api.sendReportToTelegram(finance.report_file?.report_id ?? "")} />
               </div>
@@ -161,14 +161,14 @@ export function FinanceWindow({ runner, highlightReport }: { runner: TaskRunner;
           </div>
         ) : (
           <p className="rounded-lg border border-dashed border-paper-line p-6 text-sm text-ink-soft">
-            Загрузите выписку и нажмите «Проанализировать» — агенты соберут отчёт здесь: итоги, прогноз, сравнение месяцев,
-            бюджеты и PDF.
+            Үзіндіні жүктеп, «Талдау» батырмасын басыңыз — агенттер есепті осында жинайды: қорытындылар, болжам, айларды салыстыру,
+            бюджеттер және PDF.
           </p>
         )}
       </section>
 
       <h2 className="mb-3 mt-10 text-sm font-semibold uppercase tracking-wide text-ink-soft">
-        Архив отчётов {reports && reports.length > 0 ? <span className="font-normal">· {reports.length}</span> : null}
+        Есептер мұрағаты {reports && reports.length > 0 ? <span className="font-normal">· {reports.length}</span> : null}
       </h2>
       <ReportArchive
         reports={reports}

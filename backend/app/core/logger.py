@@ -1,9 +1,9 @@
-"""Безопасный логгер (Zero-PII Logging).
+"""Қауіпсіз логгер (Zero-PII Logging).
 
-В лог попадают только поля из белого списка ``ALLOWED_FIELDS``:
-идентификаторы, хэши, домен, тайминги и статусы. Попытка залогировать
-любое другое поле (например, ``text`` или ``client_name``) — ошибка
-разработчика, поэтому поднимается ``ValueError``.
+Логқа тек ``ALLOWED_FIELDS`` ақ тізімінен өрістер түседі:
+идентификаторлар, хэштер, домен, тайминг және мәртебелер. Басқа кез келген
+өрісті (мысалы, ``text`` немесе ``client_name``) логқа жазу әрекеті —
+әзірлеушінің қатесі, сондықтан ``ValueError`` көтеріледі.
 """
 
 from __future__ import annotations
@@ -44,14 +44,14 @@ ALLOWED_FIELDS: Final = frozenset(
     }
 )
 
-# Строковые значения длиннее этого — подозрительны (вероятно, пользовательский текст).
+# Осыдан ұзын жол мәндері күдікті (ықтимал пайдаланушы мәтіні).
 MAX_STRING_VALUE_LEN: Final = 128
 
 LogValue = str | int | float | bool | Enum | None
 
 
 def payload_hash(data: str | bytes) -> str:
-    """SHA-256 хэш артефакта для корреляции в логах без раскрытия содержимого."""
+    """Мазмұнды ашпай логтарда корреляция жасау үшін артефакттың SHA-256 хэші."""
     raw = data.encode("utf-8") if isinstance(data, str) else data
     return hashlib.sha256(raw).hexdigest()
 
@@ -93,6 +93,6 @@ def get_logger(name: str) -> SafeLogger:
 
 def configure_logging(level: str = "INFO") -> None:
     logging.basicConfig(level=level, format="%(asctime)s %(levelname)s %(name)s %(message)s")
-    # httpx пишет полный URL каждого запроса на INFO, а в URL Telegram Bot API лежит токен.
+    # httpx әр сұраудың толық URL-ін INFO деңгейінде жазады, ал Telegram Bot API URL-інде токен бар.
     for noisy in ("httpx", "httpx2", "httpcore"):
         logging.getLogger(noisy).setLevel(logging.WARNING)

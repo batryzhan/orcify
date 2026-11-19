@@ -1,24 +1,24 @@
 import type { Domain, TaskStatus } from "../types/api";
 
 export const STAGE_LABEL: Record<TaskStatus, string> = {
-  classifying_intent: "Определение домена",
-  creating_jira_issue: "Карточка в Orcify Jira",
-  updating_jira: "Перенос карточки",
-  routing_smm: "Маршрутизация в Awesome Posts",
-  routing_finance: "Маршрутизация в Finance",
-  extracting_entities: "Извлечение реквизитов",
-  rendering_docx: "Рендер .docx по шаблону",
-  analyzing_csv: "Локальный анализ CSV",
-  generating_report: "Аналитическое резюме",
-  rendering_pdf: "PDF-отчёт",
-  writing_copy: "Тексты поста",
-  rendering_post: "Рендер поста 1080×1350",
-  planning_tasks: "План задач",
-  completed: "Готово",
-  failed: "Ошибка",
+  classifying_intent: "Доменді анықтау",
+  creating_jira_issue: "Orcify Jira-дағы карточка",
+  updating_jira: "Карточканы жылжыту",
+  routing_smm: "Awesome Posts-қа бағыттау",
+  routing_finance: "Finance-қа бағыттау",
+  extracting_entities: "Деректемелерді алу",
+  rendering_docx: "Үлгі бойынша .docx рендері",
+  analyzing_csv: "CSV жергілікті талдауы",
+  generating_report: "Аналитикалық қорытынды",
+  rendering_pdf: "PDF-есеп",
+  writing_copy: "Пост мәтіндері",
+  rendering_post: "1080×1350 пост рендері",
+  planning_tasks: "Тапсырмалар жоспары",
+  completed: "Дайын",
+  failed: "Қате",
 };
 
-/** Ожидаемые этапы домена (без повторяющихся updating_jira) — показываются заранее серыми. */
+/** Доменнің күтілетін кезеңдері (қайталанатын updating_jira-сыз) — алдын ала сұр түспен көрсетіледі. */
 export const STAGE_PLAN: Record<Domain | "unknown", TaskStatus[]> = {
   unknown: ["classifying_intent", "creating_jira_issue", "completed"],
   Legal: ["classifying_intent", "creating_jira_issue", "extracting_entities", "rendering_docx", "completed"],

@@ -11,17 +11,17 @@ import { IssueCard } from "./IssueCard";
 import { IssueModal } from "./IssueModal";
 
 const PLANNER_SAMPLES: ComposerSample[] = [
-  { label: "Онбординг дизайнера", text: "Составь план онбординга нового дизайнера: рабочее место и доступы, знакомство с командой, приказ о приёме, наставник и первая задача." },
-  { label: "Доработка сайта", text: "Что нужно изменить на лендинге Orcify перед олимпиадой: обновить скриншоты, добавить раздел про приватность, убрать устаревший блок про видео, проверить мобильную версию." },
+  { label: "Дизайнерді онбордингке қабылдау", text: "Жаңа дизайнерді онбордингке қабылдау жоспарын құр: жұмыс орны мен қолжетімділіктер, командамен танысу, қабылдау бұйрығы, тәлімгер және алғашқы тапсырма." },
+  { label: "Сайтты жетілдіру", text: "Олимпиададан бұрын Orcify лендингінде нені өзгерту керек: скриншоттарды жаңарту, құпиялылық туралы бөлім қосу, бейне туралы ескірген блокты алып тастау, мобильді нұсқаны тексеру." },
 ];
 
 interface Props {
-  /** Раннер Planner: раскладывает цель на задачи прямо на доске. */
+  /** Planner раннері: мақсатты тапсырмаларға тақтаның өзінде бөледі. */
   runner: TaskRunner;
   onNavigate: (view: View, params?: Record<string, string>) => void;
 }
 
-/** Orcify Jira: только задачи — что изменить, добавить или убрать. Результаты агентов — в их окнах. */
+/** Orcify Jira: тек тапсырмалар — нені өзгерту, қосу немесе алып тастау. Агент нәтижелері — өз терезелерінде. */
 export function BoardView({ runner, onNavigate }: Props) {
   const { board, error, apply, update, remove, reload } = useBoard(!runner.running);
   const [openKey, setOpenKey] = useState<string | null>(null);
@@ -32,7 +32,7 @@ export function BoardView({ runner, onNavigate }: Props) {
   const [dragKey, setDragKey] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<IssueStatus | null>(null);
 
-  // Снимки карточек из SSE Planner применяются к доске по мере поступления.
+  // Planner SSE карточка суреттері келген сайын тақтаға қолданылады.
   const applied = useRef(0);
   useEffect(() => {
     applied.current = 0;
@@ -44,7 +44,7 @@ export function BoardView({ runner, onNavigate }: Props) {
     applied.current = runner.events.length;
   }, [runner.events, apply]);
 
-  // FLIP: карточки плавно переезжают между колонками, новые — «материализуются».
+  // FLIP: карточкалар бағандар арасында тегіс жылжиды, жаңалары «пайда болады».
   const cardEls = useRef(new Map<string, HTMLElement>());
   const boardEl = useRef<HTMLDivElement>(null);
   const rects = useRef(new Map<string, { x: number; y: number }>());
@@ -106,8 +106,8 @@ export function BoardView({ runner, onNavigate }: Props) {
   const clear = async (scope: "done" | "all") => {
     const total = scope === "all" ? (board?.issues.length ?? 0) : doneCount;
     if (total === 0) return;
-    const what = scope === "all" ? `все задачи (${total})` : `выполненные задачи (${total})`;
-    if (!window.confirm(`Удалить ${what}? Это действие нельзя отменить.`)) return;
+    const what = scope === "all" ? `барлық тапсырмаларды (${total})` : `орындалған тапсырмаларды (${total})`;
+    if (!window.confirm(`${what} жою керек пе? Бұл әрекетті болдырмау мүмкін емес.`)) return;
     await api.clearBoard(scope);
     await reload();
   };
@@ -115,11 +115,11 @@ export function BoardView({ runner, onNavigate }: Props) {
   return (
     <div className="px-4 pb-28 pt-5 sm:px-8">
       <WindowHeader
-        title={`Доска ${board?.project_key ?? "ORC"}`}
+        title={`${board?.project_key ?? "ORC"} тақтасы`}
         actions={
           <>
             <button type="button" className="btn-primary" onClick={() => setCreating(true)}>
-              + Создать задачу
+              + Тапсырма жасау
             </button>
             <button type="button" className="btn-subtle" aria-expanded={plannerOpen} onClick={() => setPlannerOpen((v) => !v)}>
               Planner
@@ -128,8 +128,8 @@ export function BoardView({ runner, onNavigate }: Props) {
           </>
         }
       >
-        Список того, что нужно изменить, добавить или убрать. Перетаскивайте карточки между колонками; агенты добавляют сюда
-        короткие карточки, а их результаты открываются в своих окнах.
+        Нені өзгерту, қосу немесе алып тастау керектігінің тізімі. Карточкаларды бағандар арасында сүйреңіз; агенттер осында
+        қысқа карточкалар қосады, ал олардың нәтижелері өз терезелерінде ашылады.
       </WindowHeader>
 
       {plannerOpen && (
@@ -137,33 +137,33 @@ export function BoardView({ runner, onNavigate }: Props) {
           <AgentComposer
             id="planner-text"
             label="Planner"
-            hint="опишите цель — агент разложит её на задачи на доске"
-            placeholder="Например: подготовить демо для защиты проекта — что доделать в интерфейсе и бэкенде"
+            hint="мақсатты сипаттаңыз — агент оны тақтадағы тапсырмаларға бөледі"
+            placeholder="Мысалы: жобаны қорғауға демо дайындау — интерфейс пен бэкендте нені аяқтау керек"
             text={plannerText}
             onText={setPlannerText}
             samples={PLANNER_SAMPLES}
             rows={3}
             runner={runner}
-            submitLabel="Разложить на задачи"
+            submitLabel="Тапсырмаларға бөлу"
             onSubmit={() => void runner.submit({ text: plannerText.trim(), domain: "HR" })}
           />
         </div>
       )}
 
       <label className="relative inline-block">
-        <span className="sr-only">Поиск по доске</span>
+        <span className="sr-only">Тақтадан іздеу</span>
         <SearchIcon className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-mute" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Поиск по доске"
+          placeholder="Тақтадан іздеу"
           className="w-56 rounded-[3px] border-2 border-paper-line bg-white py-1 pl-8 pr-2 text-sm outline-none focus:border-brand"
         />
       </label>
 
       {error && !board && (
         <p role="alert" className="mt-6 rounded-md bg-fail-soft p-4 text-sm text-fail">
-          Бэкенд недоступен — доска не загружена. Запустите uvicorn в папке backend.
+          Бэкенд қолжетімсіз — тақта жүктелмеді. backend папкасында uvicorn іске қосыңыз.
         </p>
       )}
 
@@ -209,7 +209,7 @@ export function BoardView({ runner, onNavigate }: Props) {
                 ))}
               </div>
               {board && board.issues.length === 0 && column.status === "todo" && (
-                <p className="px-1.5 py-3 text-sm text-ink-mute">Доска пуста. Создайте задачу или попросите Planner.</p>
+                <p className="px-1.5 py-3 text-sm text-ink-mute">Тақта бос. Тапсырма жасаңыз немесе Planner-ден сұраңыз.</p>
               )}
               <QuickAdd onCreate={(summary) => api.createIssue({ summary, status: column.status }).then(apply)} />
             </section>
@@ -252,7 +252,7 @@ export function BoardView({ runner, onNavigate }: Props) {
   );
 }
 
-/** «+ Создать задачу» внизу колонки: Enter — создать, Esc — отмена. */
+/** Бағанның төменгі жағындағы «+ Тапсырма жасау»: Enter — жасау, Esc — болдырмау. */
 function QuickAdd({ onCreate }: { onCreate: (summary: string) => Promise<unknown> }) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
@@ -260,20 +260,20 @@ function QuickAdd({ onCreate }: { onCreate: (summary: string) => Promise<unknown
     e.preventDefault();
     const value = text.trim();
     if (!value) return;
-    setText(""); // очищаем сразу: можно печатать следующую задачу, пока создаётся эта
+    setText(""); // бірден тазалаймыз: осы тапсырма жасалып жатқанда келесісін жазуға болады
     await onCreate(value);
   };
   if (!open) {
     return (
       <button type="button" onClick={() => setOpen(true)} className="mt-2 rounded-[3px] px-2 py-1.5 text-left text-sm text-ink-soft hover:bg-ink/[0.06]">
-        + Создать задачу
+        + Тапсырма жасау
       </button>
     );
   }
   return (
     <form onSubmit={(e) => void submit(e)} className="mt-2">
       <label>
-        <span className="sr-only">Название новой задачи</span>
+        <span className="sr-only">Жаңа тапсырма атауы</span>
         <textarea
           autoFocus
           rows={2}
@@ -285,16 +285,16 @@ function QuickAdd({ onCreate }: { onCreate: (summary: string) => Promise<unknown
             if (e.key === "Escape") setOpen(false);
           }}
           onBlur={() => !text.trim() && setOpen(false)}
-          placeholder="Что нужно сделать?"
+          placeholder="Не істеу керек?"
           className="w-full resize-none rounded-md border-2 border-brand bg-white px-2.5 py-2 text-sm shadow-card outline-none"
         />
       </label>
-      <p className="mt-1 text-[11px] text-ink-mute">Enter — создать, Esc — отмена</p>
+      <p className="mt-1 text-[11px] text-ink-mute">Enter — жасау, Esc — болдырмау</p>
     </form>
   );
 }
 
-/** Полная форма новой задачи. */
+/** Жаңа тапсырманың толық формасы. */
 function CreateIssueDialog({
   onClose,
   onCreate,
@@ -337,19 +337,19 @@ function CreateIssueDialog({
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#091e42]/50 p-3 sm:p-12" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <form onSubmit={(e) => void submit(e)} role="dialog" aria-modal="true" aria-labelledby="create-title" className="w-full max-w-lg animate-fade-up space-y-4 rounded-lg bg-white p-5 shadow-raised">
         <h2 id="create-title" className="text-lg font-semibold">
-          Новая задача
+          Жаңа тапсырма
         </h2>
         <label className="block text-sm font-semibold">
-          Что сделать <span className="text-fail">*</span>
+          Не істеу керек <span className="text-fail">*</span>
           <input autoFocus required maxLength={200} value={summary} onChange={(e) => setSummary(e.target.value)} className={`${input} mt-1 font-normal`} />
         </label>
         <label className="block text-sm font-semibold">
-          Описание
+          Сипаттама
           <textarea rows={4} maxLength={4000} value={description} onChange={(e) => setDescription(e.target.value)} className={`${input} mt-1 font-normal`} />
         </label>
         <div className="grid grid-cols-2 gap-3">
           <label className="block text-sm font-semibold">
-            Тип
+            Түрі
             <select value={type} onChange={(e) => setType(e.target.value as IssueType)} className={`${input} mt-1 font-normal`}>
               {(Object.keys(TYPE_LABEL) as IssueType[]).map((t) => (
                 <option key={t} value={t}>
@@ -359,7 +359,7 @@ function CreateIssueDialog({
             </select>
           </label>
           <label className="block text-sm font-semibold">
-            Приоритет
+            Басымдық
             <select value={priority} onChange={(e) => setPriority(e.target.value as IssuePriority)} className={`${input} mt-1 font-normal`}>
               {(Object.keys(PRIORITY_LABEL) as IssuePriority[]).map((p) => (
                 <option key={p} value={p}>
@@ -370,15 +370,15 @@ function CreateIssueDialog({
           </label>
         </div>
         <label className="block text-sm font-semibold">
-          Метки <span className="font-normal text-ink-mute">через запятую</span>
+          Белгілер <span className="font-normal text-ink-mute">үтір арқылы</span>
           <input value={labels} onChange={(e) => setLabels(e.target.value)} placeholder="FRONTEND, BUG" className={`${input} mt-1 font-normal`} />
         </label>
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onClose} className="btn-subtle">
-            Отмена
+            Болдырмау
           </button>
           <button type="submit" disabled={!summary.trim() || busy} className="btn-primary">
-            Создать
+            Жасау
           </button>
         </div>
       </form>
@@ -386,7 +386,7 @@ function CreateIssueDialog({
   );
 }
 
-/** «Очистить доску»: удалить выполненные или все задачи (с подтверждением). */
+/** «Тақтаны тазалау»: орындалған немесе барлық тапсырмаларды жою (растаумен). */
 function ClearMenu({ doneCount, total, onClear }: { doneCount: number; total: number; onClear: (scope: "done" | "all") => void }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -404,7 +404,7 @@ function ClearMenu({ doneCount, total, onClear }: { doneCount: number; total: nu
   return (
     <div ref={ref} className="relative">
       <button type="button" className="btn-subtle" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((v) => !v)} disabled={total === 0}>
-        Очистить доску
+        Тақтаны тазалау
       </button>
       {open && (
         <div role="menu" className="absolute right-0 z-30 mt-1 w-60 animate-fade-up rounded-md bg-white py-1 shadow-raised">
@@ -418,7 +418,7 @@ function ClearMenu({ doneCount, total, onClear }: { doneCount: number; total: nu
             }}
             className="block w-full px-3 py-2 text-left text-sm enabled:hover:bg-paper-col disabled:opacity-40"
           >
-            Удалить выполненные ({doneCount})
+            Орындалғандарды жою ({doneCount})
           </button>
           <button
             type="button"
@@ -429,7 +429,7 @@ function ClearMenu({ doneCount, total, onClear }: { doneCount: number; total: nu
             }}
             className="block w-full px-3 py-2 text-left text-sm text-fail hover:bg-fail-soft"
           >
-            Удалить все задачи ({total})
+            Барлық тапсырманы жою ({total})
           </button>
         </div>
       )}

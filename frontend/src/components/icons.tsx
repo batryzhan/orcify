@@ -4,9 +4,9 @@ import { agentColor, initials } from "../lib/agents";
 type IconProps = { className?: string };
 
 const TYPE_STYLE: Record<IssueType, { bg: string; label: string }> = {
-  task: { bg: "#4688ec", label: "Задача" },
-  story: { bg: "#63ba3c", label: "История" },
-  bug: { bg: "#e5493a", label: "Баг" },
+  task: { bg: "#4688ec", label: "Тапсырма" },
+  story: { bg: "#63ba3c", label: "Оқиға" },
+  bug: { bg: "#e5493a", label: "Қате" },
   epic: { bg: "#904ee2", label: "Эпик" },
 };
 
@@ -24,23 +24,23 @@ export function IssueTypeIcon({ type, className = "h-4 w-4" }: { type: IssueType
 }
 
 export const TYPE_LABEL: Record<IssueType, string> = {
-  task: "Задача",
-  story: "История",
-  bug: "Баг",
+  task: "Тапсырма",
+  story: "Оқиға",
+  bug: "Қате",
   epic: "Эпик",
 };
 
 export const PRIORITY_LABEL: Record<IssuePriority, string> = {
-  highest: "Наивысший",
-  high: "Высокий",
-  medium: "Средний",
-  low: "Низкий",
+  highest: "Ең жоғары",
+  high: "Жоғары",
+  medium: "Орташа",
+  low: "Төмен",
 };
 
 export function PriorityIcon({ priority, className = "h-4 w-4" }: { priority: IssuePriority } & IconProps) {
   const label = PRIORITY_LABEL[priority];
   return (
-    <svg viewBox="0 0 16 16" className={className} role="img" aria-label={`Приоритет: ${label}`}>
+    <svg viewBox="0 0 16 16" className={className} role="img" aria-label={`Басымдық: ${label}`}>
       {priority === "highest" && (
         <g stroke="#e5493a" strokeWidth="1.9" fill="none" strokeLinecap="round" strokeLinejoin="round">
           <path d="M3.5 8.5L8 4l4.5 4.5" />
@@ -69,7 +69,7 @@ export function Avatar({ name, size = 24 }: { name: string | null; size?: number
       <span
         className="inline-flex shrink-0 items-center justify-center rounded-full bg-paper-line text-ink-mute"
         style={{ width: size, height: size }}
-        title="Не назначено"
+        title="Тағайындалмаған"
       >
         <svg viewBox="0 0 16 16" className="h-3/5 w-3/5" aria-hidden>
           <circle cx="8" cy="5.5" r="3" fill="currentColor" />
@@ -175,7 +175,7 @@ export function OrcifyMark({ className = "h-8 w-8" }: IconProps) {
   );
 }
 
-/** Курсор агента: «бумажный самолётик», поворачивается по направлению движения. */
+/** Агент курсоры: «қағаз ұшақ», қозғалыс бағытына бұрылады. */
 export function AgentCursorShape({ color }: { color: string }) {
   return (
     <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden style={{ display: "block", overflow: "visible" }}>

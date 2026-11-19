@@ -1,7 +1,7 @@
-"""Работа пайплайна с Orcify Jira через MCPServerManager (сервер ``orcify_jira``).
+"""Пайплайнның MCPServerManager арқылы Orcify Jira-мен жұмысы (``orcify_jira`` сервері).
 
-Трекер — вспомогательный канал: если MCP-сервер недоступен, пайплайн
-продолжает работу без карточки (Graceful Degradation), а не падает.
+Трекер — қосымша арна: MCP-сервер қолжетімсіз болса, пайплайн
+карточкасыз жұмысын жалғастырады (Graceful Degradation), құламайды.
 """
 
 from __future__ import annotations

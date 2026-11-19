@@ -1,4 +1,4 @@
-// Зеркало Pydantic-схем backend/app/schemas/*. Меняются только вместе.
+// Pydantic-схемалардың көрінісі backend/app/schemas/*. Тек бірге өзгереді.
 
 export type Domain = "Legal" | "SMM" | "Finance" | "HR";
 
@@ -10,7 +10,7 @@ export interface IntentClassificationResult {
 
 export type Currency = "KZT" | "USD" | "EUR" | "RUB";
 
-/** ContractEntitiesSchema: null = значение не найдено в тексте. Decimal приходит строкой. */
+/** ContractEntitiesSchema: null = мән мәтіннен табылмады. Decimal жол ретінде келеді. */
 export interface ContractEntities {
   client_name: string | null;
   bin_iin: string | null;
@@ -22,7 +22,7 @@ export interface ContractEntities {
 
 export type ContractField = keyof ContractEntities;
 
-/** ContractData: тело POST /api/legal/contracts. */
+/** ContractData: POST /api/legal/contracts денесі. */
 export interface ContractData {
   client_name: string;
   bin_iin: string;
@@ -385,10 +385,10 @@ export interface ErrorInfo {
 export interface ProgressEvent {
   status: TaskStatus;
   progress: number;
-  /** Домен известен после Этапа 1 Smart Routing и приходит во всех следующих событиях. */
+  /** Домен Smart Routing 1-кезеңінен кейін белгілі болады және барлық келесі оқиғаларда келеді. */
   domain?: Domain;
   message?: string;
-  /** Снимок карточки Orcify Jira после создания/переноса — по нему анимируется рой агентов. */
+  /** Жасалған/жылжытылған соң Orcify Jira карточкасының суреті — агенттер жүйесі соны бойынша анимацияланады. */
   issue?: JiraIssue;
   result?: TaskResult;
   error?: ErrorInfo;
@@ -405,7 +405,7 @@ export interface TaskCreateRequest {
   attachment?: TaskAttachment;
   opening_balance?: number;
   post_template?: PostTemplate;
-  /** Домен задаёт окно интерфейса; без него домен определяет Smart Router. */
+  /** Доменді интерфейс терезесі береді; онсыз доменді Smart Router анықтайды. */
   domain?: Domain;
 }
 
@@ -438,7 +438,7 @@ export interface HealthResponse {
   llm: LLMHealth;
 }
 
-/** Ошибка валидации FastAPI (422). */
+/** FastAPI валидация қатесі (422). */
 export interface ValidationErrorItem {
   loc: (string | number)[];
   msg: string;

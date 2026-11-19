@@ -14,7 +14,7 @@ export interface BoardState {
   reload: () => Promise<void>;
 }
 
-/** Применяет снимок карточки так же, как бэкенд: перенос в другую колонку — наверх колонки. */
+/** Карточка суретін бэкендтегідей қолданады: басқа бағанға көшіру — бағанның жоғарғы жағына. */
 function upsert(issues: JiraIssue[], issue: JiraIssue): JiraIssue[] {
   const index = issues.findIndex((i) => i.key === issue.key);
   if (index === -1) return [issue, ...issues];
@@ -28,18 +28,18 @@ function upsert(issues: JiraIssue[], issue: JiraIssue): JiraIssue[] {
 }
 
 /**
- * Доска Orcify Jira. Пока агенты работают, карточки обновляются из SSE (apply);
- * в покое доска опрашивается, чтобы показать задачи, пришедшие из Telegram-бота.
+ * Orcify Jira тақтасы. Агенттер жұмыс істегенде карточкалар SSE-ден жаңарады (apply);
+ * тыныштықта тақта сұратылады, Telegram-боттан келген тапсырмаларды көрсету үшін.
  */
 export function useBoard(polling: boolean): BoardState {
   const [board, setBoard] = useState<JiraBoard | null>(null);
   const [error, setError] = useState(false);
 
-  const signature = useRef<string | null>(null); // null: доска ещё не загружена (пустая доска даёт "")
+  const signature = useRef<string | null>(null); // null: тақта әлі жүктелмеген (бос тақта "" береді)
   const reload = useCallback(async () => {
     try {
       const next = await api.board();
-      // Опрос раз в 4 с: перерисовываем доску, только если что-то изменилось.
+      // Әр 4 с сайын сұрау: тақтаны тек бір нәрсе өзгерсе қайта салады.
       const sig = next.issues.map((i) => `${i.key}:${i.updated_at}`).join("|");
       if (sig !== signature.current) {
         signature.current = sig;

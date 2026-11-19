@@ -1,10 +1,10 @@
-"""Запуск задач и SSE-стриминг прогресса.
+"""Тапсырмаларды іске қосу және прогресті SSE-стримдеу.
 
-Протокол (EventSource умеет только GET):
-1. ``POST /api/tasks`` с текстом -> ``task_id`` и ``events_url``.
-2. ``GET /api/tasks/{task_id}/events`` -> поток ``ProgressEvent``.
-   Стрим одноразовый: после ``completed``/``failed`` клиент должен
-   закрыть EventSource, повторное подключение вернёт 404.
+Хаттама (EventSource тек GET-ті біледі):
+1. ``POST /api/tasks`` мәтінмен -> ``task_id`` және ``events_url``.
+2. ``GET /api/tasks/{task_id}/events`` -> ``ProgressEvent`` ағыны.
+   Ағын бір реттік: ``completed``/``failed`` кейін клиент
+   EventSource-ты жабуы керек, қайта қосылу 404 қайтарады.
 """
 
 from __future__ import annotations

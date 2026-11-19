@@ -1,4 +1,4 @@
-"""Схемы MCP Integration Layer."""
+"""MCP Integration Layer схемалары."""
 
 from __future__ import annotations
 

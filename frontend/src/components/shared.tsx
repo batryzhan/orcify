@@ -7,12 +7,12 @@ import { SendIcon } from "./icons";
 import { AgentSwarm } from "./swarm/AgentSwarm";
 import { SwarmPill } from "./swarm/SwarmPill";
 
-/** Заголовок окна: хлебные крошки, название, пояснение и действия справа. */
+/** Терезе тақырыбы: навигация жолы, атауы, түсіндірме және оң жақтағы әрекеттер. */
 export function WindowHeader({ title, children, actions }: { title: string; children?: ReactNode; actions?: ReactNode }) {
   return (
     <header className="mb-5">
       <nav className="text-sm text-ink-soft" aria-label="Навигация">
-        Проекты <span className="text-ink-mute">/</span> Orcify
+        Жобалар <span className="text-ink-mute">/</span> Orcify
       </nav>
       <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold text-ink">{title}</h1>
@@ -24,8 +24,8 @@ export function WindowHeader({ title, children, actions }: { title: string; chil
 }
 
 /**
- * Рой агентов + нижняя плашка для одного окна. Рой появляется на каждую новую
- * задачу этого окна и строит элемент `focusSelector` (превью поста, отчёт, карточку).
+ * Терезенің агенттер жүйесі + төменгі тақтайша. Жүйе осы терезенің әр жаңа
+ * тапсырмасына пайда болады және `focusSelector` элементін (пост превьюі, есеп, карточка) құрады.
  */
 export function AgentStage({
   runner,
@@ -70,7 +70,7 @@ export interface ComposerSample {
   text: string;
 }
 
-/** Поле постановки задачи агентам окна (Ctrl+Enter — запуск). */
+/** Терезе агенттеріне тапсырма қою өрісі (Ctrl+Enter — іске қосу). */
 export function AgentComposer({
   id,
   label,
@@ -129,7 +129,7 @@ export function AgentComposer({
       <div className="mt-3 flex flex-wrap items-center gap-2">
         {samples && samples.length > 0 && (
           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-            <span className="mr-1 text-xs text-ink-mute">Примеры:</span>
+            <span className="mr-1 text-xs text-ink-mute">Мысалдар:</span>
             {samples.map((s) => (
               <button
                 key={s.label}
@@ -143,7 +143,7 @@ export function AgentComposer({
           </div>
         )}
         <button type="submit" disabled={!text.trim() || busy || disabled} className="btn-primary ml-auto" data-swarm-origin>
-          {busy ? "Агенты работают…" : submitLabel}
+          {busy ? "Агенттер жұмыс істеуде…" : submitLabel}
           <kbd className="hidden font-sans text-[11px] text-white/60 sm:inline">Ctrl+Enter</kbd>
         </button>
       </div>
@@ -158,8 +158,8 @@ export function AgentComposer({
   );
 }
 
-/** Кнопка «В Telegram» с понятным итогом (сколько чатов, бот не настроен и т.п.). */
-export function TelegramButton({ send, label = "В Telegram" }: { send: () => Promise<SendPostResponse>; label?: string }) {
+/** «Telegram-ға» батырмасы түсінікті нәтижемен (қанша чат, бот бапталмаған және т.б.). */
+export function TelegramButton({ send, label = "Telegram-ға" }: { send: () => Promise<SendPostResponse>; label?: string }) {
   const [state, setState] = useState<{ busy: boolean; note: string | null }>({ busy: false, note: null });
   const click = async () => {
     setState({ busy: true, note: null });
@@ -169,20 +169,20 @@ export function TelegramButton({ send, label = "В Telegram" }: { send: () => Pr
         busy: false,
         note:
           res.sent > 0
-            ? `Отправлено в Telegram: ${res.sent} ${res.sent === 1 ? "чат" : "чата"}`
-            : "Боту ещё никто не писал — откройте @orcify_bot и нажмите /start",
+            ? `Telegram-ға жіберілді: ${res.sent} чат`
+            : "Ботқа әлі ешкім жазған жоқ — @orcify_bot ашып, /start басыңыз",
       });
     } catch (error) {
       setState({
         busy: false,
-        note: error instanceof ApiError && error.status === 409 ? "Telegram-бот не настроен (TELEGRAM_BOT_API_KEY)" : "Не удалось отправить",
+        note: error instanceof ApiError && error.status === 409 ? "Telegram-бот бапталмаған (TELEGRAM_BOT_API_KEY)" : "Жіберу мүмкін болмады",
       });
     }
   };
   return (
     <span className="inline-flex flex-wrap items-center gap-2">
       <button type="button" onClick={() => void click()} disabled={state.busy} className="btn-subtle">
-        <SendIcon /> {state.busy ? "Отправка…" : label}
+        <SendIcon /> {state.busy ? "Жіберілуде…" : label}
       </button>
       {state.note && (
         <span role="status" className="text-xs text-ink-soft">
@@ -193,7 +193,7 @@ export function TelegramButton({ send, label = "В Telegram" }: { send: () => Pr
   );
 }
 
-/** Скелет-плейсхолдер, пока агенты собирают результат. */
+/** Агенттер нәтижені жинап жатқанда скелет-плейсхолдер. */
 export function Skeleton({ className = "" }: { className?: string }) {
   return <span className={`block animate-pulse rounded bg-paper-col ${className}`} aria-hidden />;
 }

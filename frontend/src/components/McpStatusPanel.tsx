@@ -9,7 +9,7 @@ const LABEL: Record<string, string> = {
   awesome_posts: "Awesome Posts",
 };
 
-/** Реестр MCPServerManager: какие серверы подключены к активному домену и в каком они состоянии. */
+/** MCPServerManager тізілімі: белсенді доменге қандай серверлер қосылған және олар қандай күйде. */
 export function McpStatusPanel({ activeDomain }: { activeDomain: Domain | null }) {
   const [servers, setServers] = useState<McpServerHealth[] | null>(null);
 
@@ -45,19 +45,19 @@ export function McpStatusPanel({ activeDomain }: { activeDomain: Domain | null }
                 <p className="font-medium">
                   {LABEL[s.name] ?? s.name}
                   <span className="ml-2 text-xs font-normal text-ink-mute">
-                    {s.is_external ? "внешний · через анонимайзер" : "локальный"}
+                    {s.is_external ? "сыртқы · анонимайзер арқылы" : "жергілікті"}
                   </span>
                 </p>
                 <p className="text-xs text-ink-mute">
                   {s.domains.join(", ")} ·{" "}
-                  {state === "ok" ? s.tools.join(", ") : state === "down" ? "недоступен" : "не настроен → деградация"}
+                  {state === "ok" ? s.tools.join(", ") : state === "down" ? "қолжетімсіз" : "бапталмаған → деградация"}
                 </p>
               </div>
             </li>
           );
         })}
       </ul>
-      {activeDomain && <p className="mt-3 text-xs text-ink-mute">Smart Routing: активны только серверы домена {activeDomain}</p>}
+      {activeDomain && <p className="mt-3 text-xs text-ink-mute">Smart Routing: тек {activeDomain} доменінің серверлері белсенді</p>}
     </section>
   );
 }

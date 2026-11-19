@@ -1,4 +1,4 @@
-"""Зависимости FastAPI: сервисы, созданные в lifespan приложения."""
+"""FastAPI тәуелділіктері: қолданба lifespan-ында құрылған сервистер."""
 
 from __future__ import annotations
 

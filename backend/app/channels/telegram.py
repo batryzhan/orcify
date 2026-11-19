@@ -1,19 +1,19 @@
-"""Telegram-бот Orcify — канал автоматизации (замена n8n).
+"""Orcify Telegram-боты — автоматтандыру арнасы (n8n орнына).
 
-Сценарий как воркфлоу n8n, но без внешнего оркестратора:
-``Telegram Trigger -> Smart Router (Gemma 4) -> агент домена -> Orcify Jira -> ответ в чат``.
+n8n воркфлоуы сияқты сценарий, бірақ сыртқы оркестраторсыз:
+``Telegram Trigger -> Smart Router (Gemma 4) -> домен агенті -> Orcify Jira -> чатқа жауап``.
 
-* Пишете боту текст -> бот запускает тот же пайплайн, что и UI, показывает ход
-  работы (редактирует одно сообщение) и присылает результат: PNG-пост, отчёт,
-  договор или список задач. Карточка появляется на доске Orcify Jira.
-* Присылаете CSV-документ (можно с подписью) -> локальный финансовый анализ.
-* Команды: /start, /help, /board.
+* Ботқа мәтін жазасыз -> бот UI-дағыдай пайплайнды іске қосады, жұмыс барысын
+  көрсетеді (бір хабарламаны өңдейді) және нәтиже жібереді: PNG-пост, есеп,
+  келісімшарт немесе тапсырмалар тізімі. Карточка Orcify Jira тақтасында пайда болады.
+* CSV-құжат жібересіз (жазбасымен болуы мүмкін) -> жергілікті қаржылық талдау.
+* Командалар: /start, /help, /board.
 
-Приватность: Telegram — облачный сервис. Бот отвечает только в тот чат, откуда
-пришла задача, и ничего не отправляет сам; из UI пост уходит в Telegram только
-по явной кнопке. LLM, трекер и рендер по-прежнему работают локально.
-Токен бота живёт в URL запросов, поэтому URL никогда не логируются
-(``httpx`` переведён на уровень WARNING в ``configure_logging``).
+Құпиялылық: Telegram — бұлттық сервис. Бот тек тапсырма келген чатқа
+жауап береді және өздігінен ештеңе жібермейді; UI-дан пост Telegram-ға тек
+айқын батырма арқылы кетеді. LLM, трекер және рендер бұрынғыдай жергілікті жұмыс істейді.
+Бот токені сұраныстар URL-інде тұрады, сондықтан URL ешқашан логқа жазылмайды
+(``httpx`` ``configure_logging`` ішінде WARNING деңгейіне ауыстырылған).
 """
 
 from __future__ import annotations
@@ -47,26 +47,26 @@ T = TypeVar("T")
 CAPTION_LIMIT: Final = 1024
 TEXT_LIMIT: Final = 4000
 POLL_TIMEOUT_S: Final = 25
-DEFAULT_CSV_TASK: Final = "Проанализируй выписку: кассовые разрывы, крупнейшие расходы и что с этим делать."
+DEFAULT_CSV_TASK: Final = "Үзіндіні талда: ақша ағынының үзілістері, ең ірі шығыстар және мұнымен не істеу керек."
 
 FIELD_LABEL: Final = {
-    "client_name": "наименование клиента",
-    "bin_iin": "ИИН/БИН",
-    "contract_amount": "сумма",
+    "client_name": "клиент атауы",
+    "bin_iin": "ЖСН/БСН",
+    "contract_amount": "сома",
     "currency": "валюта",
-    "deadline_date": "срок исполнения",
-    "scope_of_work": "предмет договора",
+    "deadline_date": "орындау мерзімі",
+    "scope_of_work": "келісімшарт нысаны",
 }
 
 HELP_TEXT: Final = (
-    "Я Orcify — локальные ИИ-агенты для бизнеса.\n\n"
-    "Просто напишите задачу:\n"
-    "• «Сделай пост для Instagram: знакомство с командой Orcify» — пришлю готовую картинку\n"
-    "• «Составь план онбординга нового дизайнера» — заведу задачи в Orcify Jira\n"
-    "• перешлите переписку с клиентом — подготовлю договор .docx\n"
-    "• пришлите CSV-выписку — посчитаю кассовые разрывы и расходы\n\n"
-    "Команды: /board — доска задач, /help — эта справка.\n"
-    "Модель работает локально (Gemma 4); каждая задача появляется на доске Orcify Jira."
+    "Мен Orcify — бизнеске арналған жергілікті ЖИ-агенттермін.\n\n"
+    "Тапсырманы жай жазыңыз:\n"
+    "• «Instagram үшін пост жаса: Orcify командасымен танысу» — дайын суретті жіберемін\n"
+    "• «Жаңа дизайнерді онбордингке қабылдау жоспарын құр» — тапсырмаларды Orcify Jira-ға енгіземін\n"
+    "• клиентпен хат-алмасуды жіберіңіз — .docx келісімшарт дайындаймын\n"
+    "• CSV-үзіндіні жіберіңіз — ақша ағынының үзілістері мен шығыстарды есептеймін\n\n"
+    "Командалар: /board — тапсырмалар тақтасы, /help — осы анықтама.\n"
+    "Модель жергілікті жұмыс істейді (Gemma 4); әр тапсырма Orcify Jira тақтасында пайда болады."
 )
 
 
@@ -78,7 +78,7 @@ class _ApiResponse(BaseModel):
 
 
 class ChatRegistry:
-    """Чаты, которые написали боту (только id; нужны, чтобы отправить пост из UI)."""
+    """Боттың жазған чаттары (тек id; UI-дан пост жіберу үшін қажет)."""
 
     def __init__(self, path: Path | None) -> None:
         self._path = path
@@ -162,7 +162,7 @@ class TelegramBot:
             self._status.last_error = f"http_{response.status_code}"
             return None
         if not body.ok:
-            # «message is not modified» при редактировании — штатная ситуация, не ошибка канала.
+            # өңдеу кезінде «message is not modified» — қалыпты жағдай, арна қатесі емес.
             if method != "editMessageText":
                 self._status.last_error = f"api_{body.error_code or response.status_code}"
                 log.warning("telegram_api_failed", stage=method, http_status=body.error_code or response.status_code)
@@ -224,7 +224,7 @@ class TelegramBot:
     # --- polling ---------------------------------------------------------------
 
     async def run_polling(self) -> None:
-        """Long polling getUpdates. Работает, пока задача не отменена в lifespan."""
+        """Long polling getUpdates. Тапсырма lifespan-да тоқтатылмайынша жұмыс істейді."""
         if not self.configured:
             return
         await self.get_me()
@@ -259,7 +259,7 @@ class TelegramBot:
         self._tasks.add(task)
         task.add_done_callback(self._tasks.discard)
 
-    # --- обработка сообщений ------------------------------------------------------
+    # --- хабарламаларды өңдеу ------------------------------------------------------
 
     async def handle_message(self, message: TgMessage) -> None:
         chat_id = message.chat.id
@@ -285,7 +285,7 @@ class TelegramBot:
         try:
             request = TaskCreateRequest(text=text or DEFAULT_CSV_TASK, attachment=attachment)
         except ValidationError:
-            await self.send_message(chat_id, "Слишком длинное сообщение — сократите задачу.")
+            await self.send_message(chat_id, "Хабарлама тым ұзын — тапсырманы қысқартыңыз.")
             return
         async with self._slots:
             await self._run_task(chat_id, request)
@@ -295,23 +295,23 @@ class TelegramBot:
         assert doc is not None
         name = doc.file_name or "statement.csv"
         if not name.lower().endswith(".csv"):
-            await self.send_message(chat_id, "Пока я понимаю только CSV-выписки. Пришлите файл .csv.")
+            await self.send_message(chat_id, "Әзірге мен тек CSV-үзінділерді түсінемін. .csv файлын жіберіңіз.")
             return None
         raw = await self._download(doc.file_id)
         if raw is None:
-            await self.send_message(chat_id, "Не удалось скачать файл (лимит — 5 МБ).")
+            await self.send_message(chat_id, "Файлды жүктеу мүмкін болмады (шектеу — 5 МБ).")
             return None
         for encoding in ("utf-8-sig", "cp1251"):
             try:
                 return TaskAttachment(filename=name[:200], content=raw.decode(encoding))
             except (UnicodeDecodeError, ValidationError):
                 continue
-        await self.send_message(chat_id, "Файл не читается как текстовый CSV.")
+        await self.send_message(chat_id, "Файл мәтіндік CSV ретінде оқылмайды.")
         return None
 
     async def _run_task(self, chat_id: int, request: TaskCreateRequest) -> None:
         started = time.monotonic()
-        header = "⏳ Orcify принял задачу — агенты работают локально"
+        header = "⏳ Orcify тапсырманы қабылдады — агенттер жергілікті жұмыс істеуде"
         status_message = await self.send_message(chat_id, header)
         lines: list[str] = []
         final: ProgressEvent | None = None
@@ -330,18 +330,18 @@ class TelegramBot:
 
         seconds = time.monotonic() - started
         if status_message is not None:
-            done = "✅ Готово" if final is not None and final.status is TaskStatus.COMPLETED else "⚠️ Остановлено"
+            done = "✅ Дайын" if final is not None and final.status is TaskStatus.COMPLETED else "⚠️ Тоқтатылды"
             await self.edit_message(
-                chat_id, status_message.message_id, "\n".join([f"{done} за {seconds:.1f} с", *lines[-7:]])
+                chat_id, status_message.message_id, "\n".join([f"{done} · {seconds:.1f} с", *lines[-7:]])
             )
         if final is None:
             return
         if final.status is TaskStatus.FAILED:
-            await self.send_message(chat_id, f"⚠️ {final.error.message if final.error else 'Ошибка'}")
+            await self.send_message(chat_id, f"⚠️ {final.error.message if final.error else 'Қате'}")
             log.info("telegram_task", stage="task", status=final.status, latency_ms=round(seconds * 1000))
             return
 
-        footer = f"\n\n📋 Карточка {issue_key} на доске Orcify Jira" if issue_key else ""
+        footer = f"\n\n📋 {issue_key} карточкасы Orcify Jira тақтасында" if issue_key else ""
         await self._deliver(chat_id, final, footer)
         self._status.completed_runs += 1
         log.info("telegram_task", stage="task", status=final.status, latency_ms=round(seconds * 1000))
@@ -349,7 +349,7 @@ class TelegramBot:
     async def _deliver(self, chat_id: int, event: ProgressEvent, footer: str) -> None:
         result: TaskResult | None = event.result
         if result is None:
-            await self.send_message(chat_id, (event.message or "Готово") + footer)
+            await self.send_message(chat_id, (event.message or "Дайын") + footer)
             return
         if result.smm is not None:
             png_path = self._posts.png_path(result.smm.post.post_id)
@@ -366,7 +366,7 @@ class TelegramBot:
             file = result.finance.report_file
             path = self._reports.pdf_path(file.report_id) if file else None
             if file is not None and path is not None:
-                await self.send_document(chat_id, file.filename, path.read_bytes(), "application/pdf", "Полный отчёт (PDF)")
+                await self.send_document(chat_id, file.filename, path.read_bytes(), "application/pdf", "Толық есеп (PDF)")
             return
         if result.legal is not None:
             legal = result.legal
@@ -374,19 +374,19 @@ class TelegramBot:
                 stored = self._documents.get(legal.document.document_id)
                 if stored is not None:
                     await self.send_document(
-                        chat_id, legal.document.filename, stored.content, stored.media_type, "Договор готов" + footer
+                        chat_id, legal.document.filename, stored.content, stored.media_type, "Келісімшарт дайын" + footer
                     )
                     return
             missing = [FIELD_LABEL.get(f, f) for f in [*legal.missing_fields, *legal.invalid_fields]]
             await self.send_message(
-                chat_id, "Для договора не хватает или некорректны: " + ", ".join(missing) + ". Допишите и пришлите снова." + footer
+                chat_id, "Келісімшарт үшін жетіспейді немесе қате: " + ", ".join(missing) + ". Толықтырып, қайта жіберіңіз." + footer
             )
             return
         if result.hr is not None:
             items = [f"• {key} — {issue.summary}" for key, issue in zip(result.hr.issue_keys, result.hr.plan.issues)]
             await self.send_message(chat_id, f"🗂 {result.hr.plan.epic}\n\n" + "\n".join(items) + footer)
             return
-        await self.send_message(chat_id, (event.message or "Готово") + footer)
+        await self.send_message(chat_id, (event.message or "Дайын") + footer)
 
     def _board_text(self) -> str:
         board = self._jira.board()
@@ -397,17 +397,17 @@ class TelegramBot:
             parts += [f"• {i.key} {i.summary}" for i in issues[:5]]
         return "\n".join(parts)
 
-    # --- отправка из UI -----------------------------------------------------------
+    # --- UI-дан жіберу -----------------------------------------------------------
 
     async def send_report(self, report_id: str) -> int:
-        """Явное действие пользователя в окне «Финансы»: отправить PDF-отчёт во все чаты бота."""
+        """Пайдаланушының «Қаржы» терезесіндегі айқын әрекеті: PDF-есепті боттың барлық чаттарына жіберу."""
         record = self._reports.get(report_id)
         path = self._reports.pdf_path(report_id)
         if record is None or path is None:
             return 0
         caption = (
-            f"📊 {record.headline or 'Финансовая сводка'}\n"
-            f"Период: {record.period_start:%d.%m.%Y} — {record.period_end:%d.%m.%Y}"
+            f"📊 {record.headline or 'Қаржылық қорытынды'}\n"
+            f"Кезең: {record.period_start:%d.%m.%Y} — {record.period_end:%d.%m.%Y}"
         )
         pdf = path.read_bytes()
         sent = 0
@@ -418,7 +418,7 @@ class TelegramBot:
         return sent
 
     async def send_post(self, post_id: str) -> int:
-        """Явное действие пользователя в UI: отправить готовый пост во все чаты бота."""
+        """Пайдаланушының UI-дағы айқын әрекеті: дайын постты боттың барлық чаттарына жіберу."""
         record = self._posts.get(post_id)
         png_path = self._posts.png_path(post_id)
         if record is None or png_path is None:
@@ -442,14 +442,14 @@ def _finance_text(result: TaskResult) -> str:
         return f"{value:,.0f}".replace(",", " ") + " ₸"
 
     lines = [
-        f"📊 {finance.report.headline if finance.report else 'Финансовая сводка'}",
-        f"Период: {m.period_start:%d.%m.%Y} — {m.period_end:%d.%m.%Y}, операций: {m.rows}",
-        f"Поступления: {money(m.total_income)} · Расходы: {money(m.total_expense)}",
-        f"Чистый поток: {money(m.net)} · Остаток: {money(m.closing_balance)}",
+        f"📊 {finance.report.headline if finance.report else 'Қаржылық қорытынды'}",
+        f"Кезең: {m.period_start:%d.%m.%Y} — {m.period_end:%d.%m.%Y}, операциялар: {m.rows}",
+        f"Түсімдер: {money(m.total_income)} · Шығыстар: {money(m.total_expense)}",
+        f"Таза ағын: {money(m.net)} · Қалдық: {money(m.closing_balance)}",
     ]
     if m.cash_gaps:
-        lines.append(f"Кассовых разрывов: {len(m.cash_gaps)}")
+        lines.append(f"Ақша ағынының үзілістері: {len(m.cash_gaps)}")
     if finance.report:
-        lines += ["", "Выводы:", *[f"• {x}" for x in finance.report.key_findings[:4]]]
-        lines += ["", "Рекомендации:", *[f"{i}. {x}" for i, x in enumerate(finance.report.recommendations[:4], 1)]]
+        lines += ["", "Қорытындылар:", *[f"• {x}" for x in finance.report.key_findings[:4]]]
+        lines += ["", "Ұсыныстар:", *[f"{i}. {x}" for i, x in enumerate(finance.report.recommendations[:4], 1)]]
     return "\n".join(lines)

@@ -1,7 +1,7 @@
-"""Локальное хранилище окна «Финансы»: бюджеты и архив PDF-отчётов (``backend/var``).
+"""«Қаржы» терезесінің жергілікті қоймасы: бюджеттер және PDF-есептер мұрағаты (``backend/var``).
 
-В архив попадают только PDF с агрегатами и метаданные (период, итог) — без сырых
-транзакций. Папка ``backend/var`` в .gitignore и не покидает устройство.
+Мұрағатқа тек агрегаттары бар PDF және метадеректер (кезең, қорытынды) түседі — шикі
+транзакциясыз. ``backend/var`` папкасы .gitignore ішінде және құрылғыдан шықпайды.
 """
 
 from __future__ import annotations
@@ -34,7 +34,7 @@ class BudgetStore:
             return Budgets()
 
     def put(self, budgets: Budgets) -> Budgets:
-        # Одна запись на категорию: последняя побеждает.
+        # Санат бойынша бір жазба: соңғысы жеңеді.
         unique = {item.category.strip(): item for item in budgets.items}
         clean = Budgets(items=[i.model_copy(update={"category": c}) for c, i in unique.items()])
         if self._path is not None:
@@ -44,7 +44,7 @@ class BudgetStore:
         return clean
 
     def check(self, metrics: FinanceMetrics) -> list[BudgetCheck]:
-        """Сравнивает лимиты с расходами последнего полного месяца (детерминированно)."""
+        """Лимиттерді соңғы толық айдың шығыстарымен салыстырады (детерминистік)."""
         spent_by = {c.category.casefold(): c.amount for c in metrics.last_month_by_category}
         checks = []
         for item in self.get().items:

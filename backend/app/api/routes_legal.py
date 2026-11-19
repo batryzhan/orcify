@@ -1,5 +1,5 @@
-"""Legal без LLM: рендер договора из реквизитов, проверенных пользователем,
-и скачивание готовых документов из памяти."""
+"""LLM-сіз Legal: пайдаланушы тексерген деректемелер бойынша келісімшарт рендері
+және жадтан дайын құжаттарды жүктеу."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ router = APIRouter(prefix="/api", tags=["legal"])
 async def render_contract(
     contract: ContractData, legal: Annotated[LegalService, Depends(get_legal_service)]
 ) -> DocumentInfo:
-    """Для случая ``needs_input``: пользователь поправил поля в UI — рендерим без LLM."""
+    """``needs_input`` жағдайы үшін: пайдаланушы UI-да өрістерді түзетті — LLM-сіз рендерлейміз."""
     try:
         return legal.render(contract)
     except DocEngineError as exc:

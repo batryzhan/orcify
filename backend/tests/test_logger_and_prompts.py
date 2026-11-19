@@ -15,7 +15,7 @@ from app.schemas.intent import DomainEnum
 def test_logger_rejects_non_whitelisted_fields() -> None:
     log = get_logger("test")
     with pytest.raises(ValueError, match="not allowed"):
-        log.info("bad", text="Иванов Иван, ИИН 900101300017")
+        log.info("bad", text="Иванов Иван, ЖСН 900101300017")
 
 
 def test_logger_rejects_long_strings() -> None:

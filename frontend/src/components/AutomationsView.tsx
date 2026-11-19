@@ -12,21 +12,21 @@ interface FlowNode {
 }
 
 const FLOW: FlowNode[] = [
-  { title: "Telegram Trigger", detail: "сообщение или CSV в @orcify_bot", tone: "#2aabee", glyph: "✈" },
-  { title: "Smart Router", detail: "Gemma 4 · домен задачи", tone: "#1d7afc", glyph: "◆" },
-  { title: "Агент домена", detail: "Posts · Finance · Legal · HR", tone: "#e774bb", glyph: "✦" },
-  { title: "Orcify Jira", detail: "карточка на доске ORC", tone: "#22a06b", glyph: "▦" },
-  { title: "Ответ в чат", detail: "пост, отчёт, договор, план", tone: "#f38a3f", glyph: "↩" },
+  { title: "Telegram Trigger", detail: "@orcify_bot-қа хабарлама немесе CSV", tone: "#2aabee", glyph: "✈" },
+  { title: "Smart Router", detail: "Gemma 4 · тапсырма домені", tone: "#1d7afc", glyph: "◆" },
+  { title: "Домен агенті", detail: "Posts · Finance · Legal · HR", tone: "#e774bb", glyph: "✦" },
+  { title: "Orcify Jira", detail: "ORC тақтасындағы карточка", tone: "#22a06b", glyph: "▦" },
+  { title: "Чатқа жауап", detail: "пост, есеп, келісімшарт, жоспар", tone: "#f38a3f", glyph: "↩" },
 ];
 
 const COMMANDS: [string, string][] = [
-  ["Любой текст", "задача агентам: «Сделай пост для Instagram…», «Составь план онбординга…», переписка для договора"],
-  ["CSV-документ", "локальный финансовый анализ выписки (подпись к файлу — уточнение задачи)"],
-  ["/board", "сводка доски Orcify Jira по колонкам"],
-  ["/start, /help", "справка"],
+  ["Кез келген мәтін", "агенттерге тапсырма: «Instagram үшін пост жаса…», «Онбординг жоспарын құр…», келісімшарт үшін хат-алмасу"],
+  ["CSV-құжат", "үзіндінің жергілікті қаржылық талдауы (файлға жазба — тапсырманы нақтылау)"],
+  ["/board", "Orcify Jira тақтасының бағандар бойынша қорытындысы"],
+  ["/start, /help", "анықтама"],
 ];
 
-/** Автоматизации: Telegram-бот как воркфлоу в стиле n8n, но без внешнего оркестратора. */
+/** Автоматтандыру: n8n стиліндегі воркфлоу ретінде Telegram-бот, бірақ сыртқы оркестраторсыз. */
 export function AutomationsView() {
   const [status, setStatus] = useState<TelegramStatus | null>(null);
   const [down, setDown] = useState(false);
@@ -56,12 +56,12 @@ export function AutomationsView() {
   return (
     <div className="px-4 pb-16 pt-5 sm:px-8">
       <nav className="text-sm text-ink-soft">
-        Проекты <span className="text-ink-mute">/</span> Orcify
+        Жобалар <span className="text-ink-mute">/</span> Orcify
       </nav>
-      <h1 className="mt-1 text-2xl font-semibold text-ink">Автоматизации</h1>
+      <h1 className="mt-1 text-2xl font-semibold text-ink">Автоматтандыру</h1>
       <p className="mt-1 max-w-2xl text-sm text-ink-soft">
-        Telegram-бот запускает тех же агентов, что и доска: задача из чата становится карточкой в Orcify Jira, а результат
-        возвращается в чат. Как воркфлоу n8n, только оркестратор — локальная Gemma.
+        Telegram-бот тақтадағы сол агенттерді іске қосады: чаттағы тапсырма Orcify Jira карточкасына айналады, ал нәтиже
+        чатқа қайтарылады. n8n воркфлоуы сияқты, тек оркестратор — жергілікті Gemma.
       </p>
 
       <section className="mt-6 rounded-lg bg-white p-5 shadow-card">
@@ -69,32 +69,32 @@ export function AutomationsView() {
           <span className={`h-2.5 w-2.5 rounded-full ${live ? "animate-pulse bg-[#22a06b]" : status?.configured ? "bg-warn" : "bg-ink-mute/40"}`} />
           <p className="font-semibold text-ink">
             {down
-              ? "Бэкенд недоступен"
+              ? "Бэкенд қолжетімсіз"
               : !status
-                ? "Загрузка…"
+                ? "Жүктелуде…"
                 : !status.configured
-                  ? "Бот не настроен"
+                  ? "Бот бапталмаған"
                   : live
-                    ? `@${username} слушает сообщения`
-                    : "Бот настроен, но не запущен"}
+                    ? `@${username} хабарламаларды тыңдайды`
+                    : "Бот бапталған, бірақ іске қосылмаған"}
           </p>
           <a href={`https://t.me/${username}`} target="_blank" rel="noreferrer" className="btn-primary ml-auto">
-            Открыть @{username}
+            @{username} ашу
           </a>
         </div>
         {status && !status.configured && (
           <p className="mt-3 text-sm text-ink-soft">
-            Добавьте токен от @BotFather в <code className="rounded bg-paper-col px-1 font-mono text-xs">backend/.env</code> как{" "}
-            <code className="rounded bg-paper-col px-1 font-mono text-xs">TELEGRAM_BOT_API_KEY=…</code> и перезапустите бэкенд.
+            @BotFather-ден токенді <code className="rounded bg-paper-col px-1 font-mono text-xs">backend/.env</code> ішіне{" "}
+            <code className="rounded bg-paper-col px-1 font-mono text-xs">TELEGRAM_BOT_API_KEY=…</code> ретінде қосыңыз да, бэкендті қайта іске қосыңыз.
           </p>
         )}
-        {status?.last_error && <p className="mt-3 text-xs text-warn">Последняя ошибка Bot API: {status.last_error}</p>}
+        {status?.last_error && <p className="mt-3 text-xs text-warn">Bot API-дың соңғы қатесі: {status.last_error}</p>}
         {status && (
           <dl className="mt-5 grid grid-cols-3 gap-4 border-t border-paper-line pt-4">
             {[
-              ["Чатов", status.linked_chats],
-              ["Сообщений", status.handled_messages],
-              ["Задач выполнено", status.completed_runs],
+              ["Чаттар", status.linked_chats],
+              ["Хабарламалар", status.handled_messages],
+              ["Орындалған тапсырмалар", status.completed_runs],
             ].map(([label, value]) => (
               <div key={label}>
                 <dt className="text-xs text-ink-mute">{label}</dt>
@@ -141,7 +141,7 @@ export function AutomationsView() {
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <section className="rounded-lg bg-white p-5 shadow-card">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-soft">Что понимает бот</h2>
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-soft">Бот нені түсінеді</h2>
           <dl className="space-y-3 text-sm">
             {COMMANDS.map(([cmd, text]) => (
               <div key={cmd} className="grid grid-cols-[120px_minmax(0,1fr)] gap-3">
@@ -151,8 +151,8 @@ export function AutomationsView() {
             ))}
           </dl>
           <p className="mt-4 rounded-md bg-paper p-3 text-xs text-ink-soft">
-            Приватность: Telegram — облачный сервис. Бот отвечает только в чат, откуда пришла задача, и ничего не публикует
-            сам. Модель, трекер и рендер постов работают локально; токен бота не пишется в логи.
+            Құпиялылық: Telegram — бұлттық сервис. Бот тек тапсырма келген чатқа жауап береді және өздігінен ештеңе жарияламайды.
+            Модель, трекер және пост рендері жергілікті жұмыс істейді; бот токені логқа жазылмайды.
           </p>
         </section>
         <McpStatusPanel activeDomain={null} />

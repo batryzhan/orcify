@@ -1,4 +1,4 @@
-"""Окно «Финансы»: бюджеты, архив PDF-отчётов и отправка отчёта в Telegram."""
+"""«Қаржы» терезесі: бюджеттер, PDF-есептер мұрағаты және есепті Telegram-ға жіберу."""
 
 from __future__ import annotations
 
@@ -54,7 +54,7 @@ async def send_report(
     store: Annotated[ReportStore, Depends(get_report_store)],
     bot: Annotated[TelegramBot | None, Depends(get_telegram_bot)],
 ) -> SendPostResponse:
-    """Явное действие пользователя: отправить PDF во все чаты, которые писали боту."""
+    """Пайдаланушының айқын әрекеті: PDF-ті боттың жазған барлық чаттарына жіберу."""
     if store.get(report_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="report not found")
     if bot is None or not bot.configured:

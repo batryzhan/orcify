@@ -1,7 +1,7 @@
-"""PDF-отчёт по финансовому анализу (fpdf2, шрифт PT Sans с кириллицей).
+"""Қаржылық талдау бойынша PDF-есеп (fpdf2, кириллицасы бар PT Sans қарпі).
 
-Deterministic Core: все цифры — из pandas-агрегатов локального MCP, тексты
-выводов — из Structured Output модели. Сырые транзакции в отчёт не попадают.
+Deterministic Core: барлық цифрлар — жергілікті MCP-дің pandas-агрегаттарынан, қорытынды
+мәтіндері — модельдің Structured Output-ынан. Шикі транзакциялар есепке түспейді.
 """
 
 from __future__ import annotations
@@ -23,8 +23,8 @@ INCOME: Final = (42, 120, 214)
 EXPENSE: Final = (235, 104, 52)
 GOOD: Final = (31, 132, 90)
 BAD: Final = (174, 46, 36)
-RISK_LABEL: Final = {"high": "высокий", "medium": "средний", "low": "низкий"}
-MONTHS: Final = ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"]
+RISK_LABEL: Final = {"high": "жоғары", "medium": "орташа", "low": "төмен"}
+MONTHS: Final = ["қаң", "ақп", "нау", "сәу", "мам", "мау", "шіл", "там", "қыр", "қаз", "қар", "жел"]
 
 
 class FinancePdfError(Exception):
@@ -42,7 +42,7 @@ def month_label(month: str) -> str:
     return f"{MONTHS[int(m) - 1]} {year}"
 
 
-# В PT Sans нет глифов ₸ и стрелки — заменяем на привычные «тг» и «->» (в т.ч. в тексте модели).
+# PT Sans ішінде ₸ және көрсеткі глифтері жоқ — әдеттегі «тг» және «->» таңбаларына ауыстырамыз (модель мәтінінде де).
 _GLYPHS: Final = str.maketrans({"₸": "тг", "→": "->", "−": "-"})
 
 
@@ -54,7 +54,7 @@ class _Pdf(FPDF):
         self.set_y(-14)
         self.set_font("PTSans", size=8)
         self.set_text_color(*MUTE)
-        self.cell(0, 6, f"Orcify · сформировано локально, сырые транзакции не передавались в модель · стр. {self.page_no()}",
+        self.cell(0, 6, f"Orcify · жергілікті құрастырылған, шикі транзакциялар модельге берілмеген · {self.page_no()}-бет",
                   align="C")
 
 
@@ -74,7 +74,7 @@ class FinancePdfRenderer:
             raise FinancePdfError("font_missing")
         pdf = _Pdf(format="A4")
         pdf.set_creation_date(created_at)
-        pdf.set_title("Финансовая сводка Orcify")
+        pdf.set_title("Orcify қаржылық қорытындысы")
         pdf.add_font("PTSans", "", str(self._regular))
         pdf.add_font("PTSans", "B", str(self._bold))
         pdf.set_auto_page_break(auto=True, margin=18)
@@ -98,13 +98,13 @@ class FinancePdfRenderer:
             self._gaps(pdf, metrics)
         return bytes(pdf.output())
 
-    # --- секции ---------------------------------------------------------------
+    # --- бөлімдер -------------------------------------------------------------
 
     @staticmethod
     def _h2(pdf: FPDF, text: str, need: float = 40.0) -> None:
-        """Заголовок секции. ``need`` — сколько мм нужно под ним: если не помещается, секция
-        целиком переносится на новую страницу (заголовок не остаётся один внизу страницы).
-        Длинные заголовки (их пишет модель) переносятся по словам, а не обрезаются."""
+        """Бөлім тақырыбы. ``need`` — астында қанша мм қажет: сыймаса, бөлім
+        толығымен жаңа бетке өтеді (тақырып беттің түбінде жалғыз қалмайды).
+        Ұзын тақырыптар (оларды модель жазады) сөздер бойынша тасымалданады, кесілмейді."""
         if pdf.get_y() + need > pdf.h - 18:
             pdf.add_page()
         pdf.ln(4)
@@ -124,11 +124,11 @@ class FinancePdfRenderer:
     def _header(self, pdf: FPDF, m: FinanceMetrics, created_at: datetime) -> None:
         pdf.set_font("PTSans", "B", 22)
         pdf.set_text_color(*INK)
-        pdf.cell(0, 11, "Финансовая сводка", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        pdf.cell(0, 11, "Қаржылық қорытынды", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self._text(
             pdf,
-            f"Период: {m.period_start:%d.%m.%Y} — {m.period_end:%d.%m.%Y} · операций: {m.rows} · "
-            f"отчёт от {created_at:%d.%m.%Y %H:%M}",
+            f"Кезең: {m.period_start:%d.%m.%Y} — {m.period_end:%d.%m.%Y} · операциялар: {m.rows} · "
+            f"есеп күні {created_at:%d.%m.%Y %H:%M}",
             size=10,
             color=MUTE,
         )
@@ -136,10 +136,10 @@ class FinancePdfRenderer:
 
     def _kpis(self, pdf: FPDF, m: FinanceMetrics) -> None:
         tiles = [
-            ("Поступления", money(m.total_income), INCOME),
-            ("Расходы", money(m.total_expense), EXPENSE),
-            ("Чистый поток", money(m.net), GOOD if m.net >= 0 else BAD),
-            ("Остаток на конец", money(m.closing_balance), GOOD if m.closing_balance >= 0 else BAD),
+            ("Түсімдер", money(m.total_income), INCOME),
+            ("Шығыстар", money(m.total_expense), EXPENSE),
+            ("Таза ағын", money(m.net), GOOD if m.net >= 0 else BAD),
+            ("Соңғы қалдық", money(m.closing_balance), GOOD if m.closing_balance >= 0 else BAD),
         ]
         gap = 3
         width = (pdf.w - pdf.l_margin - pdf.r_margin - gap * 3) / 4
@@ -162,23 +162,23 @@ class FinancePdfRenderer:
 
     def _conclusions(self, pdf: FPDF, r: FinanceReportSchema) -> None:
         self._h2(pdf, r.headline, need=70)
-        self._text(pdf, "Ключевые наблюдения", bold=True, color=INK)
+        self._text(pdf, "Негізгі қорытындылар", bold=True, color=INK)
         for item in r.key_findings:
             self._text(pdf, f"•  {item}")
         if r.risks:
             pdf.ln(1)
-            self._text(pdf, "Риски", bold=True, color=INK)
+            self._text(pdf, "Тәуекелдер", bold=True, color=INK)
             for risk in r.risks:
                 self._text(pdf, f"•  {risk.title} ({RISK_LABEL.get(risk.level.value, risk.level.value)}): {risk.detail}")
         pdf.ln(1)
-        self._text(pdf, "Рекомендации", bold=True, color=INK)
+        self._text(pdf, "Ұсыныстар", bold=True, color=INK)
         for i, item in enumerate(r.recommendations, 1):
             self._text(pdf, f"{i}.  {item}")
 
     def _monthly_chart(self, pdf: FPDF, m: FinanceMetrics) -> None:
         if not m.monthly:
             return
-        self._h2(pdf, "Помесячный денежный поток", need=82)
+        self._h2(pdf, "Айлар бойынша ақша ағыны", need=82)
         x0, y0 = pdf.l_margin, pdf.get_y() + 2
         width, height = pdf.w - pdf.l_margin - pdf.r_margin, 50
         peak = max(max(x.income, x.expense) for x in m.monthly) or 1
@@ -197,7 +197,7 @@ class FinancePdfRenderer:
             pdf.set_text_color(*MUTE)
             pdf.cell(slot, 4, month_label(flow.month), align="C")
         pdf.set_xy(x0, y0 + height + 7)
-        for label, color in (("Поступления", INCOME), ("Расходы", EXPENSE)):
+        for label, color in (("Түсімдер", INCOME), ("Шығыстар", EXPENSE)):
             pdf.set_fill_color(*color)
             pdf.rect(pdf.get_x(), pdf.get_y() + 1.2, 3, 3, style="F")
             pdf.set_x(pdf.get_x() + 4.5)
@@ -210,7 +210,7 @@ class FinancePdfRenderer:
         pdf.set_font("PTSans", "", 9.5)
         pdf.set_text_color(*INK)
         pdf.set_draw_color(*LINE)
-        pdf.set_fill_color(255, 255, 255)  # иначе таблица унаследует цвет последней заливки (легенды графика)
+        pdf.set_fill_color(255, 255, 255)  # әйтпесе кесте соңғы бояудың түсін мұрагерлейді (график аңызы)
         with pdf.table(col_widths=widths, text_align=("LEFT",) + ("RIGHT",) * (len(header) - 1),
                        line_height=6.2, borders_layout="HORIZONTAL_LINES",
                        headings_style=_headings()) as table:
@@ -223,17 +223,17 @@ class FinancePdfRenderer:
                     row.cell(v)
 
     def _forecast(self, pdf: FPDF, m: FinanceMetrics) -> None:
-        self._h2(pdf, "Прогноз остатка на 3 месяца", need=48)
-        self._text(pdf, f"По среднему последних {m.forecast_basis_months} полных мес. Это ориентир, а не обещание.",
+        self._h2(pdf, "3 айлық қалдық болжамы", need=48)
+        self._text(pdf, f"Соңғы {m.forecast_basis_months} толық айдың орташасы бойынша. Бұл — бағдар, уәде емес.",
                    size=9.5, color=MUTE)
         pdf.ln(1)
         rows = [(month_label(p.month), money(p.income), money(p.expense), money(p.net), money(p.balance))
                 for p in m.forecast]
-        self._table(pdf, ("Месяц", "Поступления", "Расходы", "Итог", "Остаток"), rows, (26, 20, 20, 18, 20))
+        self._table(pdf, ("Ай", "Түсім", "Шығыс", "Нәтиже", "Қалдық"), rows, (26, 20, 20, 18, 20))
         negative = next((p for p in m.forecast if p.balance < 0), None)
         if negative:
             pdf.ln(1)
-            self._text(pdf, f"Внимание: при текущем темпе остаток уйдёт в минус в {month_label(negative.month)}.",
+            self._text(pdf, f"Назар аударыңыз: қазіргі қарқында қалдық {month_label(negative.month)} айында минусқа кетеді.",
                        color=BAD, bold=True)
 
     def _mom(self, pdf: FPDF, m: FinanceMetrics) -> None:
@@ -241,13 +241,13 @@ class FinancePdfRenderer:
         assert mom is not None
         self._h2(
             pdf,
-            f"{month_label(mom.current_month)} к {month_label(mom.previous_month)}",
+            f"{month_label(mom.current_month)} · алдыңғы ай: {month_label(mom.previous_month)}",
             need=34 + 6.4 * (len(mom.categories) + 1),
         )
         self._text(
             pdf,
-            f"Поступления: {money(mom.income_previous)} → {money(mom.income_current)} · "
-            f"Расходы: {money(mom.expense_previous)} → {money(mom.expense_current)}",
+            f"Түсімдер: {money(mom.income_previous)} → {money(mom.income_current)} · "
+            f"Шығыстар: {money(mom.expense_previous)} → {money(mom.expense_current)}",
             size=9.5,
         )
         if mom.categories:
@@ -258,30 +258,30 @@ class FinancePdfRenderer:
                  "—" if c.change_pct is None else f"{c.change_pct:+.0%}")
                 for c in mom.categories
             ]
-            self._table(pdf, ("Категория", "Было", "Стало", "Изменение", "%"), rows, (30, 20, 20, 20, 12))
+            self._table(pdf, ("Санат", "Бұрын", "Қазір", "Өзгеріс", "%"), rows, (30, 20, 20, 20, 12))
 
     def _budgets(self, pdf: FPDF, m: FinanceMetrics, budgets: list[BudgetCheck]) -> None:
         self._h2(
             pdf,
-            f"Бюджеты · {month_label(m.budget_month) if m.budget_month else ''}",
+            f"Бюджеттер · {month_label(m.budget_month) if m.budget_month else ''}",
             need=24 + 6.4 * (len(budgets) + 1),
         )
         rows = [
             (b.category, money(b.limit), money(b.spent),
-             ("перерасход " + money(-b.remaining)) if b.over else money(b.remaining), f"{b.ratio:.0%}")
+             ("асып кету " + money(-b.remaining)) if b.over else money(b.remaining), f"{b.ratio:.0%}")
             for b in budgets
         ]
-        self._table(pdf, ("Категория", "Лимит", "Потрачено", "Остаток", "Исп."), rows, (30, 20, 20, 26, 12))
+        self._table(pdf, ("Санат", "Лимит", "Жұмсалды", "Қалдық", "Пайд."), rows, (30, 20, 20, 26, 12))
 
     def _categories(self, pdf: FPDF, m: FinanceMetrics) -> None:
-        self._h2(pdf, "Расходы по категориям за период", need=24 + 6.4 * (len(m.expense_by_category) + 1))
+        self._h2(pdf, "Кезеңдегі санаттар бойынша шығыстар", need=24 + 6.4 * (len(m.expense_by_category) + 1))
         rows = [(c.category, money(c.amount), f"{c.share:.1%}") for c in m.expense_by_category]
-        self._table(pdf, ("Категория", "Сумма", "Доля"), rows, (40, 24, 14))
+        self._table(pdf, ("Санат", "Сома", "Үлесі"), rows, (40, 24, 14))
 
     def _gaps(self, pdf: FPDF, m: FinanceMetrics) -> None:
-        self._h2(pdf, "Кассовые разрывы", need=22 + 6 * len(m.cash_gaps))
+        self._h2(pdf, "Ақша ағынының үзілістері", need=22 + 6 * len(m.cash_gaps))
         for g in m.cash_gaps:
-            self._text(pdf, f"•  {g.start:%d.%m.%Y} — {g.end:%d.%m.%Y} ({g.days} дн.), минимум {money(g.min_balance)}",
+            self._text(pdf, f"•  {g.start:%d.%m.%Y} — {g.end:%d.%m.%Y} ({g.days} күн), минимум {money(g.min_balance)}",
                        color=BAD)
 
 

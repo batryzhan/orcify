@@ -1,10 +1,10 @@
-"""MCPServerManager: единая точка всех вызовов MCP.
+"""MCPServerManager: барлық MCP шақыруларының бірыңғай нүктесі.
 
-* реестр серверов с доменами (Smart Routing подгружает только инструменты домена);
-* ``is_external=True`` -> аргументы обязательно проходят через LocalAnonymizer,
-  ответ де-анонимизируется локально; при обнаружении утечки вызов блокируется;
-* любая ошибка/тайм-аут/«не настроен» -> ``fallback_handler`` и ``degraded=True``
-  вместо HTTP 500.
+* домендері бар серверлер тізілімі (Smart Routing тек доменнің құралдарын жүктейді);
+* ``is_external=True`` -> аргументтер міндетті түрде LocalAnonymizer арқылы өтеді,
+  жауап жергілікті түрде деанонимизацияланады; ағу анықталса, шақыру бұғатталады;
+* кез келген қате/тайм-аут/«бапталмаған» -> ``fallback_handler`` және ``degraded=True``
+  HTTP 500 орнына.
 """
 
 from __future__ import annotations
@@ -49,7 +49,7 @@ _ERROR_CODE_RE = re.compile(r"[a-z]+_input_error:([a-z_]{1,48})")
 
 
 class PiiLeakError(RuntimeError):
-    """Анонимизированные аргументы всё ещё содержат PII — вызов внешнего MCP запрещён."""
+    """Анонимизацияланған аргументтерде әлі де PII бар — сыртқы MCP-ді шақыруға тыйым салынады."""
 
 
 @dataclass
@@ -61,7 +61,7 @@ class _Registration:
 
 
 async def degraded_only(request: McpCallRequest, error_code: str) -> McpCallResult:
-    """Fallback по умолчанию: только флаг деградации, артефакт строит пайплайн."""
+    """Әдепкі fallback: тек деградация жалауы, артефактты пайплайн құрады."""
     return McpCallResult(server=request.server, tool=request.tool, ok=False, degraded=True, error_code=error_code)
 
 
@@ -69,7 +69,7 @@ class MCPServerManager:
     def __init__(self) -> None:
         self._servers: dict[str, _Registration] = {}
 
-    # --- реестр -------------------------------------------------------------
+    # --- тізілім -------------------------------------------------------------
 
     def register(
         self,
@@ -93,7 +93,7 @@ class MCPServerManager:
     def specs(self) -> list[McpServerSpec]:
         return [r.spec for r in self._servers.values()]
 
-    # --- подключение --------------------------------------------------------
+    # --- қосылу --------------------------------------------------------------
 
     def _client(self, reg: _Registration) -> Client:
         spec = reg.spec
@@ -112,7 +112,7 @@ class MCPServerManager:
         return Client(server=transport)  # type: ignore[arg-type]
 
     async def list_tools(self, domain: DomainEnum | None = None) -> list[McpToolInfo]:
-        """Инструменты домена (Scoped Execution) или все (Full Context, для экспериментов)."""
+        """Доменнің құралдары (Scoped Execution) немесе барлығы (Full Context, тәжірибелер үшін)."""
         tools: list[McpToolInfo] = []
         for reg in self._servers.values():
             if not reg.spec.enabled or (domain is not None and domain not in reg.spec.domains):
@@ -121,7 +121,7 @@ class MCPServerManager:
                 async with asyncio.timeout(reg.spec.timeout_s):
                     async with self._client(reg) as client:
                         listed = await client.list_tools()
-            except Exception as exc:  # noqa: BLE001 — недоступный сервер не должен ронять листинг
+            except Exception as exc:  # noqa: BLE001 — қолжетімсіз сервер листингті құлатпауы керек
                 log.warning("mcp_list_tools_failed", server=reg.spec.name, error_type=type(exc).__name__)
                 continue
             tools += [
@@ -154,7 +154,7 @@ class MCPServerManager:
             result.append(item)
         return result
 
-    # --- вызов --------------------------------------------------------------
+    # --- шақыру --------------------------------------------------------------
 
     async def call_tool(
         self,
@@ -192,12 +192,12 @@ class MCPServerManager:
                     result = await client.call_tool(tool, args)
         except TimeoutError:
             return await self._fallback(reg, request, "timeout", _ms(started))
-        except Exception as exc:  # noqa: BLE001 — Graceful Degradation по CLAUDE.md §3.4
+        except Exception as exc:  # noqa: BLE001 — CLAUDE.md §3.4 бойынша Graceful Degradation
             return await self._fallback(reg, request, f"unavailable:{type(exc).__name__}", _ms(started))
 
         text = "\n".join(getattr(block, "text", "") for block in result.content if getattr(block, "type", "") == "text")
         if result.is_error:
-            # Машинный код ошибки берём только у локальных серверов (их сообщения — наши коды).
+            # Қатенің машиналық кодын тек жергілікті серверлерден аламыз (олардың хабарламалары — біздің кодтар).
             match = _ERROR_CODE_RE.search(text) if not spec.is_external else None
             code = f"tool_error:{match.group(1)}" if match else "tool_error"
             return await self._fallback(reg, request, code, _ms(started))
@@ -229,7 +229,7 @@ def _ms(started: float) -> int:
     return round((time.monotonic() - started) * 1000)
 
 
-# --- реестр по умолчанию (CLAUDE.md §5.4) ------------------------------------
+# --- әдепкі тізілім (CLAUDE.md §5.4) ------------------------------------
 
 
 def build_default_manager(
@@ -240,13 +240,13 @@ def build_default_manager(
     *,
     finance_server: MCPServer | None = None,
 ) -> MCPServerManager:
-    """Все MCP-серверы Orcify локальные: данные не покидают устройство.
+    """Orcify-дың барлық MCP-серверлері жергілікті: деректер құрылғыдан шықпайды.
 
-    Внешние генеративные сервисы (видео через Higgsfield, Atlassian, n8n) убраны:
-    у локальной 4B-модели нет для них MCP, а их задачи закрывают
-    ``awesome_posts`` (рендер постов), ``orcify_jira`` (свой трекер) и Telegram-бот
-    (канал автоматизации, ``app/channels/telegram.py``). Механизм ``is_external``
-    с обязательным LocalAnonymizer сохранён для будущих внешних серверов.
+    Сыртқы генеративті сервистер (Higgsfield арқылы бейне, Atlassian, n8n) алынып тасталды:
+    жергілікті 4B-модельде олар үшін MCP жоқ, ал олардың міндеттерін
+    ``awesome_posts`` (пост рендері), ``orcify_jira`` (өз трекері) және Telegram-бот
+    (автоматтандыру арнасы, ``app/channels/telegram.py``) атқарады. ``is_external``
+    механизмі міндетті LocalAnonymizer-мен болашақ сыртқы серверлер үшін сақталған.
     """
     manager = MCPServerManager()
 
@@ -260,21 +260,21 @@ def build_default_manager(
             args=(str(settings.finance_mcp_script),),
             timeout_s=settings.mcp_timeout_s,
             enabled=settings.finance_mcp_enabled and (finance_server is not None or settings.finance_mcp_script.is_file()),
-            description="Локальный анализ CSV-выписок (pandas)",
+            description="CSV-үзінділерді жергілікті талдау (pandas)",
         ),
         degraded_only,
-        in_process=finance_server,  # тесты подключают тот же сервер in-process, без подпроцесса
+        in_process=finance_server,  # тесттер сол серверді in-process қосады, ішкі процессіз
     )
     manager.register(
         McpServerSpec(
             name="orcify_jira",
             domains=frozenset(DomainEnum),
             is_external=False,
-            transport=McpTransport.STDIO,  # фактически in-process; transport не используется
+            transport=McpTransport.STDIO,  # іс жүзінде in-process; transport қолданылмайды
             timeout_s=settings.mcp_timeout_s,
-            description="Собственный трекер задач Orcify Jira (доска ORC)",
+            description="Orcify Jira тапсырмаларының өз трекері (ORC тақтасы)",
         ),
-        degraded_only,  # без трекера пайплайн работает дальше, просто без карточки
+        degraded_only,  # трекерсіз пайплайн әрі қарай жұмыс істейді, тек карточкасыз
         in_process=build_jira_server(jira),
     )
     manager.register(
@@ -284,7 +284,7 @@ def build_default_manager(
             is_external=False,
             transport=McpTransport.STDIO,
             timeout_s=settings.mcp_timeout_s,
-            description="Рендер Instagram-постов по шаблонам (Pillow)",
+            description="Үлгілер бойынша Instagram-посттар рендері (Pillow)",
         ),
         degraded_only,
         in_process=build_posts_server(renderer, posts),

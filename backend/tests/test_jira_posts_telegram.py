@@ -1,4 +1,4 @@
-"""Orcify Jira (хранилище и API), рендер Awesome Posts и Telegram-бот с мок-API."""
+"""Orcify Jira (қойма және API), Awesome Posts рендері және мок-API бар Telegram-бот."""
 
 from __future__ import annotations
 
@@ -35,19 +35,19 @@ def test_store_starts_empty_persists_and_clears(tmp_path: Path) -> None:
     store = JiraStore(path)
     board = store.board()
     assert board.project_key == "ORC" and [c.status for c in board.columns] == list(IssueStatus)
-    assert board.issues == []  # никакого демо-хлама: доска начинается пустой
+    assert board.issues == []  # демо-қоқыс жоқ: тақта бос басталады
 
-    a = store.create(IssueCreate(summary="Первая"))
-    b = store.create(IssueCreate(summary="Вторая"))
+    a = store.create(IssueCreate(summary="Бірінші"))
+    b = store.create(IssueCreate(summary="Екінші"))
     assert (a.key, b.key) == ("ORC-1", "ORC-2") and store.board().issues[0].key == "ORC-2"
     store.update(a.key, IssueUpdate(status=IssueStatus.DONE))
-    reopened = JiraStore(path)  # повторное открытие читает файл
-    assert reopened.get("ORC-2").summary == "Вторая"
+    reopened = JiraStore(path)  # қайта ашу файлды оқиды
+    assert reopened.get("ORC-2").summary == "Екінші"
 
     assert reopened.clear({IssueStatus.DONE}) == 1
     assert [i.key for i in reopened.board().issues] == ["ORC-2"]
     assert reopened.clear() == 1 and reopened.board().issues == []
-    assert reopened.create(IssueCreate(summary="x")).key == "ORC-1"  # пустая доска — нумерация заново
+    assert reopened.create(IssueCreate(summary="x")).key == "ORC-1"  # бос тақта — нөмірлеу қайтадан
 
 
 def test_moving_card_puts_it_on_top_of_column(tmp_path: Path) -> None:
@@ -63,7 +63,7 @@ def test_moving_card_puts_it_on_top_of_column(tmp_path: Path) -> None:
 def test_jira_api_crud(settings: Settings) -> None:
     with TestClient(create_app(settings, llm_transport=httpx.MockTransport(lambda r: chat_response("{}")))) as client:
         assert client.get("/api/jira/board").json()["issues"] == []
-        created = client.post("/api/jira/issues", json={"summary": "Сверстать лендинг", "labels": ["FRONTEND"]})
+        created = client.post("/api/jira/issues", json={"summary": "Лендингті беттеу", "labels": ["FRONTEND"]})
         assert created.status_code == 201
         key = created.json()["key"]
         moved = client.patch(f"/api/jira/issues/{key}", json={"status": "in_progress", "assignee": "Designer"})
@@ -84,8 +84,8 @@ def test_jira_api_crud(settings: Settings) -> None:
 
 def copy(template: PostTemplate, **overrides: object) -> PostCopySchema:
     data: dict[str, object] = {
-        "template": template, "kicker": "−30%", "headline": "Чёрная", "headline_accent": "Пятница",
-        "subtitle": "Скидка на все тарифы до воскресенья", "cta": "Заказать", "handle": "orcify",
+        "template": template, "kicker": "−30%", "headline": "Қара", "headline_accent": "Жұма",
+        "subtitle": "Жексенбіге дейін барлық тарифтерге жеңілдік", "cta": "Тапсырыс беру", "handle": "orcify",
         "caption": "", "hashtags": [],
     }
     data.update(overrides)
@@ -96,16 +96,16 @@ def copy(template: PostTemplate, **overrides: object) -> PostCopySchema:
 def test_every_template_renders_deterministically(settings: Settings, template: PostTemplate) -> None:
     renderer = PostRenderer(settings.assets_dir)
     first = renderer.render(template, copy(template))
-    assert first == renderer.render(template, copy(template))  # Deterministic Core: тот же вход -> тот же PNG
+    assert first == renderer.render(template, copy(template))  # Deterministic Core: бірдей кіріс -> бірдей PNG
     assert Image.open(io.BytesIO(first)).size == (WIDTH, HEIGHT)
 
 
 def test_long_texts_are_fitted_not_crashing(settings: Settings) -> None:
     long = copy(
         PostTemplate.SUMMIT,
-        headline="Очень длинный заголовок, который не влезает",
-        headline_accent="и ещё бесконечно длинная акцентная строка",
-        subtitle="Подзаголовок " * 12,
+        headline="Өте ұзын тақырып, ол сыймайды",
+        headline_accent="және тағы шексіз ұзын акцент жол",
+        subtitle="Ішкі тақырып " * 12,
         kicker=None,
         cta=None,
     )
@@ -117,13 +117,13 @@ def test_long_texts_are_fitted_not_crashing(settings: Settings) -> None:
 
 
 class FakeTelegram:
-    """Мок Bot API: запоминает вызовы и отвечает как Telegram."""
+    """Bot API моксы: шақыруларды есте сақтайды және Telegram сияқты жауап береді."""
 
     def __init__(self) -> None:
         self.calls: list[tuple[str, bytes]] = []
 
     def handler(self, request: httpx.Request) -> httpx.Response:
-        assert TOKEN in request.url.path  # токен уходит только в путь запроса к Telegram
+        assert TOKEN in request.url.path  # токен Telegram-ға сұраудың жолында ғана кетеді
         method = request.url.path.rsplit("/", 1)[-1]
         self.calls.append((method, request.content))
         message = {"message_id": len(self.calls), "chat": {"id": 42, "type": "private"}}
@@ -165,11 +165,11 @@ def test_bot_runs_pipeline_and_replies_with_post(
         sent = client.post(f"/api/posts/{post_id}/telegram").json()
 
     methods = fake.methods()
-    assert methods[0] == "sendMessage" and b"Orcify" in fake.calls[0][1]  # справка на /start
-    assert "editMessageText" in methods  # ход работы обновляется в одном сообщении
+    assert methods[0] == "sendMessage" and b"Orcify" in fake.calls[0][1]  # /start кезіндегі анықтама
+    assert "editMessageText" in methods  # жұмыс барысы бір хабарламада жаңартылады
     photo = next(body for m, body in fake.calls if m == "sendPhoto")
     assert b"image/png" in photo and "#orcify".encode() in photo
-    assert "Orcify Jira".encode() in photo  # подпись ссылается на карточку
+    assert "Orcify Jira".encode() in photo  # жазба карточкаға сілтейді
     assert board["issues"][0]["status"] == "done" and board["issues"][0]["summary"].startswith("Instagram-пост")
     assert status == {**status, "configured": True, "linked_chats": 1, "handled_messages": 2, "completed_runs": 1}
     assert sent == {"sent": 1, "linked_chats": 1}
@@ -211,7 +211,7 @@ def test_bot_sends_finance_pdf(settings: Settings) -> None:
         client.portal.call(bot.handle_message, message("/start"))  # type: ignore[union-attr]
         task = client.post(
             "/api/tasks",
-            json={"text": "Анализ", "domain": "Finance", "attachment": {"filename": "bank.csv", "content": SAMPLE_CSV}},
+        json={"text": "Талдау", "domain": "Finance", "attachment": {"filename": "bank.csv", "content": SAMPLE_CSV}},
         ).json()
         client.get(task["events_url"])
         report_id = client.get("/api/finance/reports").json()[0]["file"]["report_id"]

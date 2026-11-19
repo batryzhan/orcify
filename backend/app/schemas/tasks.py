@@ -1,4 +1,4 @@
-"""Схемы HTTP-API запуска задач."""
+"""Тапсырмаларды іске қосудың HTTP-API схемалары."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from app.schemas.smm import PostTemplate
 
 
 class TaskAttachment(BaseModel):
-    """CSV-файл, прочитанный в браузере как текст (на диск не сохраняется)."""
+    """Браузерде мәтін ретінде оқылған CSV-файл (дискіге сақталмайды)."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -26,10 +26,10 @@ class TaskCreateRequest(BaseModel):
 
     text: str = Field(min_length=1, max_length=50_000)
     attachment: TaskAttachment | None = None
-    opening_balance: float = Field(default=0.0, description="Остаток на начало периода для расчёта кассовых разрывов")
-    # Явный выбор шаблона поста в UI; None — шаблон выбирает модель.
+    opening_balance: float = Field(default=0.0, description="Кезең басындағы қалдық — ақша ағынының үзілістерін есептеу үшін")
+    # UI-да пост үлгісін айқын таңдау; None — үлгіні модель таңдайды.
     post_template: PostTemplate | None = None
-    # Домен, заданный окном интерфейса; None — домен определяет Smart Router.
+    # Интерфейс терезесі берген домен; None — доменді Smart Router анықтайды.
     domain: DomainEnum | None = None
 
 

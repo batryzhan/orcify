@@ -1,4 +1,4 @@
-"""Схемы событий прогресса, отдаваемых через Server-Sent Events."""
+"""Server-Sent Events арқылы берілетін прогресс оқиғаларының схемалары."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ class TaskStatus(StrEnum):
 
 
 class ErrorInfo(BaseModel):
-    """Ошибка для клиента: машинный код и нейтральное сообщение без PII."""
+    """Клиентке қате: машиналық код және PII-сіз бейтарап хабарлама."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -46,7 +46,7 @@ class TaskResult(BaseModel):
 
     intent: IntentClassificationResult
     low_confidence: bool
-    # Карточка задачи на доске Orcify Jira (None, если трекер недоступен).
+    # Orcify Jira тақтасындағы тапсырма карточкасы (None — трекер қолжетімсіз болса).
     issue_key: str | None = None
     legal: LegalResult | None = None
     finance: FinanceResult | None = None
@@ -59,10 +59,10 @@ class ProgressEvent(BaseModel):
 
     status: TaskStatus
     progress: int = Field(ge=0, le=100)
-    # Известен после Этапа 1 и приходит во всех следующих событиях.
+    # 1-кезеңнен кейін белгілі болады және барлық келесі оқиғаларда келеді.
     domain: DomainEnum | None = None
     message: str | None = None
-    # Снимок карточки Orcify Jira после создания/переноса — UI анимирует её на доске.
+    # Жасалған/жылжытылған соң Orcify Jira карточкасының суреті — UI оны тақтада анимациялайды.
     issue: JiraIssue | None = None
     result: TaskResult | None = None
     error: ErrorInfo | None = None

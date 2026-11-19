@@ -1,4 +1,4 @@
-"""MCPServerManager, Сценарии В (Finance), Б (Awesome Posts) и HR с in-process MCP-серверами."""
+"""MCPServerManager, В (Finance), Б (Awesome Posts) сценарийлері және in-process MCP-серверлері бар HR."""
 
 from __future__ import annotations
 
@@ -56,7 +56,7 @@ def external_spec(name: str, domain: DomainEnum = DomainEnum.SMM) -> McpServerSp
 
 
 def local_factory(settings: Settings, jira: JiraStore, renderer: PostRenderer, posts: PostStore) -> MCPServerManager:
-    """Реестр по умолчанию, но финансовый сервер подключён in-process (без подпроцесса)."""
+    """Әдепкі тізілім, бірақ қаржылық сервер in-process қосылған (ішкі процессіз)."""
     return build_default_manager(settings, jira, renderer, posts, finance_server=FINANCE.mcp)
 
 
@@ -76,7 +76,7 @@ def test_servers_are_scoped_by_domain(settings: Settings, tmp_path: Path) -> Non
     assert [s.name for s in manager.servers_for(DomainEnum.FINANCE)] == ["local_finance", "orcify_jira"]
     assert [s.name for s in manager.servers_for(DomainEnum.SMM)] == ["orcify_jira", "awesome_posts"]
     assert [s.name for s in manager.servers_for(DomainEnum.LEGAL)] == ["orcify_jira"]
-    assert not any(s.is_external for s in manager.specs)  # все серверы Orcify локальные
+    assert not any(s.is_external for s in manager.specs)  # Orcify-дың барлық серверлері жергілікті
 
 
 async def test_list_tools_scoped_vs_full(settings: Settings, tmp_path: Path) -> None:
@@ -93,7 +93,7 @@ def echo_server(seen: list[str]) -> MCPServer:
     @server.tool(name="echo")
     def echo(prompt: str) -> str:
         seen.append(prompt)
-        return f"получено: {prompt}"
+        return f"алынды: {prompt}"
 
     return server
 
@@ -110,11 +110,11 @@ async def test_external_call_is_anonymized_and_result_deanonymized() -> None:
     manager = MCPServerManager()
     manager.register(external_spec("echo"), in_process=echo_server(seen))
     session = AnonymizationSession()
-    result = await manager.call_tool("echo", "echo", EchoArgs(prompt="ТОО «Альфа», ИИН 900101300017"), anonymizer=session)
+    result = await manager.call_tool("echo", "echo", EchoArgs(prompt="ТОО «Альфа», ЖСН 900101300017"), anonymizer=session)
 
-    assert seen and "900101300017" not in seen[0] and "[IIN_1]" in seen[0]  # наружу ушёл только токен
+    assert seen and "900101300017" not in seen[0] and "[IIN_1]" in seen[0]  # сыртқа тек токен шықты
     assert result.ok and result.anonymized
-    assert result.text == "получено: ТОО «Альфа», ИИН 900101300017"  # де-анонимизировано локально
+    assert result.text == "алынды: ТОО «Альфа», ЖСН 900101300017"  # жергілікті деанонимизацияланды
 
 
 async def test_disabled_server_degrades() -> None:
@@ -124,7 +124,7 @@ async def test_disabled_server_degrades() -> None:
     assert result.degraded and not result.ok and result.error_code == "not_configured"
 
 
-# --- Сценарий В: Finance -----------------------------------------------------------
+# --- В сценарийі: Finance -----------------------------------------------------------
 
 
 def test_finance_contract_matches_mcp_server() -> None:
@@ -137,7 +137,7 @@ def test_finance_contract_matches_mcp_server() -> None:
 
 @pytest.mark.parametrize(
     ("csv_text", "code"),
-    [("a;b\n1;2", "date_column_not_found"), ("Дата;Описание\n01.01.2026;x", "amount_column_not_found")],
+    [("a;b\n1;2", "date_column_not_found"), ("Күні;Сипаттама\n01.01.2026;x", "amount_column_not_found")],
 )
 def test_finance_input_errors(csv_text: str, code: str) -> None:
     with pytest.raises(FINANCE.FinanceInputError, match=code):
@@ -153,10 +153,10 @@ def test_finance_income_expense_columns() -> None:
 
 REPORT = json.dumps(
     {
-        "headline": "Поток положительный, но был кассовый разрыв",
-        "key_findings": ["Выручка выше расходов", "Зарплата — крупнейшая статья"],
-        "risks": [{"title": "Кассовый разрыв", "level": "high", "detail": "Июль"}],
-        "recommendations": ["Создать резерв"],
+        "headline": "Ағын оң, бірақ ақша ағынының үзілісі болды",
+        "key_findings": ["Түсім шығыстардан жоғары", "Жалақы — ең ірі бап"],
+        "risks": [{"title": "Ақша ағынының үзілісі", "level": "high", "detail": "Шілде"}],
+        "recommendations": ["Резерв жасау"],
     },
     ensure_ascii=False,
 )
@@ -174,7 +174,7 @@ def test_finance_scenario_end_to_end(settings: Settings) -> None:
         task = client.post(
             "/api/tasks",
             json={
-                "text": "Проанализируй выписку",
+                "text": "Үзіндіні талда",
                 "attachment": {"filename": "bank.csv", "content": SAMPLE_CSV},
                 "opening_balance": 500000,
             },
@@ -186,7 +186,7 @@ def test_finance_scenario_end_to_end(settings: Settings) -> None:
             "analyzing_csv", "generating_report", "rendering_pdf", "updating_jira", "completed",
         ]
         assert all(e.get("domain") == "Finance" for e in events[1:])
-        assert events[1]["issue"]["summary"] == "Анализ выписки bank.csv"  # type: ignore[index]
+        assert events[1]["issue"]["summary"] == "bank.csv үзіндісін талдау"  # type: ignore[index]
         assert events[-2]["issue"]["status"] == "done"  # type: ignore[index]
         finance = events[-1]["result"]["finance"]  # type: ignore[index]
         assert finance["report"]["risks"][0]["level"] == "high"
@@ -200,16 +200,16 @@ def test_finance_scenario_end_to_end(settings: Settings) -> None:
         assert archive[0]["file"]["report_id"] == finance["report_file"]["report_id"]
         assert archive[0]["issue_key"] == events[-1]["result"]["issue_key"]  # type: ignore[index]
 
-    # В LLM не попадает ни одна сырая строка выписки (только имя файла и агрегаты).
+    # LLM-ге үзіндінің бірде-бір шикі жолы түспейді (тек файл атауы және агрегаттар).
     llm_input = "\n".join(seen_by_llm)
-    assert "Оплата по счёту" not in llm_input  # назначение платежа из строк
+    assert "Шот бойынша төлем" not in llm_input  # жолдардағы төлем мақсаты
     assert "bank.csv" in llm_input
 
 
 def test_finance_without_attachment_asks_for_csv(settings: Settings) -> None:
     handler = schema_router({"IntentClassificationResult": intent_json("Finance")})
     with make_client(settings, handler) as client:
-        task = client.post("/api/tasks", json={"text": "Посчитай расходы"}).json()
+        task = client.post("/api/tasks", json={"text": "Шығыстарды есепте"}).json()
         events = parse_sse(client.get(task["events_url"]).text)
     assert events[-1]["status"] == "completed" and "CSV" in str(events[-1]["message"])
     assert "NEEDS INPUT" in events[-2]["issue"]["labels"]  # type: ignore[index]
@@ -219,28 +219,28 @@ def test_finance_bad_csv_fails_gracefully(settings: Settings) -> None:
     handler = schema_router({"IntentClassificationResult": intent_json("Finance")})
     with make_client(settings, handler) as client:
         task = client.post(
-            "/api/tasks", json={"text": "Анализ", "attachment": {"filename": "x.csv", "content": "a;b\n1;2"}}
+            "/api/tasks", json={"text": "Талдау", "attachment": {"filename": "x.csv", "content": "a;b\n1;2"}}
         ).json()
         final = parse_sse(client.get(task["events_url"]).text)[-1]
     assert final["status"] == "failed"
     assert final["error"]["code"] == "tool_error:date_column_not_found"  # type: ignore[index]
 
 
-# --- Сценарий Б: Awesome Posts --------------------------------------------------------
+# --- Б сценарийі: Awesome Posts --------------------------------------------------------
 
-SMM_REQUEST = "Сделай пост для Instagram: знакомство с командой Orcify, мы строим локальный ИИ для бизнеса."
+SMM_REQUEST = "Instagram үшін пост жаса: Orcify командасымен танысу, біз бизнеске арналған жергілікті ЖИ құрып жатырмыз."
 
 
 def post_copy(**overrides: object) -> str:
     data: dict[str, object] = {
         "template": "cosmos",
         "kicker": None,
-        "headline": "Знакомьтесь",
-        "headline_accent": "Команда Orcify",
-        "subtitle": "Пятеро инженеров, которые учат локальный ИИ работать на бизнес",
+        "headline": "Танысыңыз",
+        "headline_accent": "Orcify командасы",
+        "subtitle": "Жергілікті ЖИ-ды бизнеске жұмыс істеуге үйрететін бес инженер",
         "cta": None,
         "handle": "orcify",
-        "caption": "Привет! Мы — команда Orcify.",
+        "caption": "Сәлем! Біз — Orcify командасымыз.",
         "hashtags": ["#orcify", "localai"],
     }
     data.update(overrides)
@@ -271,7 +271,7 @@ def test_smm_scenario_renders_post_and_moves_card(settings: Settings) -> None:
 
         board = client.get("/api/jira/board").json()
         issue = next(i for i in board["issues"] if i["key"] == result["issue_key"])
-        assert issue["status"] == "done" and issue["summary"] == "Instagram-пост: Знакомьтесь Команда Orcify"
+        assert issue["status"] == "done" and issue["summary"] == "Instagram-пост: Танысыңыз Orcify командасы"
         assert issue["attachments"] == [{"kind": "post", "title": "Пост · cosmos", "url": post["image_url"]}]
 
         gallery = client.get("/api/posts").json()
@@ -304,21 +304,21 @@ def test_post_templates_and_safe_ids(settings: Settings) -> None:
         preview = client.get(templates[1]["preview_url"])
         assert preview.status_code == 200 and Image.open(io.BytesIO(preview.content)).size == (1080, 1350)
         assert client.get("/api/posts/nothex.png").status_code == 404
-        # Без настроенного бота отправка в Telegram — 404/409, а не 500.
+        # Бапталған боты жоқ болса, Telegram-ға жіберу — 404/409, 500 емес.
         assert client.post(f"/api/posts/{'0' * 32}/telegram").status_code == 404
 
 
-# --- HR: планировщик задач Orcify Jira -------------------------------------------------
+# --- HR: Orcify Jira тапсырмалар жоспарлаушысы -------------------------------------------------
 
 PLAN = json.dumps(
     {
-        "epic": "Онбординг дизайнера",
+        "epic": "Дизайнерді онбордингке қабылдау",
         "issues": [
-            {"summary": "Подготовить рабочее место", "description": "Ноутбук и доступы", "type": "task",
+            {"summary": "Жұмыс орнын дайындау", "description": "Ноутбук және қолжетімділіктер", "type": "task",
              "priority": "high", "story_points": 2, "assignee_role": "IT"},
-            {"summary": "Провести знакомство с командой", "description": "Встреча в первый день", "type": "story",
-             "priority": "medium", "story_points": 1, "assignee_role": "Руководитель"},
-            {"summary": "Оформить приказ о приёме", "description": "Подписать документы", "type": "task",
+            {"summary": "Командамен таныстыру өткізу", "description": "Бірінші күнгі кездесу", "type": "story",
+             "priority": "medium", "story_points": 1, "assignee_role": "Басшы"},
+            {"summary": "Қабылдау бұйрығын ресімдеу", "description": "Құжаттарға қол қою", "type": "task",
              "priority": "highest", "story_points": 3, "assignee_role": "HR"},
         ],
     },
@@ -329,24 +329,24 @@ PLAN = json.dumps(
 def test_hr_plan_creates_issues_on_board(settings: Settings) -> None:
     handler = schema_router({"IntentClassificationResult": intent_json("HR"), "JiraPlanSchema": PLAN})
     with make_client(settings, handler) as client:
-        task = client.post("/api/tasks", json={"text": "Составь план онбординга нового дизайнера"}).json()
+        task = client.post("/api/tasks", json={"text": "Жаңа дизайнерді онбордингке қабылдау жоспарын құр"}).json()
         events = parse_sse(client.get(task["events_url"]).text)
         board = client.get("/api/jira/board").json()
 
     result = events[-1]["result"]  # type: ignore[index]
     epic_key = result["issue_key"]
-    assert result["hr"]["plan"]["epic"] == "Онбординг дизайнера" and len(result["hr"]["issue_keys"]) == 3
+    assert result["hr"]["plan"]["epic"] == "Дизайнерді онбордингке қабылдау" and len(result["hr"]["issue_keys"]) == 3
     children = [i for i in board["issues"] if i.get("parent_key") == epic_key]
     assert {c["summary"] for c in children} == {
-        "Подготовить рабочее место", "Провести знакомство с командой", "Оформить приказ о приёме",
+        "Жұмыс орнын дайындау", "Командамен таныстыру өткізу", "Қабылдау бұйрығын ресімдеу",
     }
     assert all(c["status"] == "todo" and c["domain"] == "HR" and c["labels"] == ["PLAN"] for c in children)
     epic = next(i for i in board["issues"] if i["key"] == epic_key)
-    assert epic["type"] == "epic" and epic["summary"] == "Онбординг дизайнера"
+    assert epic["type"] == "epic" and epic["summary"] == "Дизайнерді онбордингке қабылдау"
 
 
 def test_pipeline_works_without_jira(settings: Settings) -> None:
-    """Graceful Degradation: недоступный трекер не ломает сценарий, просто нет карточки."""
+    """Graceful Degradation: қолжетімсіз трекер сценарийді бұзбайды, жай ғана карточка болмайды."""
 
     def no_jira(settings: Settings, jira: JiraStore, renderer: PostRenderer, posts: PostStore) -> MCPServerManager:
         manager = local_factory(settings, jira, renderer, posts)
@@ -363,7 +363,7 @@ def test_pipeline_works_without_jira(settings: Settings) -> None:
     assert not any("issue" in e for e in events)
 
 
-# --- Окна интерфейса задают домен: Этап 1 не вызывается ----------------------------
+# --- Интерфейс терезелері доменді береді: 1-кезең шақырылмайды ----------------------------
 
 
 def test_window_preset_domain_skips_classifier(settings: Settings) -> None:
@@ -376,21 +376,21 @@ def test_window_preset_domain_skips_classifier(settings: Settings) -> None:
     with make_client(settings, handler) as client:
         task = client.post("/api/tasks", json={"text": SMM_REQUEST, "domain": "SMM"}).json()
         events = parse_sse(client.get(task["events_url"]).text)
-    assert calls == ["PostCopySchema"]  # классификатор не вызывался
-    assert events[0]["message"] == "Домен задан окном: SMM"
+    assert calls == ["PostCopySchema"]  # классификатор шақырылмады
+    assert events[0]["message"] == "Доменді терезе берді: SMM"
     assert events[-1]["result"]["intent"]["confidence"] == 1.0  # type: ignore[index]
 
 
-# --- Окно «Финансы»: бюджеты, прогноз, сравнение месяцев ---------------------------
+# --- «Қаржы» терезесі: бюджеттер, болжам, айларды салыстыру ---------------------------
 
 
 def test_finance_forecast_and_month_over_month() -> None:
     metrics = FINANCE.analyze_csv(SAMPLE_CSV, 500_000)
     assert [p.month for p in metrics.forecast] == ["2026-11", "2026-12", "2027-01"]
-    assert metrics.forecast_basis_months == 3  # октябрь неполный (выписка до 29.10) — не в базе
+    assert metrics.forecast_basis_months == 3  # қазан толық емес (үзінді 29.10-ға дейін) — негізге кірмейді
     mom = metrics.month_over_month
     assert mom is not None and (mom.previous_month, mom.current_month) == ("2026-08", "2026-09")
-    assert metrics.budget_month == "2026-09" and metrics.last_month_by_category[0].category == "Зарплата"
+    assert metrics.budget_month == "2026-09" and metrics.last_month_by_category[0].category == "Жалақы"
 
 
 def test_budgets_are_checked_and_reach_the_report(settings: Settings) -> None:
@@ -398,19 +398,19 @@ def test_budgets_are_checked_and_reach_the_report(settings: Settings) -> None:
     with make_client(settings, handler) as client:
         saved = client.put(
             "/api/finance/budgets",
-            json={"items": [{"category": "Реклама", "limit": 300000}, {"category": "Аренда", "limit": 500000}]},
+            json={"items": [{"category": "Жарнама", "limit": 300000}, {"category": "Жалға алу", "limit": 500000}]},
         )
         assert saved.status_code == 200 and len(client.get("/api/finance/budgets").json()["items"]) == 2
         assert client.put("/api/finance/budgets", json={"items": [{"category": "x", "limit": -1}]}).status_code == 422
         task = client.post(
             "/api/tasks",
-            json={"text": "Анализ", "domain": "Finance", "attachment": {"filename": "bank.csv", "content": SAMPLE_CSV}},
+            json={"text": "Талдау", "domain": "Finance", "attachment": {"filename": "bank.csv", "content": SAMPLE_CSV}},
         ).json()
         finance = parse_sse(client.get(task["events_url"]).text)[-1]["result"]["finance"]  # type: ignore[index]
         report_id = finance["report_file"]["report_id"]
-        assert client.post(f"/api/finance/reports/{report_id}/telegram").status_code == 409  # бот не настроен
+        assert client.post(f"/api/finance/reports/{report_id}/telegram").status_code == 409  # бот бапталмаған
         assert client.delete(f"/api/finance/reports/{report_id}").status_code == 204
         assert client.get(f"/api/finance/reports/{report_id}.pdf").status_code == 404
     checks = {c["category"]: c for c in finance["budget_checks"]}
-    assert checks["Реклама"]["over"] is True and checks["Реклама"]["spent"] > 300000
-    assert checks["Аренда"]["over"] is False and checks["Аренда"]["remaining"] == 50000
+    assert checks["Жарнама"]["over"] is True and checks["Жарнама"]["spent"] > 300000
+    assert checks["Жалға алу"]["over"] is False and checks["Жалға алу"]["remaining"] == 50000

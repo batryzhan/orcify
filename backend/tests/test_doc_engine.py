@@ -26,17 +26,17 @@ def test_format_amount(value: Decimal, expected: str) -> None:
 
 
 def test_format_date_ru() -> None:
-    assert format_date_ru(date(2026, 3, 8)) == "«08» марта 2026 г."
+    assert format_date_ru(date(2026, 3, 8)) == "«08» наурыз 2026 ж."
 
 
 def contract() -> ContractData:
     return ContractData(
-        client_name="ИП Иванов",
+        client_name="ЖК Иванов",
         bin_iin=VALID_IIN,
         contract_amount=Decimal("100"),
         currency="USD",  # type: ignore[arg-type]
         deadline_date=date(2027, 1, 15),
-        scope_of_work="Консультации",
+        scope_of_work="Кеңестер",
     )
 
 
@@ -47,7 +47,7 @@ def test_context_matches_template_variables(settings: Settings) -> None:
     ctx = engine.build_context(contract(), contract_number="N1", contract_date=date(2026, 11, 18))
     declared = DocxTemplate(str(BACKEND_DIR / "templates" / "service_contract_kz.docx")).get_undeclared_template_variables()
     assert declared == set(ctx.model_dump())
-    assert ctx.currency_name == "долларов США"
+    assert ctx.currency_name == "АҚШ доллары"
 
 
 def test_missing_template(settings: Settings, tmp_path: Path) -> None:

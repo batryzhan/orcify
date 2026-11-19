@@ -17,7 +17,7 @@ from app.core.llm_client import (
 from app.schemas.intent import DomainEnum, IntentClassificationResult
 from tests.conftest import Handler, chat_response, intent_json
 
-MESSAGES = [ChatMessage(role="user", content="договор")]
+MESSAGES = [ChatMessage(role="user", content="келісімшарт")]
 
 
 def make_client(settings: Settings, handler: Handler) -> LLMClient:
@@ -64,7 +64,7 @@ async def test_gives_up_after_max_attempts(settings: Settings) -> None:
         await client.structured(MESSAGES, IntentClassificationResult, stage="t")
     assert exc_info.value.code == "schema_mismatch"
     assert exc_info.value.attempts == 2
-    assert exc_info.value.__cause__ is None  # ValidationError с input_value не прикреплён
+    assert exc_info.value.__cause__ is None  # input_value бар ValidationError тіркелмеген
 
 
 async def test_truncated_output(settings: Settings) -> None:
@@ -95,7 +95,7 @@ async def test_connection_error(settings: Settings) -> None:
 
 
 async def test_deadline_covers_slow_server(settings: Settings) -> None:
-    # Сервер отвечает медленнее общего дедлайна, но быстрее read-timeout httpx.
+    # Сервер жалпы дедлайннан баяу, бірақ httpx read-timeout-тан жылдам жауап береді.
     fast_deadline = settings.model_copy(update={"llm_deadline_s": 0.2, "llm_timeout_s": 10.0})
 
     async def slow_handler(_req: httpx.Request) -> httpx.Response:
@@ -110,7 +110,7 @@ async def test_deadline_covers_slow_server(settings: Settings) -> None:
 
 
 async def test_deadline_covers_all_retries(settings: Settings) -> None:
-    # Каждая попытка быстрая, но вместе с повторами не укладываются в дедлайн.
+    # Әр әрекет жылдам, бірақ қайталаулармен бірге дедлайнға сыймайды.
     tight = settings.model_copy(update={"llm_deadline_s": 0.25, "llm_max_attempts": 5})
 
     async def handler(_req: httpx.Request) -> httpx.Response:

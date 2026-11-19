@@ -1,8 +1,8 @@
-"""In-process MCP-сервер ``awesome_posts``: рендер Instagram-поста по текстам от модели.
+"""In-process MCP-сервері ``awesome_posts``: модель мәтіндері бойынша Instagram-пост рендері.
 
-Заменяет внешний Higgsfield MCP: генеративная графика локальной 4B-модели
-недоступна, поэтому картинка собирается детерминированно — фон шаблона
-(``backend/assets/background``) + тексты из Structured Output.
+Сыртқы Higgsfield MCP-нің орнын басады: жергілікті 4B-модельге генеративті графика
+қолжетімсіз, сондықтан сурет детерминистік жиналады — үлгі фоны
+(``backend/assets/background``) + Structured Output мәтіндері.
 """
 
 from __future__ import annotations
@@ -24,17 +24,17 @@ from app.schemas.smm import PostCopySchema, PostRecord, PostTemplate, RenderedPo
 def build_posts_server(renderer: PostRenderer, store: PostStore) -> MCPServer:
     server = MCPServer(
         name="orcify-awesome-posts",
-        instructions="Локальный рендер Instagram-постов 1080×1350 по шаблонам cosmos / neon / summit.",
+        instructions="cosmos / neon / summit үлгілері бойынша 1080×1350 Instagram-посттарының жергілікті рендері.",
     )
 
     @server.tool(
         name="render_post",
-        description="Положить тексты поста на фон выбранного шаблона и сохранить PNG в галерею",
+        description="Пост мәтіндерін таңдалған үлгі фонына салып, PNG-ді галереяға сақтау",
     )
     async def render_post(template: PostTemplate, content: PostCopySchema) -> RenderedPost:
         started = time.monotonic()
         try:
-            # Pillow — CPU-работа: уносим из event loop, чтобы не тормозить SSE других задач.
+            # Pillow — CPU жұмысы: басқа тапсырмалардың SSE-ін тежемеу үшін event loop-тан шығарамыз.
             png = await asyncio.to_thread(renderer.render, template, content)
         except PostRenderError as exc:
             raise ToolError(f"posts_input_error:{exc.code}") from None

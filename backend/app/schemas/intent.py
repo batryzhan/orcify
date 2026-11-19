@@ -1,4 +1,4 @@
-"""Схемы Этапа 1 Smart Routing — классификация намерения."""
+"""Smart Routing 1-кезеңінің схемалары — ниетті жіктеу."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ class DomainEnum(StrEnum):
 
 
 class IntentClassificationResult(BaseModel):
-    """Structured Output классификатора. Поле ``reasoning`` никогда не логируется."""
+    """Классификатордың Structured Output-ы. ``reasoning`` өрісі ешқашан логқа жазылмайды."""
 
     model_config = ConfigDict(extra="forbid")
 

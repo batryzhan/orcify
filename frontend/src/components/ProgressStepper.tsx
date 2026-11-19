@@ -16,14 +16,14 @@ function seconds(ms: number): string {
 export function ProgressStepper({ events, startedAt, state, domain }: Props) {
   const reached = new Map<TaskStatus, number>();
   events.forEach((e, i) => {
-    // Переносы карточки (updating_jira) повторяются — в списке этапов их не показываем.
+    // Карточканы көшірулер (updating_jira) қайталанады — кезеңдер тізімінде көрсетпейміз.
     if (e.data.status !== "updating_jira" && !reached.has(e.data.status)) reached.set(e.data.status, i);
   });
 
   const latest = events.at(-1)?.data ?? null;
   const failed = latest?.status === "failed";
   const finished = latest?.status === "completed" || failed;
-  // После завершения непройденные этапы скрываются (например, рендер при needs_input).
+  // Аяқталған соң өтілмеген кезеңдер жасырылады (мысалы, needs_input кезіндегі рендер).
   const plan = PLAN[domain ?? "unknown"].filter((s) => (finished ? reached.has(s) : true));
   const steps: TaskStatus[] = [...plan, ...[...reached.keys()].filter((s) => !plan.includes(s))];
   const order = (s: TaskStatus) => reached.get(s) ?? Number.MAX_SAFE_INTEGER;
@@ -34,9 +34,9 @@ export function ProgressStepper({ events, startedAt, state, domain }: Props) {
   const total = events.length > 0 && startedAt !== null ? (events.at(-1)?.at ?? startedAt) - startedAt : null;
 
   return (
-    <section aria-label="Ход выполнения">
+    <section aria-label="Орындалу барысы">
       <div className="mb-4 flex items-baseline justify-between gap-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-soft">Ход выполнения</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-soft">Орындалу барысы</h2>
         <span className="font-mono text-sm tabular-nums text-ink-soft">
           {progress}%{total !== null && !running ? ` · ${seconds(total)}` : ""}
         </span>
@@ -60,7 +60,7 @@ export function ProgressStepper({ events, startedAt, state, domain }: Props) {
           const index = reached.get(status);
           const done = index !== undefined;
           const isCurrent = done && index === events.length - 1 && running;
-          // Длительность этапа = от его события до следующего события стрима.
+          // Кезеңнің ұзақтығы = оның оқиғасынан ағынның келесі оқиғасына дейін.
           const thisAt = index !== undefined ? events[index]?.at : undefined;
           const nextAt = index !== undefined ? events[index + 1]?.at : undefined;
           const duration = thisAt !== undefined && nextAt !== undefined ? nextAt - thisAt : null;

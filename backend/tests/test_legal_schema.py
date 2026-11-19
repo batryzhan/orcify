@@ -8,9 +8,9 @@ from pydantic import ValidationError
 
 from app.schemas.legal import ContractData, ContractEntitiesSchema, CurrencyEnum, is_valid_kz_id
 
-# Контрольные разряды посчитаны вручную по алгоритму ИИН/БИН РК.
-VALID_FIRST_PASS = "900101300017"  # сумма с весами 1..11 = 51, 51 mod 11 = 7
-VALID_SECOND_PASS = "901101300019"  # первый проход = 10, второй (веса 3..11,1,2) = 75 mod 11 = 9
+# Бақылау разряды ҚР ЖСН/БСН алгоритмі бойынша қолмен есептелген.
+VALID_FIRST_PASS = "900101300017"  # 1..11 салмақтарымен қосынды = 51, 51 mod 11 = 7
+VALID_SECOND_PASS = "901101300019"  # бірінші өту = 10, екінші (салмақтар 3..11,1,2) = 75 mod 11 = 9
 
 
 @pytest.mark.parametrize("value", [VALID_FIRST_PASS, VALID_SECOND_PASS])
@@ -33,7 +33,7 @@ def _entities(**overrides: object) -> ContractEntitiesSchema:
         "contract_amount": "500000",
         "currency": "KZT",
         "deadline_date": "2026-12-31",
-        "scope_of_work": "Разработка сайта",
+        "scope_of_work": "Сайтты әзірлеу",
     }
     data.update(overrides)
     return ContractEntitiesSchema.model_validate(data)

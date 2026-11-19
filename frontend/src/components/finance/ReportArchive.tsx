@@ -5,7 +5,7 @@ import { formatDate, formatMoney } from "../../lib/format";
 import type { ReportRecord } from "../../types/api";
 import { TelegramButton } from "../shared";
 
-/** Архив PDF-отчётов: открыть, скачать, отправить в Telegram, удалить. */
+/** PDF-есептер мұрағаты: ашу, жүктеу, Telegram-ға жіберу, жою. */
 export function ReportArchive({
   reports,
   highlight,
@@ -20,11 +20,11 @@ export function ReportArchive({
     rowRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [highlight, reports]);
 
-  if (reports === null) return <p className="text-sm text-ink-mute">Загрузка…</p>;
+  if (reports === null) return <p className="text-sm text-ink-mute">Жүктелуде…</p>;
   if (reports.length === 0) {
     return (
       <p className="rounded-md border border-dashed border-paper-line p-6 text-sm text-ink-soft">
-        Отчётов пока нет — после анализа выписки PDF появится здесь.
+        Есептер әзірге жоқ — үзінді талданған соң PDF осында пайда болады.
       </p>
     );
   }
@@ -40,30 +40,30 @@ export function ReportArchive({
               PDF
             </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-ink">{r.headline ?? "Финансовая сводка"}</p>
+              <p className="truncate text-sm font-medium text-ink">{r.headline ?? "Қаржылық қорытынды"}</p>
               <p className="text-xs text-ink-mute">
-                {formatDate(r.period_start)} — {formatDate(r.period_end)} · {r.rows} операций · итог {formatMoney(r.net, true)}
-                {r.issue_key ? ` · ${r.issue_key}` : ""} · создан {new Date(r.created_at).toLocaleString("ru-RU", { dateStyle: "short", timeStyle: "short" })}
+                {formatDate(r.period_start)} — {formatDate(r.period_end)} · {r.rows} операция · нәтиже {formatMoney(r.net, true)}
+                {r.issue_key ? ` · ${r.issue_key}` : ""} · жасалған {new Date(r.created_at).toLocaleString("kk-KZ", { dateStyle: "short", timeStyle: "short" })}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <a href={r.file.download_url} target="_blank" rel="noreferrer" className="btn-subtle">
-                Открыть
+                Ашу
               </a>
               <a href={r.file.download_url} download={r.file.filename} className="btn-subtle">
-                Скачать
+                Жүктеу
               </a>
               <TelegramButton send={() => api.sendReportToTelegram(id)} />
               <button
                 type="button"
                 onClick={() => {
-                  if (window.confirm("Удалить отчёт из архива? Это действие нельзя отменить.")) {
+                  if (window.confirm("Есепті мұрағаттан жою керек пе? Бұл әрекетті болдырмау мүмкін емес.")) {
                     void api.deleteReport(id).then(() => onDeleted(id));
                   }
                 }}
                 className="btn text-ink-mute hover:text-fail"
               >
-                Удалить
+                Жою
               </button>
             </div>
           </li>

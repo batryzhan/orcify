@@ -29,7 +29,7 @@
   }
 }
 
-/* Рой агентов: курсоры двигаются через transform из requestAnimationFrame. */
+/* Агенттер жүйесі: курсорлар requestAnimationFrame-нен transform арқылы қозғалады. */
 .swarm-layer {
   position: fixed;
   inset: 0;

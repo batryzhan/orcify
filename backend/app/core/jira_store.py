@@ -1,8 +1,8 @@
-"""Хранилище Orcify Jira: локальная доска задач в JSON-файле (``backend/var``).
+"""Orcify Jira қоймасы: JSON-файлдағы жергілікті тапсырмалар тақтасы (``backend/var``).
 
-Это продуктовые данные трекера, а не логи: файл не покидает устройство и
-не коммитится в git. Пайплайны пишут в описание задачи только краткие
-итоги (домен, ссылки на артефакты), без сырого текста запроса.
+Бұл — трекердің өнімдік деректері, лог емес: файл құрылғыдан шықпайды және
+git-ке коммиттелмейді. Пайплайндар тапсырма сипаттамасына тек қысқа
+қорытындыларды (домен, артефактілерге сілтемелер) жазады, сұраныстың шикі мәтінін емес.
 """
 
 from __future__ import annotations
@@ -28,10 +28,10 @@ from app.schemas.jira import (
 log = get_logger(__name__)
 
 COLUMNS: tuple[BoardColumn, ...] = (
-    BoardColumn(status=IssueStatus.TODO, title="К выполнению"),
-    BoardColumn(status=IssueStatus.IN_PROGRESS, title="В работе"),
-    BoardColumn(status=IssueStatus.REVIEW, title="Проверка"),
-    BoardColumn(status=IssueStatus.DONE, title="Готово"),
+    BoardColumn(status=IssueStatus.TODO, title="Орындалуға"),
+    BoardColumn(status=IssueStatus.IN_PROGRESS, title="Жұмыста"),
+    BoardColumn(status=IssueStatus.REVIEW, title="Тексеру"),
+    BoardColumn(status=IssueStatus.DONE, title="Дайын"),
 )
 
 
@@ -62,7 +62,7 @@ class JiraStore:
         self._lock = threading.Lock()
         self._issues: list[JiraIssue] = []
         self._next = 1
-        # Доска начинается пустой: задачи появляются, когда их ставят люди или агенты.
+        # Тақта бос басталады: тапсырмалар оларды адамдар немесе агенттер қойғанда пайда болады.
         self._load()
 
     # --- persistence --------------------------------------------------------
@@ -139,19 +139,19 @@ class JiraStore:
             updated = JiraIssue.model_validate({**current.model_dump(), **patch, "updated_at": _now()})
             index = self._issues.index(current)
             del self._issues[index]
-            # Карточка, перенесённая в другую колонку, встаёт наверх колонки.
+            # Басқа бағанға көшірілген карточка бағанның жоғарғы жағына орналасады.
             self._issues.insert(0 if updated.status != current.status else index, updated)
             self._save()
         return updated
 
     def clear(self, statuses: set[IssueStatus] | None = None) -> int:
-        """Удаляет все задачи (или только с указанными статусами). Возвращает число удалённых."""
+        """Барлық тапсырманы (немесе тек көрсетілген мәртебелері барларын) жояды. Жойылғандар санын қайтарады."""
         with self._lock:
             before = len(self._issues)
             self._issues = [] if statuses is None else [i for i in self._issues if i.status not in statuses]
             removed = before - len(self._issues)
             if not self._issues:
-                self._next = 1  # пустая доска — нумерация с ORC-1
+                self._next = 1  # бос тақта — нөмірлеу ORC-1-ден
             self._save()
         log.info("jira_board_cleared", status="all" if statuses is None else "filtered")
         return removed

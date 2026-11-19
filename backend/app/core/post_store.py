@@ -1,4 +1,4 @@
-"""Галерея готовых постов: PNG + метаданные в ``backend/var/posts`` (локально, не в git)."""
+"""Дайын посттар галереясы: PNG + метадеректер ``backend/var/posts`` ішінде (жергілікті, git-те емес)."""
 
 from __future__ import annotations
 

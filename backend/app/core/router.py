@@ -1,4 +1,4 @@
-"""Smart Routing, Этап 1: классификация намерения в бизнес-домен."""
+"""Smart Routing, 1-кезең: ниетті бизнес-доменге жіктеу."""
 
 from __future__ import annotations
 

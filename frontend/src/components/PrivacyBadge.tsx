@@ -4,12 +4,12 @@ import { api } from "../lib/api";
 import type { HealthResponse } from "../types/api";
 
 const ERROR_TEXT: Record<string, string> = {
-  unauthorized: "неверный API-ключ",
-  connection_error: "Unsloth Studio не запущен",
-  model_not_found: "модель не загружена",
+  unauthorized: "API-кілт қате",
+  connection_error: "Unsloth Studio іске қосылмаған",
+  model_not_found: "модель жүктелмеген",
 };
 
-/** Индикатор локальной обработки: какая модель работает и что данные не уходят в облако. */
+/** Жергілікті өңдеу индикаторы: қандай модель жұмыс істейді және деректер бұлтқа кетпейді. */
 export function PrivacyBadge() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [backendDown, setBackendDown] = useState(false);
@@ -36,9 +36,9 @@ export function PrivacyBadge() {
   const ok = health?.status === "ok";
   const model = health?.llm.model?.replace(/^unsloth\//, "").replace(/-GGUF$/, "") ?? "Gemma 4";
   const problem = backendDown
-    ? "бэкенд не отвечает"
+    ? "бэкенд жауап бермейді"
     : health && !ok
-      ? (ERROR_TEXT[health.llm.error_code ?? ""] ?? "модель недоступна")
+      ? (ERROR_TEXT[health.llm.error_code ?? ""] ?? "модель қолжетімсіз")
       : null;
 
   return (
@@ -46,15 +46,15 @@ export function PrivacyBadge() {
       className={`flex items-center gap-2.5 rounded-full border px-3.5 py-1.5 text-xs ${
         problem ? "border-warn/30 bg-warn-soft text-warn" : "border-local/25 bg-local-soft text-local"
       }`}
-      title="Запросы обрабатываются локальной моделью. Трекер, рендер постов и анализ CSV тоже работают на устройстве."
+      title="Сұраныстарды жергілікті модель өңдейді. Трекер, пост рендері және CSV талдауы да құрылғыда жұмыс істейді."
     >
       <span className={`h-2 w-2 rounded-full ${problem ? "bg-warn" : "bg-local"} ${ok ? "animate-pulse" : ""}`} />
       {problem ? (
-        <span>Локальная модель: {problem}</span>
+        <span>Жергілікті модель: {problem}</span>
       ) : (
         <span>
-          <strong className="font-semibold">Локально</strong> · {model}
-          {health?.llm.context_length ? ` · ctx ${health.llm.context_length}` : ""} · данные не покидают устройство
+          <strong className="font-semibold">Жергілікті</strong> · {model}
+          {health?.llm.context_length ? ` · ctx ${health.llm.context_length}` : ""} · деректер құрылғыдан шықпайды
         </span>
       )}
     </div>

@@ -1,4 +1,4 @@
-"""Awesome Posts: шаблоны, галерея готовых постов и отправка в Telegram."""
+"""Awesome Posts: үлгілер, дайын посттар галереясы және Telegram-ға жіберу."""
 
 from __future__ import annotations
 
@@ -19,15 +19,15 @@ from app.schemas.telegram import SendPostResponse
 router = APIRouter(prefix="/api/posts", tags=["posts"])
 CACHE = {"Cache-Control": "public, max-age=86400"}
 
-# Демо-тексты для превью шаблонов в UI (это пример контента, а не промпт модели).
+# UI-дағы үлгілер превьюіне арналған демо-мәтіндер (бұл мазмұн мысалы, модель промпты емес).
 PREVIEW_COPY: dict[PostTemplate, dict[str, str | None]] = {
-    PostTemplate.COSMOS: {"kicker": None, "headline": "Знакомьтесь", "headline_accent": "Команда Orcify",
-                          "subtitle": "Мы учим локальный ИИ работать на бизнес", "cta": None},
-    PostTemplate.NEON: {"kicker": "−30%", "headline": "Чёрная", "headline_accent": "Пятница",
-                        "subtitle": "Скидка на все тарифы доставки до воскресенья", "cta": "Заказать"},
-    PostTemplate.SUMMIT: {"kicker": "Ценности Orcify", "headline": "Данные клиента",
-                          "headline_accent": "не покидают устройство",
-                          "subtitle": "ИИ, которому можно доверить коммерческую тайну", "cta": None},
+    PostTemplate.COSMOS: {"kicker": None, "headline": "Танысыңыз", "headline_accent": "Orcify командасы",
+                          "subtitle": "Біз жергілікті ЖИ-ды бизнеске жұмыс істеуге үйретеміз", "cta": None},
+    PostTemplate.NEON: {"kicker": "−30%", "headline": "Қара", "headline_accent": "Жұма",
+                        "subtitle": "Жексенбіге дейін жеткізудің барлық тарифтеріне жеңілдік", "cta": "Тапсырыс беру"},
+    PostTemplate.SUMMIT: {"kicker": "Orcify құндылықтары", "headline": "Клиент деректері",
+                          "headline_accent": "құрылғыдан шықпайды",
+                          "subtitle": "Коммерциялық құпияны сеніп тапсыруға болатын ЖИ", "cta": None},
 }
 _previews: dict[PostTemplate, bytes] = {}
 
@@ -61,7 +61,7 @@ async def template_background(
 async def template_preview(
     template: PostTemplate, renderer: Annotated[PostRenderer, Depends(get_post_renderer)]
 ) -> Response:
-    """Пример поста на шаблоне (рендерится один раз и кэшируется в памяти)."""
+    """Үлгідегі пост мысалы (бір рет рендерленеді және жадта кэштеледі)."""
     if template not in _previews:
         content = PostCopySchema.model_validate(
             {**PREVIEW_COPY[template], "template": template, "handle": "@orcify", "caption": "", "hashtags": []}

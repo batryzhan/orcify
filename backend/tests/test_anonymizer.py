@@ -43,14 +43,14 @@ def test_tokens_are_deterministic_within_session() -> None:
 def test_short_value_does_not_corrupt_tokens() -> None:
     session = AnonymizationSession()
     session.register("Иванов Пётр", PiiCategory.PERSON)
-    session.register("ER", PiiCategory.COMPANY)  # подстрока токена [PERSON_1]
+    session.register("ER", PiiCategory.COMPANY)  # [PERSON_1] токенінің ішкі жолы
     out = session.anonymize("Иванов Пётр и ER")
     assert out == "[PERSON_1] и [COMPANY_1]"
     assert session.deanonymize(out) == "Иванов Пётр и ER"
 
 
 def test_aliases_catch_bare_names_and_hashtags() -> None:
-    """Регрессия живого прогона: модель написала «Альфа Трейд» и «#альфатрейд» без «ТОО»."""
+    """Тірі іске қосудың регрессиясы: модель «Альфа Трейд» және «#альфатрейд» деп «ТОО»-сыз жазды."""
     session = AnonymizationSession()
     session.anonymize("Ролик для ТОО «Альфа Трейд», кейс клиента Иванов Пётр")
     session.register("Иванов Пётр", PiiCategory.PERSON)
@@ -59,7 +59,7 @@ def test_aliases_catch_bare_names_and_hashtags() -> None:
     assert out == "[COMPANY_1]: доставка за час. #[COMPANY_1] #[COMPANY_1] [PERSON_1]у понравилось"
     assert session.leaked(out) == 0
     assert session.leaked(generated) > 0
-    assert session.report().entities_total == 2  # псевдонимы не считаются отдельными сущностями
+    assert session.report().entities_total == 2  # бүркеншік аттар бөлек нысандар болып есептелмейді
 
 
 def test_json_roundtrip_and_leak_check() -> None:
@@ -85,7 +85,7 @@ async def test_llm_detection_adds_names_and_ignores_hallucinations(settings: Set
         entities = [
             {"text": "Иванов Пётр", "category": "PERSON"},
             {"text": "Алматы, ул. Абая 10", "category": "ADDRESS"},
-            {"text": "Несуществующий Человек", "category": "PERSON"},  # нет в тексте
+            {"text": "Несуществующий Человек", "category": "PERSON"},  # мәтінде жоқ
         ]
         return chat_response(json.dumps({"entities": entities}, ensure_ascii=False))
 

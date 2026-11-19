@@ -1,13 +1,13 @@
-"""Оркестрация задачи: Smart Routing -> карточка в Orcify Jira -> исполнение
-в домене -> события SSE.
+"""Тапсырманы оркестрлеу: Smart Routing -> Orcify Jira-дағы карточка -> орындау
+доменде -> SSE оқиғалары.
 
-Каждая задача получает карточку на доске ORC: агенты домена переносят её
-по колонкам (К выполнению -> В работе -> Проверка/Готово) через in-process
-MCP ``orcify_jira``, а снимок карточки уходит в SSE-событии — UI анимирует
-рой агентов-курсоров по этим снимкам.
+Әр тапсырма ORC тақтасында карточка алады: домен агенттері оны
+бағандар бойынша жылжытады (Орындалуға -> Жұмыста -> Тексеру/Дайын) in-process
+MCP ``orcify_jira`` арқылы, ал карточка суреті SSE оқиғасында жіберіледі — UI
+курсор-агенттер жүйесін осы суреттер бойынша анимациялайды.
 
-Ошибки LLM, MCP и рендера превращаются в событие ``failed`` (или в
-деградированный результат), а не в HTTP 500.
+LLM, MCP және рендер қателері ``failed`` оқиғасына (немесе
+деградацияланған нәтижеге) айналады, HTTP 500-ге емес.
 """
 
 from __future__ import annotations
@@ -49,12 +49,12 @@ from app.schemas.tasks import TaskCreateRequest
 log = get_logger(__name__)
 
 FINANCE_ERRORS = {
-    "tool_error:date_column_not_found": "В CSV не найдена колонка с датой операции",
-    "tool_error:amount_column_not_found": "В CSV не найдена колонка суммы (или приход/расход)",
-    "tool_error:unreadable_csv": "Файл не читается как CSV",
-    "tool_error:no_valid_rows": "В файле нет строк с корректной датой и суммой",
-    "tool_error:too_many_rows": "Слишком большой файл (больше 200 000 строк)",
-    "not_configured": "Локальный финансовый MCP-сервер отключён",
+    "tool_error:date_column_not_found": "CSV-де операция күні бағаны табылмады",
+    "tool_error:amount_column_not_found": "CSV-де сома бағаны (немесе кіріс/шығыс) табылмады",
+    "tool_error:unreadable_csv": "Файл CSV ретінде оқылмайды",
+    "tool_error:no_valid_rows": "Файлда күні мен сомасы дұрыс жолдар жоқ",
+    "tool_error:too_many_rows": "Файл тым үлкен (200 000 жолдан артық)",
+    "not_configured": "Жергілікті қаржылық MCP-сервер өшірулі",
 }
 
 DOMAIN_LABEL: Final = {
@@ -70,10 +70,10 @@ DOMAIN_TYPE: Final = {
     DomainEnum.HR: IssueType.EPIC,
 }
 STATUS_TITLE: Final = {
-    IssueStatus.TODO: "К выполнению",
-    IssueStatus.IN_PROGRESS: "В работе",
-    IssueStatus.REVIEW: "Проверка",
-    IssueStatus.DONE: "Готово",
+    IssueStatus.TODO: "Орындалуға",
+    IssueStatus.IN_PROGRESS: "Жұмыста",
+    IssueStatus.REVIEW: "Тексеру",
+    IssueStatus.DONE: "Дайын",
 }
 NEEDS_INPUT: Final = "NEEDS INPUT"
 
@@ -117,19 +117,19 @@ class TaskPipeline:
         failure: tuple[str, str] | None = None
         try:
             if request.domain is not None:
-                # Окно интерфейса уже задаёт домен (Посты / Финансы / Договоры / Jira):
-                # Этап 1 не нужен, сразу Scoped Execution. Smart Routing работает для
-                # свободных запросов (Telegram-бот).
+                # Интерфейс терезесі доменді бұрыннан береді (Посттар / Қаржы / Келісімшарттар / Jira):
+                # 1-кезең қажет емес, бірден Scoped Execution. Smart Routing еркін
+                # сұраныстар үшін жұмыс істейді (Telegram-бот).
                 yield ProgressEvent(
-                    status=stage, progress=5, message=f"Домен задан окном: {request.domain.value}"
+                    status=stage, progress=5, message=f"Доменді терезе берді: {request.domain.value}"
                 )
                 intent = IntentClassificationResult(
-                    domain=request.domain, confidence=1.0, reasoning="Домен выбран в окне интерфейса."
+                    domain=request.domain, confidence=1.0, reasoning="Домен интерфейс терезесінде таңдалған."
                 )
                 low = False
                 log.info("intent_preset", task_id=tid, domain=intent.domain)
             else:
-                yield ProgressEvent(status=stage, progress=5, message="Router определяет бизнес-домен...")
+                yield ProgressEvent(status=stage, progress=5, message="Router бизнес-доменді анықтауда...")
                 routed = await self._router.classify(_routing_text(request))
                 intent = routed.data
                 low = not self._router.is_confident(intent)
@@ -148,7 +148,7 @@ class TaskPipeline:
             issue = await self._jira.create(
                 IssueCreate(
                     summary=_initial_summary(intent.domain, request),
-                    description=f"Задача поставлена агентам Orcify. Домен: {intent.domain.value}.",
+                    description=f"Тапсырма Orcify агенттеріне қойылды. Домен: {intent.domain.value}.",
                     type=DOMAIN_TYPE[intent.domain],
                     priority=IssuePriority.MEDIUM,
                     labels=[ctx.label],
@@ -163,7 +163,7 @@ class TaskPipeline:
                     status=stage,
                     progress=10,
                     domain=intent.domain,
-                    message=f"Карточка {issue.key} создана в Orcify Jira",
+                    message=f"{issue.key} карточкасы Orcify Jira-да жасалды",
                     issue=issue,
                 )
 
@@ -181,19 +181,19 @@ class TaskPipeline:
                 yield event.model_copy(update={"domain": intent.domain})
 
         except LLMUnavailableError as exc:
-            failure = (exc.code, "Локальная модель недоступна")
+            failure = (exc.code, "Жергілікті модель қолжетімсіз")
         except LLMResponseError as exc:
-            failure = (exc.code, "Модель вернула ответ не по схеме")
+            failure = (exc.code, "Модель жауабы схемаға сәйкес келмеді")
         except DocEngineError as exc:
-            failure = (exc.code, "Не удалось сформировать документ по шаблону")
+            failure = (exc.code, "Құжатты үлгі бойынша жасау мүмкін болмады")
         except FinanceAnalysisError as exc:
-            failure = (exc.code, FINANCE_ERRORS.get(exc.code, "Локальный финансовый анализ недоступен"))
+            failure = (exc.code, FINANCE_ERRORS.get(exc.code, "Жергілікті қаржылық талдау қолжетімсіз"))
         except PostRenderFailedError as exc:
-            failure = (exc.code, "Не удалось собрать пост на шаблоне")
+            failure = (exc.code, "Постты үлгі бойынша жинау мүмкін болмады")
         except FinancePdfError as exc:
-            failure = (exc.code, "Не удалось собрать PDF-отчёт")
+            failure = (exc.code, "PDF-есепті жинау мүмкін болмады")
         except PiiLeakError:
-            failure = ("pii_leak_blocked", "Вызов внешнего сервиса заблокирован: не удалось замаскировать PII")
+            failure = ("pii_leak_blocked", "Сыртқы сервисті шақыру бұғатталды: PII маскалау мүмкін болмады")
 
         if failure is not None:
             code, message = failure
@@ -221,7 +221,7 @@ class TaskPipeline:
 
     @staticmethod
     def _moved(issue_key: str | None, status: IssueStatus, agent: str) -> str:
-        return f"{issue_key or 'Карточка'} → «{STATUS_TITLE[status]}» · агент {agent}"
+        return f"{issue_key or 'Карточка'} → «{STATUS_TITLE[status]}» · {agent} агенті"
 
     def _done(self, ctx: _Ctx, message: str, **result: object) -> ProgressEvent:
         log.info("task_completed", task_id=ctx.tid, domain=ctx.intent.domain)
@@ -232,14 +232,14 @@ class TaskPipeline:
             result=TaskResult(intent=ctx.intent, low_confidence=ctx.low, issue_key=ctx.issue_key, **result),  # type: ignore[arg-type]
         )
 
-    # --- Сценарий А: Legal ------------------------------------------------------
+    # --- А сценарийі: Legal ------------------------------------------------------
 
     async def _run_legal(self, ctx: _Ctx, text: str) -> AsyncIterator[ProgressEvent]:
         if ev := await self._move(ctx, 20, self._moved(ctx.issue_key, IssueStatus.IN_PROGRESS, "Lawyer"),
                                   status=IssueStatus.IN_PROGRESS, assignee="Lawyer"):
             yield ev
         yield ProgressEvent(
-            status=TaskStatus.EXTRACTING_ENTITIES, progress=50, message="Lawyer извлекает реквизиты договора..."
+            status=TaskStatus.EXTRACTING_ENTITIES, progress=50, message="Lawyer келісімшарт деректемелерін алуда..."
         )
         extracted = await self._legal.extract(text)
         entities = extracted.data
@@ -257,13 +257,13 @@ class TaskPipeline:
             fields = ", ".join([*validation.missing_fields, *validation.invalid_fields])
             if ev := await self._move(
                 ctx, 90, self._moved(ctx.issue_key, IssueStatus.REVIEW, "Lawyer"),
-                status=IssueStatus.REVIEW, labels=[ctx.label, NEEDS_INPUT], summary="Договор: нужны реквизиты",
-                description=f"Не хватает или некорректны поля: {fields}. Заполните их в карточке результата.",
+                status=IssueStatus.REVIEW, labels=[ctx.label, NEEDS_INPUT], summary="Келісімшарт: деректемелер қажет",
+                description=f"Өрістер жетіспейді немесе қате: {fields}. Оларды нәтиже карточкасында толтырыңыз.",
             ):
                 yield ev
             yield self._done(
                 ctx,
-                "Не хватает или некорректны реквизиты — проверьте поля и сформируйте договор",
+                "Деректемелер жетіспейді немесе қате — өрістерді тексеріп, келісімшартты жасаңыз",
                 legal=LegalResult(
                     outcome=LegalOutcome.NEEDS_INPUT,
                     entities=entities,
@@ -273,20 +273,20 @@ class TaskPipeline:
             )
             return
 
-        yield ProgressEvent(status=TaskStatus.RENDERING_DOCX, progress=80, message="Формирование .docx по шаблону...")
+        yield ProgressEvent(status=TaskStatus.RENDERING_DOCX, progress=80, message="Үлгі бойынша .docx жасалуда...")
         document = self._legal.render(validation.contract)
         scope = validation.contract.scope_of_work
         if ev := await self._move(
             ctx, 95, self._moved(ctx.issue_key, IssueStatus.DONE, "Lawyer"),
-            status=IssueStatus.DONE, summary=f"Договор: {scope[:150]}",
-            description="Договор сформирован по шаблону service_contract_kz.docx (Deterministic Core).",
+            status=IssueStatus.DONE, summary=f"Келісімшарт: {scope[:150]}",
+            description="Келісімшарт service_contract_kz.docx үлгісі бойынша жасалды (Deterministic Core).",
             add_attachments=[IssueAttachment(kind=AttachmentKind.DOCUMENT, title=document.filename,
                                              url=document.download_url)],
         ):
             yield ev
         yield self._done(
             ctx,
-            "Договор готов",
+            "Келісімшарт дайын",
             legal=LegalResult(
                 outcome=LegalOutcome.RENDERED,
                 entities=entities,
@@ -296,27 +296,27 @@ class TaskPipeline:
             ),
         )
 
-    # --- Сценарий В: Finance ----------------------------------------------------
+    # --- В сценарийі: Finance ----------------------------------------------------
 
     async def _run_finance(self, ctx: _Ctx, request: TaskCreateRequest) -> AsyncIterator[ProgressEvent]:
-        yield ProgressEvent(status=TaskStatus.ROUTING_FINANCE, progress=15, message="Подключён только local_finance MCP")
+        yield ProgressEvent(status=TaskStatus.ROUTING_FINANCE, progress=15, message="Тек local_finance MCP қосылды")
         if request.attachment is None:
-            if ev := await self._move(ctx, 90, "Нужен CSV-файл — карточка ждёт вложения",
+            if ev := await self._move(ctx, 90, "CSV-файл қажет — карточка тіркемені күтуде",
                                       labels=[ctx.label, NEEDS_INPUT], assignee="Analyst"):
                 yield ev
-            yield self._done(ctx, "Для финансового анализа прикрепите CSV-выписку")
+            yield self._done(ctx, "Қаржылық талдау үшін CSV-үзіндіні тіркеңіз")
             return
 
         if ev := await self._move(ctx, 25, self._moved(ctx.issue_key, IssueStatus.IN_PROGRESS, "Analyst"),
                                   status=IssueStatus.IN_PROGRESS, assignee="Analyst"):
             yield ev
-        yield ProgressEvent(status=TaskStatus.ANALYZING_CSV, progress=50, message="Локальный расчёт агрегатов (pandas)...")
+        yield ProgressEvent(status=TaskStatus.ANALYZING_CSV, progress=50, message="Агрегаттарды жергілікті есептеу (pandas)...")
         metrics, mcp_latency = await self._finance.analyze(request.attachment.content, request.opening_balance)
 
         yield ProgressEvent(
             status=TaskStatus.GENERATING_REPORT,
             progress=75,
-            message="Резюме по агрегатам (сырые строки в модель не передаются)...",
+            message="Агрегаттар бойынша қорытынды (шикі жолдар модельге берілмейді)...",
         )
         budgets = self._finance.check_budgets(metrics)
         report, report_error = None, None
@@ -324,7 +324,7 @@ class TaskPipeline:
             report = await self._finance.summarize(metrics, budgets)
         except (LLMUnavailableError, LLMResponseError) as exc:
             report_error = exc.code
-        yield ProgressEvent(status=TaskStatus.RENDERING_PDF, progress=88, message="Сборка PDF-отчёта (локально)...")
+        yield ProgressEvent(status=TaskStatus.RENDERING_PDF, progress=88, message="PDF-есепті жинау (жергілікті)...")
         report_file = await self._finance.build_report(metrics, report, budgets)
         if ctx.issue_key:
             self._finance.attach_issue(report_file.report_id, ctx.issue_key)
@@ -332,9 +332,9 @@ class TaskPipeline:
         if ev := await self._move(
             ctx, 95, self._moved(ctx.issue_key, final, "Analyst"),
             status=final,
-            summary=f"Анализ выписки {metrics.period_start:%d.%m.%Y}–{metrics.period_end:%d.%m.%Y}",
-            description=(report.headline if report else "Метрики посчитаны; резюме модели недоступно.")
-            + f" Операций: {metrics.rows}, кассовых разрывов: {len(metrics.cash_gaps)}.",
+            summary=f"Үзінді талдауы {metrics.period_start:%d.%m.%Y}–{metrics.period_end:%d.%m.%Y}",
+            description=(report.headline if report else "Метрикалар есептелді; модель қорытындысы қолжетімсіз.")
+            + f" Операциялар: {metrics.rows}, ақша ағынының үзілістері: {len(metrics.cash_gaps)}.",
             add_attachments=[IssueAttachment(kind=AttachmentKind.REPORT, title=report_file.filename,
                                              url=report_file.download_url)],
         ):
@@ -342,7 +342,7 @@ class TaskPipeline:
         log.info("finance_completed", task_id=ctx.tid, latency_ms=mcp_latency, degraded=report is None)
         yield self._done(
             ctx,
-            "Отчёт готов" if report else "Метрики готовы; резюме модели недоступно",
+            "Есеп дайын" if report else "Метрикалар дайын; модель қорытындысы қолжетімсіз",
             finance=FinanceResult(
                 metrics=metrics,
                 report=report,
@@ -353,23 +353,23 @@ class TaskPipeline:
             ),
         )
 
-    # --- Сценарий Б: SMM (Awesome Posts) ------------------------------------------
+    # --- Б сценарийі: SMM (Awesome Posts) ------------------------------------------
 
     async def _run_smm(self, ctx: _Ctx, request: TaskCreateRequest) -> AsyncIterator[ProgressEvent]:
         yield ProgressEvent(
-            status=TaskStatus.ROUTING_SMM, progress=15, message="Подключены только Awesome Posts и Orcify Jira"
+            status=TaskStatus.ROUTING_SMM, progress=15, message="Тек Awesome Posts және Orcify Jira қосылды"
         )
         if ev := await self._move(ctx, 22, self._moved(ctx.issue_key, IssueStatus.IN_PROGRESS, "Copywriter"),
                                   status=IssueStatus.IN_PROGRESS, assignee="Copywriter"):
             yield ev
-        yield ProgressEvent(status=TaskStatus.WRITING_COPY, progress=35, message="Copywriter пишет тексты поста (локально)...")
+        yield ProgressEvent(status=TaskStatus.WRITING_COPY, progress=35, message="Copywriter пост мәтіндерін жазуда (жергілікті)...")
         content = await self._smm.write_copy(request.text, request.post_template)
 
         headline = f"{content.headline} {content.headline_accent}".strip()
-        if ev := await self._move(ctx, 55, f"Designer собирает пост на шаблоне {content.template.value}",
+        if ev := await self._move(ctx, 55, f"Designer постты {content.template.value} үлгісінде жинауда",
                                   summary=f"Instagram-пост: {headline}"[:200], assignee="Designer"):
             yield ev
-        yield ProgressEvent(status=TaskStatus.RENDERING_POST, progress=70, message="Рендер 1080×1350 на фоне шаблона...")
+        yield ProgressEvent(status=TaskStatus.RENDERING_POST, progress=70, message="Үлгі фонында 1080×1350 рендері...")
         post = await self._smm.render(content)
 
         tags = " ".join(h if h.startswith("#") else f"#{h}" for h in content.hashtags)
@@ -386,17 +386,17 @@ class TaskPipeline:
         log.info("post_rendered", task_id=ctx.tid, latency_ms=post.render_ms, payload_hash=post.sha256)
         yield self._done(
             ctx,
-            "Пост для Instagram готов",
+            "Instagram-ға пост дайын",
             smm=PostResult(content=content, post=post, template_forced=request.post_template is not None),
         )
 
-    # --- HR: планирование задач в Orcify Jira --------------------------------------
+    # --- HR: Orcify Jira-да тапсырмаларды жоспарлау --------------------------------------
 
     async def _run_hr(self, ctx: _Ctx, text: str) -> AsyncIterator[ProgressEvent]:
         if ev := await self._move(ctx, 20, self._moved(ctx.issue_key, IssueStatus.IN_PROGRESS, "Planner"),
                                   status=IssueStatus.IN_PROGRESS, assignee="Planner"):
             yield ev
-        yield ProgressEvent(status=TaskStatus.PLANNING_TASKS, progress=35, message="Planner раскладывает задачу на шаги...")
+        yield ProgressEvent(status=TaskStatus.PLANNING_TASKS, progress=35, message="Planner тапсырманы қадамдарға бөлуде...")
         plan = await self._hr.plan(text)
         if ev := await self._move(ctx, 45, f"Эпик: {plan.epic}"[:200], summary=plan.epic):
             yield ev
@@ -424,25 +424,25 @@ class TaskPipeline:
             yield ProgressEvent(
                 status=TaskStatus.CREATING_JIRA_ISSUE,
                 progress=50 + round(40 * (index + 1) / total),
-                message=f"Planner завёл {child.key}: {child.summary}"[:300],
+                message=f"Planner {child.key} жасады: {child.summary}"[:300],
                 issue=child,
             )
-        yield self._done(ctx, f"План готов: {len(keys)} задач на доске", hr=HrResult(plan=plan, issue_keys=keys))
+        yield self._done(ctx, f"Жоспар дайын: тақтада {len(keys)} тапсырма", hr=HrResult(plan=plan, issue_keys=keys))
 
 
 def _initial_summary(domain: DomainEnum, request: TaskCreateRequest) -> str:
     if domain is DomainEnum.FINANCE:
-        return f"Анализ выписки {request.attachment.filename}" if request.attachment else "Финансовый анализ"
+        return f"{request.attachment.filename} үзіндісін талдау" if request.attachment else "Қаржылық талдау"
     return {
-        DomainEnum.LEGAL: "Договор оказания услуг",
+        DomainEnum.LEGAL: "Қызмет көрсету келісімшарты",
         DomainEnum.SMM: "Instagram-пост",
-        DomainEnum.HR: "План задач",
+        DomainEnum.HR: "Тапсырмалар жоспары",
     }[domain]
 
 
 def _routing_text(request: TaskCreateRequest) -> str:
     if request.attachment is None:
         return request.text
-    # В классификатор уходит только имя файла, не содержимое.
-    return f"{request.text}\n\n[Приложен CSV-файл: {request.attachment.filename}]"
+    # Классификаторға тек файл атауы беріледі, мазмұны емес.
+    return f"{request.text}\n\n[CSV-файл тіркелген: {request.attachment.filename}]"
 

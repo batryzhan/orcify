@@ -1,8 +1,8 @@
-"""Клиент локальной LLM (Gemma 4 в Unsloth Studio, OpenAI-совместимый API).
+"""Жергілікті LLM клиенті (Unsloth Studio-дағы Gemma 4, OpenAI-үйлесімді API).
 
-Каждый вызов — только Structured Outputs: JSON Schema целевой
-Pydantic-модели передаётся в ``response_format`` (strict), ответ
-валидируется той же моделью. Свободный текст не парсится.
+Әр шақыру — тек Structured Outputs: мақсатты Pydantic-модельдің
+JSON Schema-сы ``response_format``-қа беріледі (strict), жауап сол
+модельмен валидацияланады. Еркін мәтін талданбайды.
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ log = get_logger(__name__)
 
 
 class LLMError(Exception):
-    """Базовая ошибка LLM. ``code`` — машинный код без пользовательских данных."""
+    """LLM негізгі қатесі. ``code`` — пайдаланушы деректерінсіз машиналық код."""
 
     def __init__(self, code: str, attempts: int = 1) -> None:
         super().__init__(code)
@@ -33,14 +33,14 @@ class LLMError(Exception):
 
 
 class LLMUnavailableError(LLMError):
-    """Сервер недоступен, не авторизован или вернул HTTP-ошибку."""
+    """Сервер қолжетімсіз, авторизацияланбаған немесе HTTP-қате қайтарды."""
 
 
 class LLMResponseError(LLMError):
-    """Модель ответила, но ответ не соответствует схеме."""
+    """Модель жауап берді, бірақ жауап схемаға сәйкес келмейді."""
 
 
-# --- Контракт запроса ---------------------------------------------------------
+# --- Сұраныс келісімшарты ---------------------------------------------------------
 
 
 class ChatMessage(BaseModel):
@@ -70,7 +70,7 @@ class ChatCompletionRequest(BaseModel):
     stream: Literal[False] = False
 
 
-# --- Контракт ответа (лишние поля игнорируются) -------------------------------
+# --- Жауап келісімшарты (артық өрістер еленбейді) -------------------------------
 
 
 class _Message(BaseModel):
@@ -88,7 +88,7 @@ class _Usage(BaseModel):
 
 
 class _Timings(BaseModel):
-    """Серверные тайминги llama.cpp (есть не у всех OpenAI-совместимых серверов)."""
+    """llama.cpp сервер таймингтері (барлық OpenAI-үйлесімді серверлерде бола бермейді)."""
 
     prompt_ms: float = 0.0
     predicted_ms: float = 0.0
@@ -110,16 +110,16 @@ class _ModelsResponse(BaseModel):
     data: list[_ModelEntry]
 
 
-# --- Результат ----------------------------------------------------------------
+# --- Нәтиже ----------------------------------------------------------------
 
 
 class LLMCallStats(BaseModel):
-    """Телеметрия вызова для docs/metrics.md (без PII).
+    """docs/metrics.md үшін шақыру телеметриясы (PII-сіз).
 
-    ``latency_ms`` — время на стороне клиента по ``time.monotonic()``:
-    на Windows эти часы не идут, пока ноутбук спит (Modern Standby), так что
-    сон не попадает в метрику. ``server_prompt_ms``/``server_predicted_ms`` —
-    чистое время инференса по данным llama.cpp, сумма по всем попыткам.
+    ``latency_ms`` — ``time.monotonic()`` бойынша клиент жағындағы уақыт:
+    Windows-та бұл сағат ноутбук ұйықтағанда жүрмейді (Modern Standby), сондықтан
+    ұйқы метрикаға түспейді. ``server_prompt_ms``/``server_predicted_ms`` —
+    llama.cpp деректері бойынша таза инференс уақыты, барлық әрекеттер бойынша қосынды.
     """
 
     model: str
@@ -253,7 +253,7 @@ class LLMClient:
         try:
             return schema.model_validate_json(choice.message.content)
         except ValidationError:
-            # from None: ValidationError содержит input_value, т.е. возможные PII.
+            # from None: ValidationError құрамында input_value, яғни ықтимал PII бар.
             raise LLMResponseError("schema_mismatch") from None
 
     async def health(self) -> LLMHealth:

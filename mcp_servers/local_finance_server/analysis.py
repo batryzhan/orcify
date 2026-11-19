@@ -1,8 +1,8 @@
-"""Детерминированный анализ банковской выписки (pandas).
+"""Банк үзіндісінің детерминистік талдауы (pandas).
 
-Сырые строки таблицы никогда не покидают этот процесс: наружу уходят
-только агрегаты ``FinanceMetrics``. Поддерживаются выгрузки с одной
-колонкой суммы (знак = направление) или с парой колонок приход/расход.
+Кестенің шикі жолдары бұл процестен ешқашан шықпайды: сыртқа тек
+``FinanceMetrics`` агрегаттары кетеді. Бір сома бағаны бар (таңба = бағыт)
+немесе кіріс/шығыс бағандар жұбы бар жүктемелер қолдау табады.
 """
 
 from __future__ import annotations
@@ -16,18 +16,18 @@ import pandas as pd
 from pydantic import BaseModel, Field
 
 ROLE_ALIASES: Final[dict[str, tuple[str, ...]]] = {
-    "date": ("date", "дата", "дата операции", "дата платежа", "transaction date", "posting date"),
-    "amount": ("amount", "сумма", "сумма операции", "sum", "сумма, kzt", "сумма (kzt)"),
-    "income": ("income", "credit", "приход", "поступление", "кредит", "зачисление"),
-    "expense": ("expense", "debit", "расход", "списание", "дебет"),
-    "category": ("category", "категория", "статья", "статья расходов"),
-    "counterparty": ("counterparty", "контрагент", "получатель", "плательщик", "payee", "partner"),
-    "description": ("description", "назначение", "назначение платежа", "описание", "comment", "комментарий"),
+    "date": ("date", "дата", "дата операции", "дата платежа", "күні", "операция күні", "төлем күні", "transaction date", "posting date"),
+    "amount": ("amount", "сумма", "сумма операции", "сома", "операция сомасы", "sum", "сумма, kzt", "сумма (kzt)"),
+    "income": ("income", "credit", "приход", "поступление", "кредит", "зачисление", "кіріс", "түсім"),
+    "expense": ("expense", "debit", "расход", "списание", "дебет", "шығыс", "есептен шығару"),
+    "category": ("category", "категория", "статья", "статья расходов", "санат", "бап", "шығыс бабы"),
+    "counterparty": ("counterparty", "контрагент", "получатель", "плательщик", "алушы", "төлеуші", "payee", "partner"),
+    "description": ("description", "назначение", "назначение платежа", "описание", "төлем мақсаты", "мақсаты", "сипаттама", "comment", "комментарий", "түсініктеме"),
     "currency": ("currency", "валюта"),
 }
 
 MAX_ROWS: Final = 200_000
-ANOMALY_THRESHOLD: Final = 3.5  # модифицированный z-score (медиана/MAD)
+ANOMALY_THRESHOLD: Final = 3.5  # модификацияланған z-score (медиана/MAD)
 
 
 class MonthlyFlow(BaseModel):
@@ -108,12 +108,12 @@ class FinanceMetrics(BaseModel):
     anomalies: list[Anomaly]
     columns_detected: dict[str, str]
     warnings: list[str] = Field(default_factory=list)
-    # Прогноз остатка на 3 месяца по среднему последних полных месяцев (детерминированно).
+    # 3 айлық қалдық болжамы — соңғы толық айлардың орташасы бойынша (детерминистік).
     forecast: list[ForecastPoint] = Field(default_factory=list)
     forecast_basis_months: int = 0
-    # Сравнение последнего полного месяца с предыдущим.
+    # Соңғы толық айды алдыңғымен салыстыру.
     month_over_month: MonthComparison | None = None
-    # Расходы по категориям за последний полный месяц — база для проверки бюджетов.
+    # Соңғы толық айдағы санаттар бойынша шығыстар — бюджеттерді тексеру негізі.
     budget_month: str | None = None
     last_month_by_category: list[CategoryTotal] = Field(default_factory=list)
 
@@ -151,7 +151,7 @@ _ISO_DATE = re.compile(r"^\s*\d{4}-\d{2}-\d{2}")
 
 
 def parse_dates(series: pd.Series) -> pd.Series:
-    """ISO (2026-01-06) — год впереди; иначе день впереди (06.01.2026, принято в РК)."""
+    """ISO (2026-01-06) — жыл алда; әйтпесе күн алда (06.01.2026, ҚР-да қабылданған)."""
     sample = series.dropna().astype(str).head(50)
     if len(sample) and sample.str.match(_ISO_DATE).all():
         return pd.to_datetime(series, errors="coerce", format="ISO8601")
@@ -218,7 +218,7 @@ FORECAST_MONTHS: Final = 3
 
 
 def _complete_months(monthly: list[MonthlyFlow], period_end: date) -> list[MonthlyFlow]:
-    """Последний месяц выписки считается полным, только если выписка доходит до его конца."""
+    """Үзіндінің соңғы айы толық деп саналады, егер үзінді оның соңына дейін жететін болса."""
     if not monthly:
         return []
     last_is_complete = (period_end + timedelta(days=1)).month != period_end.month
@@ -314,7 +314,7 @@ def analyze_csv(csv_text: str, opening_balance: float = 0.0) -> FinanceMetrics:
         df["amount"] = income - expense
     for role in ("category", "counterparty"):
         if role in columns:
-            df[role] = raw[columns[role]].fillna("Без категории" if role == "category" else "Не указан").str.strip()
+            df[role] = raw[columns[role]].fillna("Санатсыз" if role == "category" else "Көрсетілмеген").str.strip()
 
     bad = df["date"].isna() | df["amount"].isna()
     if bad.any():

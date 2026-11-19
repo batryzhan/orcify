@@ -1,4 +1,4 @@
-"""Статус Telegram-бота (канал автоматизации)."""
+"""Telegram-бот күйі (автоматтандыру арнасы)."""
 
 from __future__ import annotations
 

@@ -1,8 +1,8 @@
-"""Схемы домена Legal (Deterministic Core).
+"""Legal домені схемалары (Deterministic Core).
 
-Цепочка: ``ContractEntitiesSchema`` (ответ LLM, поля могут быть null)
--> ``ContractData`` (строгая валидация, включая контрольный разряд ИИН/БИН)
--> рендер ``docxtpl``.
+Тізбек: ``ContractEntitiesSchema`` (LLM жауабы, өрістер null болуы мүмкін)
+-> ``ContractData`` (қатаң валидация, соның ішінде ЖСН/БСН бақылау разряды)
+-> ``docxtpl`` рендері.
 """
 
 from __future__ import annotations
@@ -20,11 +20,11 @@ _WEIGHTS_2: Final = (3, 4, 5, 6, 7, 8, 9, 10, 11, 1, 2)
 
 
 def is_valid_kz_id(value: str) -> bool:
-    """Проверка контрольного разряда ИИН/БИН Республики Казахстан.
+    """Қазақстан Республикасы ЖСН/БСН бақылау разрядын тексеру.
 
-    12-я цифра = сумма(d_i * w1_i) mod 11 по первым 11 цифрам; если
-    получилось 10 — пересчёт со вторым набором весов; если снова 10 —
-    номер некорректен.
+    12-ші цифр = алғашқы 11 цифр бойынша сумма(d_i * w1_i) mod 11; егер
+    нәтиже 10 болса — салмақтардың екінші жинағымен қайта есептеу; егер қайтадан 10 болса —
+    нөмір қате.
     """
     if len(value) != 12 or not value.isascii() or not value.isdigit():
         return False
@@ -39,7 +39,7 @@ def is_valid_kz_id(value: str) -> bool:
 
 def _check_kz_id(value: str) -> str:
     if not is_valid_kz_id(value):
-        # Сообщение намеренно без самого значения (Zero-PII).
+        # Хабарлама мәннің өзінсіз әдейі жазылған (Zero-PII).
         raise ValueError("invalid IIN/BIN checksum")
     return value
 
@@ -56,23 +56,23 @@ class CurrencyEnum(StrEnum):
 
 
 class ContractEntitiesSchema(BaseModel):
-    """Structured Output LLM-экстрактора. ``null`` = значение не найдено в тексте."""
+    """LLM экстракторының Structured Output-ы. ``null`` = мән мәтіннен табылмады."""
 
     model_config = ConfigDict(extra="forbid")
 
-    client_name: str | None = Field(description="Наименование клиента (заказчика)")
-    bin_iin: KzIdDigits | None = Field(description="ИИН/БИН клиента, 12 цифр")
-    contract_amount: Annotated[Decimal, Field(ge=0)] | None = Field(description="Сумма договора")
-    currency: CurrencyEnum | None = Field(description="Валюта договора")
-    deadline_date: date | None = Field(description="Срок исполнения, YYYY-MM-DD")
-    scope_of_work: str | None = Field(description="Предмет договора: какие услуги оказываются")
+    client_name: str | None = Field(description="Клиенттің (тапсырыс берушінің) атауы")
+    bin_iin: KzIdDigits | None = Field(description="Клиенттің ЖСН/БСН-і, 12 цифр")
+    contract_amount: Annotated[Decimal, Field(ge=0)] | None = Field(description="Келісімшарт сомасы")
+    currency: CurrencyEnum | None = Field(description="Келісімшарт валютасы")
+    deadline_date: date | None = Field(description="Орындау мерзімі, YYYY-MM-DD")
+    scope_of_work: str | None = Field(description="Келісімшарт нысаны: қандай қызметтер көрсетіледі")
 
     def missing_fields(self) -> list[str]:
         return [name for name, value in self if value is None]
 
 
 class ContractData(BaseModel):
-    """Проверенные данные, которые разрешено передавать в шаблонизатор."""
+    """Шаблонизаторға беруге рұқсат етілген тексерілген деректер."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -102,7 +102,7 @@ class DocumentInfo(BaseModel):
 
 
 class LegalResult(BaseModel):
-    """Результат Сценария А. ``entities`` возвращаются в локальный UI для проверки."""
+    """А сценарийінің нәтижесі. ``entities`` тексеру үшін жергілікті UI-ға қайтарылады."""
 
     model_config = ConfigDict(extra="forbid")
 

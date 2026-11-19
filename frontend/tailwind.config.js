@@ -8,16 +8,16 @@ export default {
         mono: ["Cascadia Code", "Consolas", "ui-monospace", "monospace"],
       },
       colors: {
-        // Холодная «трекерная» палитра: текст, фон колонок, линии.
+        // Салқын «трекерлік» палитра: мәтін, бағандар фоны, сызықтар.
         ink: { DEFAULT: "#172b4d", soft: "#44546f", mute: "#626f86" },
         paper: { DEFAULT: "#f7f8f9", card: "#ffffff", line: "#dcdfe4", col: "#f1f2f4" },
         brand: { DEFAULT: "#0c66e4", hover: "#0055cc", soft: "#e9f2ff" },
         local: { DEFAULT: "#0f7a5c", soft: "#e3f2ec" },
         warn: { DEFAULT: "#a15c07", soft: "#fbf0dc" },
         fail: { DEFAULT: "#b3261e", soft: "#fbe7e5" },
-        // Категориальные слоты графиков (dataviz: проверено validate_palette.js, light).
+        // Графиктердің категориялық слоттары (dataviz: validate_palette.js тексерген, light).
         series: { 1: "#2a78d6", 2: "#eb6834" },
-        // Рамка выделения, которую «рисуют» агенты (как в редакторах дизайна).
+        // Агенттер «салатын» бөлектеу жақтауы (дизайн редакторларындағыдай).
         select: "#1d7afc",
       },
       boxShadow: {

@@ -25,10 +25,10 @@ const STATUS_STYLE: Record<IssueStatus, string> = {
 const field = "w-full rounded-[3px] border-2 border-transparent bg-transparent px-2 py-1 text-sm outline-none hover:bg-paper-col focus:border-brand focus:bg-white";
 
 function dateTime(iso: string): string {
-  return new Date(iso).toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  return new Date(iso).toLocaleString("kk-KZ", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
-/** Карточка задачи: всё редактируется на месте (заголовок, описание, статус, тип, приоритет, метки…). */
+/** Тапсырма карточкасы: бәрі орнында өңделеді (тақырып, сипаттама, мәртебе, түрі, басымдық, белгілер…). */
 export function IssueModal({ issue, columns, onClose, onOpen, onUpdate, onDelete, onNavigate }: Props) {
   const closeRef = useRef<HTMLButtonElement>(null);
   const [summary, setSummary] = useState(issue.summary);
@@ -80,8 +80,8 @@ export function IssueModal({ issue, columns, onClose, onOpen, onUpdate, onDelete
             </>
           )}
           <span className="font-medium text-ink-soft">{issue.key}</span>
-          {saving && <span className="text-xs text-ink-mute">сохранение…</span>}
-          <button ref={closeRef} type="button" onClick={onClose} className="ml-auto rounded p-1 text-ink-soft hover:bg-paper-col" aria-label="Закрыть">
+          {saving && <span className="text-xs text-ink-mute">сақталуда…</span>}
+          <button ref={closeRef} type="button" onClick={onClose} className="ml-auto rounded p-1 text-ink-soft hover:bg-paper-col" aria-label="Жабу">
             <CloseIcon />
           </button>
         </header>
@@ -89,7 +89,7 @@ export function IssueModal({ issue, columns, onClose, onOpen, onUpdate, onDelete
         <div className="grid grid-cols-1 gap-6 p-5 md:grid-cols-[minmax(0,1fr)_260px]">
           <div className="min-w-0 space-y-5">
             <label className="block">
-              <span className="sr-only">Название задачи</span>
+              <span className="sr-only">Тапсырма атауы</span>
               <input
                 id="issue-title"
                 value={summary}
@@ -102,12 +102,12 @@ export function IssueModal({ issue, columns, onClose, onOpen, onUpdate, onDelete
             </label>
 
             <label className="block">
-              <span className="mb-1 block text-sm font-semibold text-ink">Описание</span>
+              <span className="mb-1 block text-sm font-semibold text-ink">Сипаттама</span>
               <textarea
                 value={description}
                 maxLength={4000}
                 rows={6}
-                placeholder="Что нужно изменить, добавить или убрать…"
+                placeholder="Нені өзгерту, қосу немесе алып тастау керек…"
                 onChange={(e) => setDescription(e.target.value)}
                 onBlur={() => description !== issue.description && void save({ description })}
                 className="w-full resize-y rounded-[3px] border-2 border-paper-line px-3 py-2 text-sm leading-relaxed outline-none placeholder:text-ink-mute focus:border-brand"
@@ -116,7 +116,7 @@ export function IssueModal({ issue, columns, onClose, onOpen, onUpdate, onDelete
 
             {links.some((l) => l.link) && (
               <section>
-                <h3 className="mb-2 text-sm font-semibold text-ink">Результат агента</h3>
+                <h3 className="mb-2 text-sm font-semibold text-ink">Агент нәтижесі</h3>
                 <div className="flex flex-wrap gap-2">
                   {links.map(({ a, link }) =>
                     link ? (
@@ -132,7 +132,7 @@ export function IssueModal({ issue, columns, onClose, onOpen, onUpdate, onDelete
 
           <aside className="space-y-4">
             <label className="block">
-              <span className="sr-only">Статус</span>
+              <span className="sr-only">Мәртебе</span>
               <select
                 value={issue.status}
                 onChange={(e) => void save({ status: e.target.value as IssueStatus })}
@@ -147,19 +147,19 @@ export function IssueModal({ issue, columns, onClose, onOpen, onUpdate, onDelete
             </label>
 
             <dl className="space-y-2 rounded-md border border-paper-line p-3 text-sm">
-              <Row label="Исполнитель">
+              <Row label="Орындаушы">
                 <input
                   defaultValue={issue.assignee ?? ""}
                   key={`a-${issue.key}-${issue.assignee ?? ""}`}
                   maxLength={40}
-                  placeholder="Не назначен"
-                  aria-label="Исполнитель"
+                  placeholder="Тағайындалмаған"
+                  aria-label="Орындаушы"
                   onBlur={(e) => e.target.value.trim() && e.target.value.trim() !== issue.assignee && void save({ assignee: e.target.value.trim() })}
                   className={field}
                 />
               </Row>
-              <Row label="Тип">
-                <select value={issue.type} aria-label="Тип" onChange={(e) => void save({ type: e.target.value as IssueType })} className={field}>
+              <Row label="Түрі">
+                <select value={issue.type} aria-label="Түрі" onChange={(e) => void save({ type: e.target.value as IssueType })} className={field}>
                   {(Object.keys(TYPE_LABEL) as IssueType[]).map((t) => (
                     <option key={t} value={t}>
                       {TYPE_LABEL[t]}
@@ -167,8 +167,8 @@ export function IssueModal({ issue, columns, onClose, onOpen, onUpdate, onDelete
                   ))}
                 </select>
               </Row>
-              <Row label="Приоритет">
-                <select value={issue.priority} aria-label="Приоритет" onChange={(e) => void save({ priority: e.target.value as IssuePriority })} className={field}>
+              <Row label="Басымдық">
+                <select value={issue.priority} aria-label="Басымдық" onChange={(e) => void save({ priority: e.target.value as IssuePriority })} className={field}>
                   {(Object.keys(PRIORITY_LABEL) as IssuePriority[]).map((p) => (
                     <option key={p} value={p}>
                       {PRIORITY_LABEL[p]}
@@ -191,7 +191,7 @@ export function IssueModal({ issue, columns, onClose, onOpen, onUpdate, onDelete
                   ))}
                 </select>
               </Row>
-              <Row label="Метки">
+              <Row label="Белгілер">
                 <div className="flex flex-wrap items-center gap-1 px-2 py-1">
                   {issue.labels.map((l) => (
                     <button
@@ -199,8 +199,8 @@ export function IssueModal({ issue, columns, onClose, onOpen, onUpdate, onDelete
                       type="button"
                       onClick={() => void save({ labels: issue.labels.filter((x) => x !== l) })}
                       className={`lozenge ${labelClass(l)} hover:opacity-70`}
-                      aria-label={`Убрать метку ${l}`}
-                      title="Убрать метку"
+                      aria-label={`${l} белгісін алып тастау`}
+                      title="Белгіні алып тастау"
                     >
                       {l} ✕
                     </button>
@@ -211,8 +211,8 @@ export function IssueModal({ issue, columns, onClose, onOpen, onUpdate, onDelete
                       onChange={(e) => setLabelDraft(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && addLabel()}
                       onBlur={addLabel}
-                      placeholder="+ метка"
-                      aria-label="Новая метка"
+                      placeholder="+ белгі"
+                      aria-label="Жаңа белгі"
                       className="w-20 rounded bg-transparent px-1 text-xs outline-none focus:bg-paper-col"
                     />
                   )}
@@ -221,17 +221,17 @@ export function IssueModal({ issue, columns, onClose, onOpen, onUpdate, onDelete
             </dl>
 
             <div className="space-y-1 text-xs text-ink-mute">
-              <p>Создано {dateTime(issue.created_at)}</p>
-              <p>Обновлено {dateTime(issue.updated_at)}</p>
+              <p>Жасалған {dateTime(issue.created_at)}</p>
+              <p>Жаңартылған {dateTime(issue.updated_at)}</p>
             </div>
             <button
               type="button"
               className="text-xs text-ink-mute hover:text-fail"
               onClick={() => {
-                if (window.confirm(`Удалить ${issue.key}? Это действие нельзя отменить.`)) void onDelete(issue.key).then(onClose);
+                if (window.confirm(`${issue.key} жою керек пе? Бұл әрекетті болдырмау мүмкін емес.`)) void onDelete(issue.key).then(onClose);
               }}
             >
-              Удалить задачу
+              Тапсырманы жою
             </button>
           </aside>
         </div>

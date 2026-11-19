@@ -5,7 +5,7 @@ const VIEWS: readonly View[] = ["board", "posts", "finance", "legal", "automatio
 
 export interface Route {
   view: View;
-  /** Параметры после «?»: например #/posts?post=<id> открывает пост. */
+  /** «?» кейінгі параметрлер: мысалы, #/posts?post=<id> постты ашады. */
   params: URLSearchParams;
 }
 
@@ -15,7 +15,7 @@ function parse(hash: string): Route {
   return { view, params: new URLSearchParams(query) };
 }
 
-/** Роутер на hash: #/board, #/posts, #/finance, #/legal, #/automations (+ ?параметры). */
+/** Hash-роутер: #/board, #/posts, #/finance, #/legal, #/automations (+ ?параметрлер). */
 export function useHashRoute(): [Route, (view: View, params?: Record<string, string>) => void] {
   const [route, setRoute] = useState<Route>(() => parse(window.location.hash));
   useEffect(() => {
@@ -30,12 +30,12 @@ export function useHashRoute(): [Route, (view: View, params?: Record<string, str
   return [route, navigate];
 }
 
-/** Ссылка из карточки Jira на результат в окне домена. */
+/** Jira карточкасынан домен терезесіндегі нәтижеге сілтеме. */
 export function resultLink(url: string): { view: View; params: Record<string, string>; label: string } | null {
   const post = /\/api\/posts\/([0-9a-f]{32})\.png$/.exec(url)?.[1];
-  if (post) return { view: "posts", params: { post }, label: "Открыть в Awesome Posts" };
+  if (post) return { view: "posts", params: { post }, label: "Awesome Posts-та ашу" };
   const report = /\/api\/finance\/reports\/([0-9a-f]{32})\.pdf$/.exec(url)?.[1];
-  if (report) return { view: "finance", params: { report }, label: "Открыть в Финансах" };
-  if (url.startsWith("/api/documents/")) return { view: "legal", params: {}, label: "Открыть в Договорах" };
+  if (report) return { view: "finance", params: { report }, label: "Қаржыдан ашу" };
+  if (url.startsWith("/api/documents/")) return { view: "legal", params: {}, label: "Келісімшарттардан ашу" };
   return null;
 }

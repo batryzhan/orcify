@@ -11,12 +11,12 @@ export interface TaskRunner extends UseSSEResult {
   running: boolean;
   result: TaskResult | null;
   domain: Domain | null;
-  /** Последний снимок главной карточки задачи на доске Orcify Jira. */
+  /** Orcify Jira тақтасындағы тапсырманың негізгі карточкасының соңғы суреті. */
   focusIssue: JiraIssue | null;
   submit: (body: TaskCreateRequest) => Promise<boolean>;
 }
 
-/** Запуск задачи агентам и подписка на её SSE-стрим (живёт на уровне App, переживает смену вкладок). */
+/** Тапсырманы агенттерге қою және оның SSE-ағынына жазылу (App деңгейінде тұрады, қойындылар ауысқанда сақталады). */
 export function useTaskRunner(): TaskRunner {
   const [taskId, setTaskId] = useState<string | null>(null);
   const [eventsUrl, setEventsUrl] = useState<string | null>(null);
@@ -34,7 +34,7 @@ export function useTaskRunner(): TaskRunner {
       setEventsUrl(task.events_url);
       return true;
     } catch {
-      setSubmitError("Бэкенд недоступен. Запустите uvicorn в папке backend.");
+      setSubmitError("Бэкенд қолжетімсіз. backend папкасында uvicorn іске қосыңыз.");
       return false;
     } finally {
       setSubmitting(false);

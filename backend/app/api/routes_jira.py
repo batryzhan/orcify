@@ -1,4 +1,4 @@
-"""Orcify Jira: доска задач для UI (агенты работают с ней через MCP ``orcify_jira``)."""
+"""Orcify Jira: UI үшін тапсырмалар тақтасы (агенттер онымен MCP ``orcify_jira`` арқылы жұмыс істейді)."""
 
 from __future__ import annotations
 
@@ -47,6 +47,6 @@ async def delete_issue(key: str, store: Annotated[JiraStore, Depends(get_jira_st
 async def clear_board(
     body: ClearBoardRequest, store: Annotated[JiraStore, Depends(get_jira_store)]
 ) -> ClearBoardResponse:
-    """«Очистить доску»: все задачи или только выполненные."""
+    """«Тақтаны тазалау»: барлық тапсырма немесе тек орындалғандар."""
     removed = store.clear(None if body.scope == "all" else {IssueStatus.DONE})
     return ClearBoardResponse(removed=removed)

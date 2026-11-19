@@ -1,8 +1,8 @@
-"""Схемы домена Finance (Сценарий В).
+"""Finance домені схемалары (В сценарийі).
 
-``FinanceMetrics`` — контракт ответа MCP-инструмента ``analyze_transactions``
-(mcp_servers/local_finance_server/analysis.py). Совпадение схем проверяется
-тестом ``test_finance_contract_matches_mcp_server``.
+``FinanceMetrics`` — ``analyze_transactions`` MCP-құралы жауабының келісімшарты
+(mcp_servers/local_finance_server/analysis.py). Схемалардың сәйкестігін
+``test_finance_contract_matches_mcp_server`` тесті тексереді.
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class AnalyzeTransactionsArgs(BaseModel):
-    """Аргументы MCP-инструмента analyze_transactions."""
+    """analyze_transactions MCP-құралының аргументтері."""
 
     csv_text: str
     opening_balance: float = 0.0
@@ -99,12 +99,12 @@ class FinanceMetrics(BaseModel):
     anomalies: list[Anomaly]
     columns_detected: dict[str, str]
     warnings: list[str] = Field(default_factory=list)
-    # Прогноз остатка на 3 месяца по среднему последних полных месяцев (детерминированно).
+    # 3 айлық қалдық болжамы — соңғы толық айлардың орташасы бойынша (детерминистік).
     forecast: list[ForecastPoint] = Field(default_factory=list)
     forecast_basis_months: int = 0
-    # Сравнение последнего полного месяца с предыдущим.
+    # Соңғы толық айды алдыңғы аймен салыстыру.
     month_over_month: MonthComparison | None = None
-    # Расходы по категориям за последний полный месяц — база для проверки бюджетов.
+    # Соңғы толық айдағы санаттар бойынша шығыстар — бюджеттерді тексеру негізі.
     budget_month: str | None = None
     last_month_by_category: list[CategoryTotal] = Field(default_factory=list)
 
@@ -124,18 +124,18 @@ class FinanceRisk(BaseModel):
 
 
 class FinanceReportSchema(BaseModel):
-    """Structured Output аналитика: LLM видит только агрегаты, не строки выписки."""
+    """Талдаушының Structured Output-ы: LLM тек агрегаттарды көреді, үзінді жолдарын емес."""
 
     model_config = ConfigDict(extra="forbid")
 
-    headline: str = Field(max_length=200, description="Главный вывод одной фразой")
+    headline: str = Field(max_length=200, description="Бір сөйлеммен басты қорытынды")
     key_findings: list[str] = Field(min_length=2, max_length=6)
     risks: list[FinanceRisk] = Field(max_length=5)
     recommendations: list[str] = Field(min_length=1, max_length=6)
 
 
 class BudgetItem(BaseModel):
-    """Месячный лимит расходов по категории (задаётся в окне «Финансы»)."""
+    """Санат бойынша айлық шығыс лимиті («Қаржы» терезесінде беріледі)."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -159,7 +159,7 @@ class BudgetCheck(BaseModel):
 
 
 class ReportFile(BaseModel):
-    """PDF-отчёт в локальном архиве ``backend/var/finance_reports`` (только агрегаты)."""
+    """Жергілікті мұрағаттағы PDF-есеп ``backend/var/finance_reports`` (тек агрегаттар)."""
 
     report_id: str = Field(pattern=r"^[0-9a-f]{32}$")
     filename: str
@@ -169,7 +169,7 @@ class ReportFile(BaseModel):
 
 
 class ReportRecord(BaseModel):
-    """Запись архива отчётов: метаданные без сырых транзакций."""
+    """Есептер мұрағатының жазбасы: шикі транзакциясыз метадеректер."""
 
     file: ReportFile
     created_at: datetime

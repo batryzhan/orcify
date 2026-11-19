@@ -1,8 +1,8 @@
-"""Схемы домена SMM — «Awesome Posts» (Сценарий Б).
+"""SMM домені схемалары — «Awesome Posts» (Б сценарийі).
 
-Локальная модель не генерирует картинки: она пишет только тексты поста
-(Structured Output ``PostCopySchema``), а детерминированный рендерер
-(Pillow) кладёт их на фоновое фото выбранного шаблона.
+Жергілікті модель суреттерді генерацияламайды: ол тек пост мәтіндерін жазады
+(Structured Output ``PostCopySchema``), ал детерминистік рендерер
+(Pillow) оларды таңдалған үлгінің фондық фотосына салады.
 """
 
 from __future__ import annotations
@@ -14,29 +14,29 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class PostTemplate(StrEnum):
-    COSMOS = "cosmos"  # анонс / знакомство с командой: космос, крупный градиентный заголовок
-    NEON = "neon"  # запуск продукта / акция: ночной неоновый город, плашка и кнопка
-    SUMMIT = "summit"  # цитата / мероприятие: горы, спокойная типографика
+    COSMOS = "cosmos"  # анонс / команданы таныстыру: ғарыш, үлкен градиентті тақырып
+    NEON = "neon"  # өнімді іске қосу / акция: түнгі неонды қала, жолақ және батырма
+    SUMMIT = "summit"  # дәйексөз / іс-шара: таулар, тыныш типография
 
 
 class PostCopySchema(BaseModel):
-    """Structured Output копирайтера. ``null`` = элемент не нужен в этом посте."""
+    """Копирайтердің Structured Output-ы. ``null`` = бұл постта элемент қажет емес."""
 
     model_config = ConfigDict(extra="forbid")
 
-    template: PostTemplate = Field(description="Шаблон оформления под смысл поста")
-    kicker: str | None = Field(max_length=40, description="Короткая надпись над заголовком (NEW, −30%, 12 ДЕКАБРЯ)")
-    headline: str = Field(min_length=1, max_length=48, description="Первая строка заголовка, 1–3 слова")
-    headline_accent: str = Field(min_length=1, max_length=48, description="Вторая, акцентная строка, 1–3 слова")
-    subtitle: str = Field(max_length=160, description="Подзаголовок, одно предложение")
-    cta: str | None = Field(max_length=40, description="Призыв к действию на кнопке, 1–3 слова")
-    handle: str = Field(max_length=40, description="Аккаунт бренда, начинается с @")
-    caption: str = Field(max_length=1500, description="Подпись к посту для Instagram")
-    hashtags: list[str] = Field(max_length=12, description="Хэштеги без пробелов")
+    template: PostTemplate = Field(description="Пост мағынасына сай безендіру үлгісі")
+    kicker: str | None = Field(max_length=40, description="Тақырып үстіндегі қысқа жазу (NEW, −30%, 12 ЖЕЛТОҚСАН)")
+    headline: str = Field(min_length=1, max_length=48, description="Тақырыптың бірінші жолы, 1–3 сөз")
+    headline_accent: str = Field(min_length=1, max_length=48, description="Екінші, акценттік жол, 1–3 сөз")
+    subtitle: str = Field(max_length=160, description="Ішкі тақырып, бір сөйлем")
+    cta: str | None = Field(max_length=40, description="Батырмадағы әрекетке шақыру, 1–3 сөз")
+    handle: str = Field(max_length=40, description="Бренд аккаунты, @ белгісінен басталады")
+    caption: str = Field(max_length=1500, description="Instagram үшін постқа жазба")
+    hashtags: list[str] = Field(max_length=12, description="Бос орынсыз хэштегтер")
 
 
 class RenderPostArgs(BaseModel):
-    """Аргументы MCP-инструмента ``render_post``."""
+    """``render_post`` MCP-құралының аргументтері."""
 
     template: PostTemplate
     content: PostCopySchema
@@ -55,7 +55,7 @@ class RenderedPost(BaseModel):
 
 
 class PostRecord(BaseModel):
-    """Метаданные сохранённого поста (галерея). Тексты — сгенерированный контент, не запрос."""
+    """Сақталған пост метадеректері (галерея). Мәтіндер — генерацияланған контент, сұраныс емес."""
 
     post: RenderedPost
     content: PostCopySchema

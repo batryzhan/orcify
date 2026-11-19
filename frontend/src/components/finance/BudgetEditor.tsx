@@ -12,7 +12,7 @@ interface Row {
 let nextId = 1;
 const toRow = (item: BudgetItem): Row => ({ id: nextId++, category: item.category, limit: String(item.limit) });
 
-/** Месячные лимиты по категориям расходов. Проверяются при каждом анализе выписки. */
+/** Санаттар бойынша айлық шығыс лимиттері. Үзіндіні әр талдау кезінде тексеріледі. */
 export function BudgetEditor({ suggestions }: { suggestions: string[] }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [status, setStatus] = useState<string | null>(null);
@@ -34,9 +34,9 @@ export function BudgetEditor({ suggestions }: { suggestions: string[] }) {
     try {
       const saved = await api.saveBudgets({ items: rows.map((r) => ({ category: r.category.trim(), limit: parse(r.limit) })) });
       setRows(saved.items.map(toRow));
-      setStatus("Сохранено — учтём в следующем анализе");
+      setStatus("Сақталды — келесі талдауда ескеріледі");
     } catch {
-      setStatus("Не удалось сохранить");
+      setStatus("Сақтау мүмкін болмады");
     } finally {
       setSaving(false);
     }
@@ -46,24 +46,24 @@ export function BudgetEditor({ suggestions }: { suggestions: string[] }) {
 
   return (
     <section className="rounded-lg bg-white p-4 shadow-card" data-swarm-target>
-      <h2 className="text-sm font-semibold text-ink">Бюджеты на месяц</h2>
-      <p className="mb-3 text-xs text-ink-mute">Лимиты сверяются с расходами последнего полного месяца выписки.</p>
+      <h2 className="text-sm font-semibold text-ink">Айлық бюджеттер</h2>
+      <p className="mb-3 text-xs text-ink-mute">Лимиттер үзіндінің соңғы толық айындағы шығыстармен салыстырылады.</p>
       <datalist id="budget-categories">
         {suggestions.map((c) => (
           <option key={c} value={c} />
         ))}
       </datalist>
-      {rows.length === 0 && <p className="mb-2 text-xs text-ink-soft">Лимитов пока нет.</p>}
+      {rows.length === 0 && <p className="mb-2 text-xs text-ink-soft">Лимиттер әзірге жоқ.</p>}
       <ul className="space-y-2">
         {rows.map((r) => (
           <li key={r.id} className="flex items-center gap-2">
             <label className="min-w-0 flex-1">
-              <span className="sr-only">Категория</span>
+              <span className="sr-only">Санат</span>
               <input
                 list="budget-categories"
                 value={r.category}
                 onChange={(e) => update(r.id, { category: e.target.value })}
-                placeholder="Категория"
+                placeholder="Санат"
                 className="w-full rounded-[3px] border-2 border-paper-line px-2 py-1 text-sm outline-none focus:border-brand"
               />
             </label>
@@ -81,7 +81,7 @@ export function BudgetEditor({ suggestions }: { suggestions: string[] }) {
               type="button"
               onClick={() => setRows((prev) => prev.filter((x) => x.id !== r.id))}
               className="flex h-8 w-8 items-center justify-center rounded text-ink-mute hover:bg-paper-col hover:text-fail"
-              aria-label={`Удалить лимит ${r.category || ""}`}
+              aria-label={`${r.category || ""} лимитін жою`}
             >
               ✕
             </button>
@@ -93,7 +93,7 @@ export function BudgetEditor({ suggestions }: { suggestions: string[] }) {
           + Лимит
         </button>
         <button type="button" onClick={() => void save()} disabled={!valid || saving} className="btn-primary">
-          {saving ? "Сохранение…" : "Сохранить"}
+          {saving ? "Сақталуда…" : "Сақтау"}
         </button>
         {status && (
           <span role="status" className="text-xs text-ink-soft">

@@ -1,8 +1,8 @@
-"""Схемы Orcify Jira — собственного локального трекера задач (доска ORC).
+"""Orcify Jira схемалары — тапсырмалардың өз жергілікті трекері (ORC тақтасы).
 
-Трекер работает целиком на устройстве: агенты создают и двигают задачи
-через in-process MCP-сервер ``orcify_jira`` (см. ``app/mcp/jira_server.py``),
-UI читает доску через ``/api/jira``.
+Трекер толығымен құрылғыда жұмыс істейді: агенттер ``orcify_jira`` in-process
+MCP-сервері арқылы тапсырмалар жасайды және жылжытады (``app/mcp/jira_server.py`` қараңыз),
+UI тақтаны ``/api/jira`` арқылы оқиды.
 """
 
 from __future__ import annotations
@@ -39,9 +39,9 @@ class IssuePriority(StrEnum):
 
 
 class AttachmentKind(StrEnum):
-    POST = "post"  # PNG Instagram-поста (хранится в backend/var/posts)
-    DOCUMENT = "document"  # договор .docx из in-memory DocumentStore (живёт ограниченное время)
-    REPORT = "report"  # PDF-отчёт из архива окна «Финансы» (backend/var/finance_reports)
+    POST = "post"  # Instagram-постының PNG-і (backend/var/posts ішінде сақталады)
+    DOCUMENT = "document"  # in-memory DocumentStore-дағы .docx келісімшарт (шектеулі уақыт тұрады)
+    REPORT = "report"  # «Қаржы» терезесінің мұрағатындағы PDF-есеп (backend/var/finance_reports)
 
 
 Label = str
@@ -68,7 +68,7 @@ class JiraIssue(BaseModel):
     story_points: int | None = Field(default=None, ge=0, le=21)
     assignee: str | None = Field(default=None, max_length=40)
     domain: DomainEnum | None = None
-    # Связь с задачей пайплайна (для подсветки карточки, которую сейчас «строят» агенты).
+    # Пайплайн тапсырмасымен байланыс (қазір агенттер «құрып жатқан» карточканы белгілеу үшін).
     task_id: UUID | None = None
     parent_key: str | None = None
     attachments: list[IssueAttachment] = Field(default_factory=list, max_length=10)
@@ -85,12 +85,12 @@ class JiraBoard(BaseModel):
     project_key: str
     project_name: str
     columns: list[BoardColumn]
-    # Порядок внутри колонки = порядок в списке (свежие сверху).
+    # Баған ішіндегі реттілік = тізімдегі реттілік (жаңалары жоғарыда).
     issues: list[JiraIssue]
 
 
 class IssueCreate(BaseModel):
-    """Аргументы создания задачи (UI и MCP-инструмент ``create_issue``)."""
+    """Тапсырма жасау аргументтері (UI және ``create_issue`` MCP-құралы)."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -108,7 +108,7 @@ class IssueCreate(BaseModel):
 
 
 class IssueUpdate(BaseModel):
-    """Частичное обновление: ``None`` = поле не меняется."""
+    """Ішінара жаңарту: ``None`` = өріс өзгермейді."""
 
     model_config = ConfigDict(extra="forbid")
 

@@ -10,7 +10,7 @@ import { useTaskRunner } from "./hooks/useTaskRunner";
 
 export default function App() {
   const [route, navigate] = useHashRoute();
-  // У каждого окна свой раннер: задачи живут, пока вы переключаетесь между окнами.
+  // Әр терезенің өз раннері бар: терезелер арасында ауысқанда тапсырмалар жалғаса береді.
   const planner = useTaskRunner();
   const posts = useTaskRunner();
   const finance = useTaskRunner();

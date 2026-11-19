@@ -1,11 +1,11 @@
-"""Воспроизводимые замеры для docs/metrics.md и docs/experiments.md.
+"""docs/metrics.md және docs/experiments.md үшін қайталанатын өлшемдер.
 
-Запуск из папки backend (нужен запущенный Unsloth Studio):
+backend папкасынан іске қосу (іске қосылған Unsloth Studio қажет):
     .venv\\Scripts\\python scripts\\benchmark.py [--only routing,tools,pii,legal] [--repeat 1]
 
-Все данные — синтетические (benchmarks/dataset.json). Результаты пишутся в
-docs/results/benchmark_<время>.json. Вызовы идут последовательно, чтобы
-задержки не искажались конкуренцией за GPU.
+Барлық деректер — синтетикалық (benchmarks/dataset.json). Нәтижелер
+docs/results/benchmark_<уақыт>.json файлына жазылады. Шақырулар тізбектей жүреді,
+кешігулер GPU үшін бәсекелестіктен бұрмаланбауы үшін.
 """
 
 from __future__ import annotations
@@ -136,7 +136,7 @@ async def bench_pii(anonymizer: LocalAnonymizer, data: list[dict[str, object]], 
         missed = [v for v in values if v.lower() in out.lower()]
         total += len(values)
         leaked += len(missed)
-        # Данные синтетические, поэтому пропущенные значения можно сохранить для разбора ошибок.
+        # Деректер синтетикалық, сондықтан қате талдау үшін өткізілген мәндерді сақтауға болады.
         per_item.append({"values": len(values), "leaked": len(missed), "missed": missed})
         session.clear()
     return {
@@ -202,12 +202,12 @@ async def main() -> None:
         results["llm_health"] = health.model_dump()
 
         if "routing" in parts:
-            print("Smart Routing (Этап 1)…", flush=True)
+            print("Smart Routing (1-кезең)…", flush=True)
             recs = await bench_routing(IntentRouter(llm, prompts, settings), data["routing"])
             results["routing"] = {"summary": summarize(recs), "records": [r.model_dump() for r in recs]}
 
         if "tools" in parts:
-            print("Smart Routing vs Full Context (выбор инструмента)…", flush=True)
+            print("Smart Routing vs Full Context (құрал таңдау)…", flush=True)
             scoped = await bench_tools(llm, prompts, data["tool_catalog"], data["tool_selection"], scoped=True)
             full = await bench_tools(llm, prompts, data["tool_catalog"], data["tool_selection"], scoped=False)
             results["tool_selection"] = {

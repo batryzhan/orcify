@@ -1,7 +1,7 @@
-"""Локальный MCP-сервер финансового анализа (stdio).
+"""Жергілікті қаржылық талдау MCP-сервері (stdio).
 
-Запуск: ``python mcp_servers/local_finance_server/server.py``
-(обычно запускается автоматически бэкендом через MCPServerManager).
+Іске қосу: ``python mcp_servers/local_finance_server/server.py``
+(әдетте бэкенд MCPServerManager арқылы автоматты түрде іске қосады).
 """
 
 from __future__ import annotations
@@ -18,23 +18,23 @@ from analysis import FinanceInputError, FinanceMetrics, analyze_csv  # noqa: E40
 
 mcp = MCPServer(
     name="orcify-local-finance",
-    instructions="Локальный детерминированный анализ CSV-выписок. Возвращает только агрегаты.",
+    instructions="CSV-үзінділердің жергілікті детерминистік талдауы. Тек агрегаттарды қайтарады.",
 )
 
 
 @mcp.tool(
     name="analyze_transactions",
     description=(
-        "Считает агрегаты по CSV банковской выписки: выручка, расходы по категориям, "
-        "помесячный денежный поток, кассовые разрывы, топ контрагентов, аномалии. "
-        "Сырые строки наружу не возвращаются."
+        "Банк үзіндісінің CSV-і бойынша агрегаттарды есептейді: түсім, санаттар бойынша шығыстар, "
+        "айлар бойынша ақша ағыны, ақша ағынының үзілістері, топ контрагенттер, аномалиялар. "
+        "Шикі жолдар сыртқа қайтарылмайды."
     ),
 )
 def analyze_transactions(csv_text: str, opening_balance: float = 0.0) -> FinanceMetrics:
     try:
         return analyze_csv(csv_text, opening_balance)
     except FinanceInputError as exc:
-        # Ожидаемая ошибка входных данных: только машинный код, без трассировки и данных.
+        # Кіріс деректеріндегі күтілетін қате: тек машиналық код, трассировкасыз және деректерсіз.
         raise ToolError(f"finance_input_error:{exc}") from None
 
 

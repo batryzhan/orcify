@@ -6,7 +6,7 @@ function commonPrefix(a: string, b: string): number {
   return i;
 }
 
-/** Печатает новый текст посимвольно (как будто его набирает агент), начиная с общего префикса. */
+/** Жаңа мәтінді таңбалап басады (оны агент теріп жатқандай), ортақ префиксінен бастап. */
 export function useTypewriter(text: string, active: boolean, msPerChar = 28): { shown: string; typing: boolean } {
   const [shown, setShown] = useState(text);
   const shownRef = useRef(text);

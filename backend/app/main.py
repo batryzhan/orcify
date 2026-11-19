@@ -1,6 +1,6 @@
-"""Точка входа FastAPI.
+"""FastAPI кіру нүктесі.
 
-Запуск: ``uvicorn app.main:app --reload`` из папки ``backend``.
+Іске қосу: ``backend`` папкасынан ``uvicorn app.main:app --reload``.
 """
 
 from __future__ import annotations
@@ -45,7 +45,7 @@ from app.core.smm_service import SmmService
 from app.core.task_store import TaskStore
 from app.mcp.manager import MCPServerManager, build_default_manager
 
-# (settings, jira, renderer, posts) -> реестр MCP; тесты подменяют серверы in-process.
+# (settings, jira, renderer, posts) -> MCP тізілімі; тесттер серверлерді in-process алмастырады.
 McpFactory = Callable[[Settings, JiraStore, PostRenderer, PostStore], MCPServerManager]
 
 

@@ -1,8 +1,8 @@
-"""In-process MCP-сервер ``orcify_jira``: инструменты нашего собственного трекера.
+"""In-process MCP-сервері ``orcify_jira``: өз трекеріміздің құралдары.
 
-Агенты пайплайна создают и двигают задачи только через этот сервер
-(MCPServerManager -> in-process Client), так же как раньше это делал бы
-внешний Atlassian MCP — но данные никогда не покидают устройство.
+Пайплайн агенттері тапсырмаларды тек осы сервер арқылы жасайды және жылжытады
+(MCPServerManager -> in-process Client), бұрын мұны сыртқы
+Atlassian MCP істейтін еді — бірақ деректер құрылғыдан ешқашан шықпайды.
 """
 
 from __future__ import annotations
@@ -17,16 +17,16 @@ from app.schemas.jira import IssueCreate, IssueStatus, IssueUpdate, JiraBoard, J
 def build_jira_server(store: JiraStore) -> MCPServer:
     server = MCPServer(
         name="orcify-jira",
-        instructions="Локальный трекер задач Orcify (доска ORC): создание, перенос и поиск задач.",
+        instructions="Orcify жергілікті тапсырмалар трекері (ORC тақтасы): тапсырмаларды жасау, жылжыту және іздеу.",
     )
 
-    @server.tool(name="create_issue", description="Создать задачу на доске Orcify Jira")
+    @server.tool(name="create_issue", description="Orcify Jira тақтасында тапсырма жасау")
     def create_issue(issue: IssueCreate) -> JiraIssue:
         return store.create(issue)
 
     @server.tool(
         name="update_issue",
-        description="Изменить задачу: статус (колонку), исполнителя, приоритет, метки, вложения",
+        description="Тапсырманы өзгерту: мәртебе (баған), орындаушы, басымдық, белгілер, тіркемелер",
     )
     def update_issue(key: str, changes: IssueUpdate) -> JiraIssue:
         try:
@@ -34,7 +34,7 @@ def build_jira_server(store: JiraStore) -> MCPServer:
         except IssueNotFoundError:
             raise ToolError("jira_input_error:issue_not_found") from None
 
-    @server.tool(name="list_issues", description="Получить доску: колонки и задачи (опционально по статусу)")
+    @server.tool(name="list_issues", description="Тақтаны алу: бағандар және тапсырмалар (қалауынша мәртебе бойынша)")
     def list_issues(status: IssueStatus | None = None) -> JiraBoard:
         board = store.board()
         if status is not None:

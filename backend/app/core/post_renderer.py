@@ -1,8 +1,8 @@
-"""Awesome Posts — детерминированный рендер Instagram-постов (Pillow).
+"""Awesome Posts — Instagram-посттарының детерминистік рендері (Pillow).
 
-Модель ничего не рисует: она возвращает только тексты (``PostCopySchema``),
-а этот модуль кладёт их на фоновое фото шаблона из ``backend/assets/background``.
-Одинаковый вход -> одинаковый PNG (никакой генеративной графики и сети).
+Модель ештеңе салмайды: ол тек мәтіндерді қайтарады (``PostCopySchema``),
+ал бұл модуль оларды ``backend/assets/background`` ішіндегі үлгі фондық фотосына салады.
+Бірдей кіріс -> бірдей PNG (генеративті графикасыз және желісіз).
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from app.schemas.smm import PostCopySchema, PostTemplate
 
 WIDTH: Final = 1080
-HEIGHT: Final = 1350  # 4:5 — основной формат ленты Instagram
+HEIGHT: Final = 1350  # 4:5 — Instagram таспасының негізгі форматы
 
 RGB = tuple[int, int, int]
 RGBA = tuple[int, int, int, int]
@@ -36,7 +36,7 @@ class TemplateSpec:
     title: str
     use_case: str
     background: str
-    # Вертикальный фокус кадрирования фона (0 — верх, 1 — низ).
+    # Фонды кадрлаудың тік фокусы (0 — жоғарғы жағы, 1 — төменгі жағы).
     focus_y: float
     credit: str
 
@@ -45,7 +45,7 @@ TEMPLATES: Final[dict[PostTemplate, TemplateSpec]] = {
     PostTemplate.COSMOS: TemplateSpec(
         PostTemplate.COSMOS,
         "Cosmos",
-        "Анонс, знакомство с командой, большая новость",
+        "Анонс, команданы таныстыру, үлкен жаңалық",
         "cosmos.jpg",
         0.85,
         "Unsplash",
@@ -53,7 +53,7 @@ TEMPLATES: Final[dict[PostTemplate, TemplateSpec]] = {
     PostTemplate.NEON: TemplateSpec(
         PostTemplate.NEON,
         "Neon",
-        "Запуск продукта, акция, скидка, промокод",
+        "Өнімді іске қосу, акция, жеңілдік, промокод",
         "neon.jpg",
         0.5,
         "Unsplash",
@@ -61,7 +61,7 @@ TEMPLATES: Final[dict[PostTemplate, TemplateSpec]] = {
     PostTemplate.SUMMIT: TemplateSpec(
         PostTemplate.SUMMIT,
         "Summit",
-        "Цитата, ценности компании, мероприятие",
+        "Дәйексөз, компания құндылықтары, іс-шара",
         "summit.jpg",
         0.6,
         "Unsplash",
@@ -69,7 +69,7 @@ TEMPLATES: Final[dict[PostTemplate, TemplateSpec]] = {
 }
 
 
-# --- шрифты и примитивы ---------------------------------------------------------
+# --- қаріптер және примитивтер ---------------------------------------------------
 
 
 class _Fonts:
@@ -89,7 +89,7 @@ def _load_font(path: str, weight: str, size: int) -> ImageFont.FreeTypeFont:
     try:
         font.set_variation_by_name(weight)
     except (OSError, ValueError):
-        pass  # статический шрифт без осей — используем как есть
+        pass  # осьсіз статикалық қаріп — сол күйінде қолданамыз
     return font
 
 
@@ -209,7 +209,7 @@ def _draw_text(
     glow_radius: int = 18,
     shadow: bool = False,
 ) -> tuple[int, int, int, int]:
-    """Рисует строку (цвет или вертикальный градиент) с опциональным свечением. Возвращает bbox."""
+    """Жолды (түс немесе тік градиент) қосымша жарқылмен салады. Bbox қайтарады."""
     mask = _text_mask(text, font, tracking)
     x, y = _place(mask, xy[0], xy[1], align)
     pad = glow_radius * 3
@@ -257,7 +257,7 @@ def _arrow(canvas: Image.Image, x: int, cy: int, color: RGBA) -> None:
 
 
 def _star_emblem(canvas: Image.Image, cx: int, cy: int, size: int) -> None:
-    """Нейтральная эмблема: кольцо и звезда (не логотип реального бренда)."""
+    """Бейтарап эмблема: сақина және жұлдыз (нақты брендтің логотипі емес)."""
     import math
 
     layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
@@ -319,7 +319,7 @@ class PostRenderer:
         canvas.convert("RGB").save(out, format="PNG", compress_level=6)
         return out.getvalue()
 
-    # Cosmos: эмблема, огромный двухстрочный градиентный заголовок, точки карусели.
+    # Cosmos: эмблема, үлкен екі жолды градиентті тақырып, карусель нүктелері.
     def _cosmos(self, canvas: Image.Image, c: PostCopySchema, handle: str) -> None:
         f = self._fonts
         _shade(canvas, (0, 0, WIDTH, 760), (6, 8, 30, 200), (6, 8, 30, 0))
@@ -364,7 +364,7 @@ class PostRenderer:
                    fill=(255, 255, 255, 215))
         _dots(canvas, 1300)
 
-    # Neon: тёмная вуаль слева, плашка-кикер, заголовок с неоновым акцентом, кнопка.
+    # Neon: сол жақта күңгірт перде, кикер-жолақ, неонды акцентті тақырып, батырма.
     def _neon(self, canvas: Image.Image, c: PostCopySchema, handle: str) -> None:
         f = self._fonts
         canvas.alpha_composite(_horizontal_gradient((WIDTH, HEIGHT), (8, 4, 24, 225), (8, 4, 24, 60)))
@@ -397,7 +397,7 @@ class PostRenderer:
             for line in lines:
                 b = _draw_text(canvas, line, sub_font, (x, sy), fill=(236, 232, 255, 240), shadow=True)
                 sy = b[3] + 12
-        cta = _clean(c.cta) or "Подробнее"
+        cta = _clean(c.cta) or "Толығырақ"
         c_font = f.get("Montserrat", "Bold", 36)
         cw = _text_width(c_font, cta) + 110
         _pill(canvas, (x, 1100, x + cw, 1190), (255, 255, 255, 255))
@@ -405,7 +405,7 @@ class PostRenderer:
         _arrow(canvas, x + cw - 58, 1145, (255, 43, 214, 255))
         _draw_text(canvas, handle, f.get("Montserrat", "SemiBold", 30), (x, 1240), fill=(255, 255, 255, 200))
 
-    # Summit: светлый кикер с линиями, серифный заголовок внизу, акцент тёплым золотом.
+    # Summit: сызықтары бар ашық кикер, төменде серифті тақырып, жылы алтын акцент.
     def _summit(self, canvas: Image.Image, c: PostCopySchema, handle: str) -> None:
         f = self._fonts
         _shade(canvas, (0, 0, WIDTH, 360), (4, 8, 20, 170), (4, 8, 20, 0))

@@ -11,7 +11,7 @@ const TEMPLATE_TITLE: Record<RenderedPost["template"], string> = {
   summit: "Summit",
 };
 
-/** Готовый Instagram-пост: картинка 1080×1350, подпись, хэштеги, скачивание и отправка в Telegram. */
+/** Дайын Instagram-пост: 1080×1350 сурет, жазба, хэштегтер, жүктеу және Telegram-ға жіберу. */
 export function PostResultView({ post, content, hideImage = false }: { post: RenderedPost; content: PostCopy; hideImage?: boolean }) {
   const [copied, setCopied] = useState(false);
   const tags = content.hashtags.map((h) => (h.startsWith("#") ? h : `#${h}`)).join(" ");
@@ -36,28 +36,28 @@ export function PostResultView({ post, content, hideImage = false }: { post: Ren
       )}
       <div className="min-w-0 space-y-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-mute">Подпись к посту</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-mute">Постқа жазба</p>
           <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-ink">{content.caption}</p>
           {tags && <p className="mt-2 text-sm text-brand">{tags}</p>}
         </div>
         <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-          <dt className="text-ink-mute">Шаблон</dt>
+          <dt className="text-ink-mute">Үлгі</dt>
           <dd>{TEMPLATE_TITLE[post.template]}</dd>
           <dt className="text-ink-mute">Аккаунт</dt>
           <dd>{content.handle || "@orcify"}</dd>
-          <dt className="text-ink-mute">Размер</dt>
+          <dt className="text-ink-mute">Өлшемі</dt>
           <dd className="tabular-nums">
             {post.width}×{post.height} · {formatBytes(post.size_bytes)}
           </dd>
           <dt className="text-ink-mute">Рендер</dt>
-          <dd className="tabular-nums">{(post.render_ms / 1000).toFixed(2)} с, локально</dd>
+          <dd className="tabular-nums">{(post.render_ms / 1000).toFixed(2)} с, жергілікті</dd>
         </dl>
         <div className="flex flex-wrap items-center gap-2">
           <a href={post.image_url} download className="btn-primary">
-            Скачать PNG
+            PNG жүктеу
           </a>
           <button type="button" onClick={() => void copy()} className="btn-subtle">
-            {copied ? "Скопировано" : "Копировать подпись"}
+            {copied ? "Көшірілді" : "Жазбаны көшіру"}
           </button>
           <TelegramButton send={() => api.sendPostToTelegram(post.post_id)} />
         </div>

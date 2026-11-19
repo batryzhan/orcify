@@ -1,4 +1,4 @@
-"""Схемы домена HR: планировщик задач для Orcify Jira (онбординг, найм, кадровые процессы)."""
+"""HR домені схемалары: Orcify Jira үшін тапсырмалар жоспарлаушысы (онбординг, жалдау, кадр процестері)."""
 
 from __future__ import annotations
 
@@ -10,20 +10,20 @@ from app.schemas.jira import IssuePriority, IssueType
 class PlannedIssue(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    summary: str = Field(min_length=1, max_length=160, description="Короткое название задачи")
-    description: str = Field(max_length=600, description="Что сделать и критерий готовности")
-    type: IssueType = Field(description="task — работа, story — результат для сотрудника, bug — проблема")
+    summary: str = Field(min_length=1, max_length=160, description="Тапсырманың қысқа атауы")
+    description: str = Field(max_length=600, description="Не істеу керек және дайындық критерийі")
+    type: IssueType = Field(description="task — жұмыс, story — қызметкер үшін нәтиже, bug — мәселе")
     priority: IssuePriority
-    story_points: int = Field(ge=1, le=13, description="Оценка трудоёмкости: 1, 2, 3, 5, 8, 13")
-    assignee_role: str = Field(max_length=40, description="Роль исполнителя: HR, руководитель, IT, бухгалтерия")
+    story_points: int = Field(ge=1, le=13, description="Еңбек сыйымдылығын бағалау: 1, 2, 3, 5, 8, 13")
+    assignee_role: str = Field(max_length=40, description="Орындаушы рөлі: HR, басшы, IT, бухгалтерия")
 
 
 class JiraPlanSchema(BaseModel):
-    """Structured Output планировщика."""
+    """Жоспарлаушының Structured Output-ы."""
 
     model_config = ConfigDict(extra="forbid")
 
-    epic: str = Field(min_length=1, max_length=160, description="Название эпика, объединяющего задачи")
+    epic: str = Field(min_length=1, max_length=160, description="Тапсырмаларды біріктіретін эпик атауы")
     issues: list[PlannedIssue] = Field(min_length=1, max_length=8)
 
 

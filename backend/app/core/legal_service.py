@@ -1,4 +1,4 @@
-"""Сценарий А (Legal): Unstructured Text -> LLM Extractor -> Pydantic -> docxtpl."""
+"""А сценарийі (Legal): Unstructured Text -> LLM Extractor -> Pydantic -> docxtpl."""
 
 from __future__ import annotations
 

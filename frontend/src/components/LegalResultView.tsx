@@ -6,12 +6,12 @@ import { isValidKzId } from "../lib/kzId";
 import type { ContractData, ContractEntities, ContractField, Currency, DocumentInfo, LegalResult } from "../types/api";
 
 const FIELD_LABELS: Record<ContractField, string> = {
-  client_name: "Клиент (заказчик)",
-  bin_iin: "ИИН / БИН",
-  contract_amount: "Сумма",
+  client_name: "Клиент (тапсырыс беруші)",
+  bin_iin: "ЖСН / БСН",
+  contract_amount: "Сома",
   currency: "Валюта",
-  deadline_date: "Срок исполнения",
-  scope_of_work: "Предмет договора",
+  deadline_date: "Орындау мерзімі",
+  scope_of_work: "Келісімшарт нысаны",
 };
 
 const FIELDS: ContractField[] = [
@@ -49,9 +49,9 @@ export function LegalResultView({ result }: { result: LegalResult }) {
   return (
     <section className="space-y-5 rounded-xl border border-paper-line bg-paper-card p-5">
       <header className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-lg font-semibold">Договор возмездного оказания услуг</h2>
+        <h2 className="text-lg font-semibold">Өтеулі қызмет көрсету келісімшарты</h2>
         <span className="text-xs text-ink-mute">
-          Текст — фиксированный шаблон docxtpl, модель только извлекла реквизиты
+          Мәтін — тіркелген docxtpl үлгісі, модель тек деректемелерді алды
         </span>
       </header>
 
@@ -94,7 +94,7 @@ function DownloadCard({ document }: { document: DocumentInfo }) {
         download={document.filename}
         className="rounded-lg bg-local px-4 py-2 text-sm font-medium text-white hover:bg-local/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-local"
       >
-        Скачать .docx
+        .docx жүктеу
       </a>
     </div>
   );
@@ -122,9 +122,9 @@ function CorrectionForm({ result, onRendered }: { result: LegalResult; onRendere
 
   const localError = (field: ContractField): string | null => {
     const value = draft[field].trim();
-    if (value === "") return "Обязательное поле";
-    if (field === "bin_iin" && !isValidKzId(value)) return "12 цифр с верным контрольным разрядом";
-    if (field === "contract_amount" && !(Number(value.replace(",", ".")) > 0)) return "Положительное число";
+    if (value === "") return "Міндетті өріс";
+    if (field === "bin_iin" && !isValidKzId(value)) return "Бақылау разряды дұрыс 12 цифр";
+    if (field === "contract_amount" && !(Number(value.replace(",", ".")) > 0)) return "Оң сан";
     return null;
   };
   const hasErrors = FIELDS.some((f) => localError(f) !== null);
@@ -155,7 +155,7 @@ function CorrectionForm({ result, onRendered }: { result: LegalResult; onRendere
         }
         setServerErrors(next);
       } else {
-        setFailure("Не удалось сформировать документ. Проверьте, что бэкенд запущен.");
+        setFailure("Құжатты жасау мүмкін болмады. Бэкенд іске қосылғанын тексеріңіз.");
       }
     } finally {
       setSubmitting(false);
@@ -165,8 +165,8 @@ function CorrectionForm({ result, onRendered }: { result: LegalResult; onRendere
   return (
     <form onSubmit={submit} className="space-y-4" noValidate>
       <p className="rounded-lg bg-warn-soft px-4 py-3 text-sm text-warn">
-        Модель не нашла или нашла некорректными {flagged.size} из 6 реквизитов. Проверьте поля — договор
-        сформируется без повторного обращения к модели.
+        Модель 6 деректемеден {flagged.size}-ін таппады немесе қате тапты. Өрістерді тексеріңіз — келісімшарт
+        модельге қайта жүгінбей жасалады.
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -189,7 +189,7 @@ function CorrectionForm({ result, onRendered }: { result: LegalResult; onRendere
                 {FIELD_LABELS[field]}
                 {flagged.has(field) && (
                   <span className="rounded bg-warn-soft px-1.5 text-[11px] text-warn">
-                    {result.missing_fields.includes(field) ? "не найдено" : "некорректно"}
+                    {result.missing_fields.includes(field) ? "табылмады" : "қате"}
                   </span>
                 )}
               </label>
@@ -225,7 +225,7 @@ function CorrectionForm({ result, onRendered }: { result: LegalResult; onRendere
         disabled={hasErrors || submitting}
         className="rounded-lg bg-ink px-4 py-2 text-sm font-medium text-white enabled:hover:bg-ink/90 disabled:cursor-not-allowed disabled:opacity-40"
       >
-        {submitting ? "Формирую…" : "Сформировать договор"}
+        {submitting ? "Жасалуда…" : "Келісімшартты жасау"}
       </button>
     </form>
   );

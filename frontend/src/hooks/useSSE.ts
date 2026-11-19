@@ -6,14 +6,14 @@ export type SSEState = "idle" | "connecting" | "open" | "closed" | "error";
 
 export interface ReceivedEvent {
   data: ProgressEvent;
-  /** performance.now() в момент получения — для таймингов этапов в UI. */
+  /** Хабар алынған сәттегі performance.now() — UI-дағы кезеңдердің тайминдері үшін. */
   at: number;
 }
 
 export interface UseSSEResult {
   events: ReceivedEvent[];
   latest: ProgressEvent | null;
-  /** performance.now() момента подписки. */
+  /** Жазылу сәтіндегі performance.now(). */
   startedAt: number | null;
   state: SSEState;
   error: string | null;
@@ -21,14 +21,14 @@ export interface UseSSEResult {
 }
 
 /**
- * Подписка на одноразовый SSE-стрим задачи (событие `progress`).
+ * Тапсырманың бір реттік SSE-ағынына жазылу (`progress` оқиғасы).
  *
- * Стрим на бэкенде одноразовый: повторное подключение вернёт 404, поэтому
- * встроенный авто-реконнект EventSource отключается — при обрыве до
- * терминального события хук переходит в `error`.
+ * Бэкендтегі ағын бір реттік: қайта қосылу 404 қайтарады, сондықтан
+ * EventSource-тың кірістірілген авто-реконнектісі өшірілген — терминалдық
+ * оқиғаға дейін үзілсе, хук `error` күйіне өтеді.
  *
- * Открытие откладывается на тик: в React StrictMode эффект монтируется
- * дважды, и без задержки первый EventSource «съел» бы задачу.
+ * Ашу бір тактіге кейінге қалдырылады: React StrictMode-та эффект
+ * екі рет орнатылады, ал кідіріссіз бірінші EventSource тапсырманы «жеп қояр» еді.
  */
 export function useSSE(url: string | null, eventName = "progress"): UseSSEResult {
   const [events, setEvents] = useState<ReceivedEvent[]>([]);
@@ -84,7 +84,7 @@ export function useSSE(url: string | null, eventName = "progress"): UseSSEResult
         finished = true;
         source?.close();
         setState("error");
-        setError("Соединение с сервером прервано. Запустите задачу заново.");
+        setError("Сервермен байланыс үзілді. Тапсырманы қайта іске қосыңыз.");
       };
     }, 0);
 

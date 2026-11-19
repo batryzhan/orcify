@@ -6,7 +6,7 @@ import { STAGE_LABEL, STAGE_PLAN } from "../../lib/stages";
 import { Avatar } from "../icons";
 import { SWARM_SIZE } from "./AgentSwarm";
 
-/** Нижняя плашка роя: «16 агентов · этап 3 / 6», прогресс, текущее действие, время. */
+/** Жүйенің төменгі тақтайшасы: «16 агент · 3 / 6 кезең», прогресс, ағымдағы әрекет, уақыт. */
 export function SwarmPill({ runner, onOpenResult }: { runner: TaskRunner; onOpenResult?: () => void }) {
   const { latest, events, startedAt, running, domain } = runner;
   const [now, setNow] = useState(() => performance.now());
@@ -16,7 +16,7 @@ export function SwarmPill({ runner, onOpenResult }: { runner: TaskRunner; onOpen
     return () => window.clearInterval(id);
   }, [running]);
 
-  // После завершения плашка сама исчезает через 6 с, чтобы не закрывать результат.
+  // Аяқталған соң тақтайша 6 с кейін өзі жоғалады, нәтижені жаппау үшін.
   const [hiddenFor, setHiddenFor] = useState<number | null>(null);
   const terminal = latest?.status === "completed" || latest?.status === "failed";
   useEffect(() => {
@@ -35,7 +35,7 @@ export function SwarmPill({ runner, onOpenResult }: { runner: TaskRunner; onOpen
   const end = events.at(-1)?.at ?? now;
   const elapsed = startedAt !== null ? ((running ? now : end) - startedAt) / 1000 : 0;
   const leads = domain ? DOMAIN_LEADS[domain] : ["Router"];
-  const message = failed ? latest?.error?.message : (latest?.message ?? "Агенты подключаются…");
+  const message = failed ? latest?.error?.message : (latest?.message ?? "Агенттер қосылуда…");
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-5 z-[70] flex justify-center px-4">
@@ -50,10 +50,10 @@ export function SwarmPill({ runner, onOpenResult }: { runner: TaskRunner; onOpen
           ))}
         </span>
         <span className="whitespace-nowrap font-semibold tabular-nums">
-          {SWARM_SIZE} агентов
+          {SWARM_SIZE} агент
         </span>
         <span className="hidden whitespace-nowrap tabular-nums text-white/60 sm:inline">
-          {Math.min(step, plan.length)} / {plan.length} этапов
+          {Math.min(step, plan.length)} / {plan.length} кезең
         </span>
         <span className="hidden h-1 w-20 overflow-hidden rounded-full bg-white/15 sm:block" aria-hidden>
           <span
@@ -62,12 +62,12 @@ export function SwarmPill({ runner, onOpenResult }: { runner: TaskRunner; onOpen
           />
         </span>
         <span className={`min-w-0 truncate ${failed ? "text-[#fd9891]" : "text-white/80"}`} title={message ?? ""}>
-          {completed ? "Готово" : (message ?? STAGE_LABEL[latest?.status ?? "classifying_intent"])}
+          {completed ? "Дайын" : (message ?? STAGE_LABEL[latest?.status ?? "classifying_intent"])}
         </span>
         <span className="whitespace-nowrap font-mono text-xs tabular-nums text-white/50">{elapsed.toFixed(1)} с</span>
         {completed && onOpenResult && (
           <button type="button" onClick={onOpenResult} className="whitespace-nowrap rounded-full bg-white px-3 py-1 text-xs font-semibold text-[#1d2125] hover:bg-white/90">
-            Открыть результат
+            Нәтижені ашу
           </button>
         )}
       </div>

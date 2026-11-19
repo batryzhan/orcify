@@ -1,4 +1,4 @@
-"""Статус локальной LLM и MCP-серверов."""
+"""Жергілікті LLM және MCP-серверлердің күйі."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/api", tags=["health"])
 
 @router.get("/health", response_model=HealthResponse)
 async def health(llm: Annotated[LLMClient, Depends(get_llm_client)]) -> HealthResponse:
-    """Быстрая проверка локальной модели (опрашивается UI каждые 15 с)."""
+    """Жергілікті модельді жылдам тексеру (UI әр 15 с сайын сұратады)."""
     llm_health = await llm.health()
     ok = llm_health.reachable and llm_health.error_code is None
     return HealthResponse(status=ServiceStatus.OK if ok else ServiceStatus.DEGRADED, llm=llm_health)
@@ -25,5 +25,5 @@ async def health(llm: Annotated[LLMClient, Depends(get_llm_client)]) -> HealthRe
 
 @router.get("/health/mcp", response_model=list[McpServerHealth])
 async def mcp_health(manager: Annotated[MCPServerManager, Depends(get_mcp_manager)]) -> list[McpServerHealth]:
-    """Статус MCP-серверов: локальные запускаются и опрашиваются, внешние — если настроены."""
+    """MCP-серверлер күйі: жергілікті серверлер іске қосылады және сұратылады, сыртқылар — бапталған болса."""
     return await manager.health()

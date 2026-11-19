@@ -1,8 +1,8 @@
-"""Сценарий Б (SMM, «Awesome Posts»): тексты поста (локальная Gemma, Structured
-Output) -> рендер PNG через in-process MCP ``awesome_posts``.
+"""Б сценарийі (SMM, «Awesome Posts»): пост мәтіндері (жергілікті Gemma, Structured
+Output) -> in-process MCP ``awesome_posts`` арқылы PNG рендері.
 
-Весь сценарий локальный: ни текст запроса, ни картинка не уходят во внешние
-сервисы. Пост можно отправить в Telegram только явным действием пользователя.
+Бүкіл сценарий жергілікті: сұраныс мәтіні де, сурет те сыртқы
+сервистерге кетпейді. Постты Telegram-ға тек пайдаланушының айқын әрекетімен жіберуге болады.
 """
 
 from __future__ import annotations
@@ -34,7 +34,7 @@ class SmmService:
         self._mcp = mcp
 
     async def write_copy(self, text: str, forced: PostTemplate | None = None) -> PostCopySchema:
-        user = text if forced is None else f"{text}\n\n[Шаблон выбран пользователем: {forced.value}]"
+        user = text if forced is None else f"{text}\n\n[Үлгіні пайдаланушы таңдады: {forced.value}]"
         messages = [
             ChatMessage(role="system", content=self._prompts.load(COPY_PROMPT)),
             ChatMessage(role="user", content=user),

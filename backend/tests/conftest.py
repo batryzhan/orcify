@@ -15,8 +15,8 @@ Handler = Callable[[httpx.Request], httpx.Response]
 
 @pytest.fixture
 def settings(tmp_path: Path) -> Settings:
-    # _env_file=None: тесты не читают реальный backend/.env с ключами (LLM, Telegram).
-    # Доска, посты и чаты — во временной папке, чтобы не трогать backend/var.
+    # _env_file=None: тесттер LLM, Telegram кілттері бар нақты backend/.env оқымайды.
+    # Тақта, посттар және чаттар — уақытша папкада, backend/var қозғалмауы үшін.
     return Settings(  # type: ignore[call-arg]
         _env_file=None,
         llm_api_key=SecretStr("test-key"),
@@ -40,10 +40,10 @@ def chat_response(content: str, finish_reason: str = "stop") -> httpx.Response:
 
 
 def intent_json(domain: str = "Legal", confidence: float = 0.9) -> str:
-    return json.dumps({"domain": domain, "confidence": confidence, "reasoning": "Запрос на договор."})
+    return json.dumps({"domain": domain, "confidence": confidence, "reasoning": "Келісімшартқа сұраныс."})
 
 
-VALID_IIN = "900101300017"  # синтетический ИИН с верным контрольным разрядом
+VALID_IIN = "900101300017"  # бақылау разряды дұрыс синтетикалық ЖСН
 
 
 def entities_json(**overrides: object) -> str:
@@ -53,14 +53,14 @@ def entities_json(**overrides: object) -> str:
         "contract_amount": 500000,
         "currency": "KZT",
         "deadline_date": "2026-12-31",
-        "scope_of_work": "Разработка корпоративного сайта",
+        "scope_of_work": "Корпоративтік сайтты әзірлеу",
     }
     data.update(overrides)
     return json.dumps(data, ensure_ascii=False)
 
 
 def schema_router(replies: dict[str, str]) -> Handler:
-    """Мок LLM: отвечает по имени запрошенной JSON-схемы."""
+    """LLM моклары: сұралған JSON-схема атауы бойынша жауап береді."""
 
     def handler(request: httpx.Request) -> httpx.Response:
         name = json.loads(request.content)["response_format"]["json_schema"]["name"]

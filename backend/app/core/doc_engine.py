@@ -1,8 +1,8 @@
-"""Deterministic Core: рендер .docx через docxtpl.
+"""Deterministic Core: docxtpl арқылы .docx рендері.
 
-На вход — только провалидированный ``ContractData``. Все значения
-форматируются детерминированно (даты, суммы), Jinja работает со
-``StrictUndefined`` и автоэкранированием XML.
+Кіріске — тек валидацияланған ``ContractData``. Барлық мәндер
+детерминистік форматталады (күндер, сомалар), Jinja ``StrictUndefined`` және
+XML автоэкрандаумен жұмыс істейді.
 """
 
 from __future__ import annotations
@@ -23,15 +23,15 @@ from app.schemas.legal import ContractData, CurrencyEnum
 CONTRACT_TEMPLATE: Final = "service_contract_kz.docx"
 
 MONTHS_GENITIVE: Final = (
-    "января", "февраля", "марта", "апреля", "мая", "июня",
-    "июля", "августа", "сентября", "октября", "ноября", "декабря",
+    "қаңтар", "ақпан", "наурыз", "сәуір", "мамыр", "маусым",
+    "шілде", "тамыз", "қыркүйек", "қазан", "қараша", "желтоқсан",
 )
 
 CURRENCY_NAMES: Final = {
-    CurrencyEnum.KZT: "тенге",
-    CurrencyEnum.USD: "долларов США",
-    CurrencyEnum.EUR: "евро",
-    CurrencyEnum.RUB: "российских рублей",
+    CurrencyEnum.KZT: "теңге",
+    CurrencyEnum.USD: "АҚШ доллары",
+    CurrencyEnum.EUR: "еуро",
+    CurrencyEnum.RUB: "Ресей рублі",
 }
 
 
@@ -42,11 +42,11 @@ class DocEngineError(Exception):
 
 
 def format_date_ru(value: date) -> str:
-    return f"«{value.day:02d}» {MONTHS_GENITIVE[value.month - 1]} {value.year} г."
+    return f"«{value.day:02d}» {MONTHS_GENITIVE[value.month - 1]} {value.year} ж."
 
 
 def format_amount(value: Decimal) -> str:
-    """500000 -> '500 000,00' (неразрывные пробелы между разрядами)."""
+    """500000 -> '500 000,00' (разрядтар арасындағы үзілмейтін бос орындар)."""
     quantized = value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     integer, _, cents = f"{quantized:.2f}".partition(".")
     grouped = f"{int(integer):,}".replace(",", " ")
@@ -54,7 +54,7 @@ def format_amount(value: Decimal) -> str:
 
 
 class ContractRenderContext(BaseModel):
-    """Ровно те переменные, что объявлены в шаблоне договора."""
+    """Келісімшарт шаблонында жарияланған айнымалылар ғана."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -111,6 +111,6 @@ class DocEngine:
             buffer = io.BytesIO()
             template.save(buffer)
         except Exception:
-            # from None: исключения Jinja/lxml могут содержать фрагменты данных.
+            # from None: Jinja/lxml ерекше жағдайларында деректер үзінділері болуы мүмкін.
             raise DocEngineError("render_failed") from None
         return buffer.getvalue()

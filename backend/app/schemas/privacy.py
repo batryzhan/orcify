@@ -1,4 +1,4 @@
-"""Схемы Local Anonymizer (маскирование PII перед внешними MCP)."""
+"""Local Anonymizer схемалары (сыртқы MCP алдында PII маскалау)."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ class PiiCategory(StrEnum):
 
 
 class LlmPiiCategory(StrEnum):
-    """Категории, которые ищет LLM (остальное надёжнее ловят регулярные выражения)."""
+    """LLM іздейтін санаттар (қалғанын регулярлық өрнектер сенімдірек табады)."""
 
     PERSON = "PERSON"
     COMPANY = "COMPANY"
@@ -30,12 +30,12 @@ class LlmPiiCategory(StrEnum):
 class PiiSpan(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    text: str = Field(min_length=2, max_length=200, description="Фрагмент ровно так, как он написан в тексте")
+    text: str = Field(min_length=2, max_length=200, description="Үзінді мәтінде қалай жазылса, дәл солай")
     category: LlmPiiCategory
 
 
 class PiiDetectionResult(BaseModel):
-    """Structured Output детектора PII."""
+    """PII детекторының Structured Output-ы."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -43,7 +43,7 @@ class PiiDetectionResult(BaseModel):
 
 
 class AnonymizationReport(BaseModel):
-    """Сводка для UI и метрик: только счётчики, без самих значений."""
+    """UI және метрикаларға арналған жиынтық: тек санауыштар, мәндердің өздерінсіз."""
 
     entities_total: int
     by_category: dict[PiiCategory, int]

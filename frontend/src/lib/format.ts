@@ -6,7 +6,7 @@ export function formatAmount(amount: string | null, currency: Currency | null): 
   if (amount === null) return "—";
   const n = Number(amount);
   const text = Number.isFinite(n)
-    ? n.toLocaleString("ru-RU", { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+    ? n.toLocaleString("kk-KZ", { minimumFractionDigits: 0, maximumFractionDigits: 2 })
     : amount;
   return currency ? `${text} ${CURRENCY_LABEL[currency]}` : text;
 }
@@ -16,18 +16,18 @@ export function formatDate(iso: string | null): string {
   const d = new Date(`${iso}T00:00:00`);
   return Number.isNaN(d.getTime())
     ? iso
-    : d.toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
+    : d.toLocaleDateString("kk-KZ", { day: "numeric", month: "long", year: "numeric" });
 }
 
 export function formatMoney(value: number, compact = false): string {
   if (compact && Math.abs(value) >= 1_000_000) {
-    return `${(value / 1_000_000).toLocaleString("ru-RU", { maximumFractionDigits: 1 })} млн ₸`;
+    return `${(value / 1_000_000).toLocaleString("kk-KZ", { maximumFractionDigits: 1 })} млн ₸`;
   }
-  return `${Math.round(value).toLocaleString("ru-RU")} ₸`;
+  return `${Math.round(value).toLocaleString("kk-KZ")} ₸`;
 }
 
 export function formatPercent(share: number): string {
-  return `${(share * 100).toLocaleString("ru-RU", { maximumFractionDigits: 1 })}%`;
+  return `${(share * 100).toLocaleString("kk-KZ", { maximumFractionDigits: 1 })}%`;
 }
 
 export function formatBytes(size: number): string {

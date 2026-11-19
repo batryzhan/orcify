@@ -1,8 +1,8 @@
-"""Сценарий В (Finance): CSV -> локальный MCP (pandas) -> агрегаты -> LLM-резюме -> PDF-отчёт.
+"""В сценарийі (Finance): CSV -> жергілікті MCP (pandas) -> агрегаттар -> LLM-қорытынды -> PDF-есеп.
 
-Отчёт собирается детерминированно (``finance_pdf.py``) и кладётся в локальный
-архив окна «Финансы». Бюджеты пользователя сверяются с расходами последнего
-полного месяца без участия модели.
+Есеп детерминистік түрде құрастырылады (``finance_pdf.py``) және «Қаржы» терезесінің
+жергілікті мұрағатына салынады. Пайдаланушы бюджеттері соңғы толық айдың
+шығыстарымен модельсіз салыстырылады.
 """
 
 from __future__ import annotations
@@ -78,7 +78,7 @@ class FinanceService:
         return self._budgets.check(metrics)
 
     async def summarize(self, metrics: FinanceMetrics, budgets: list[BudgetCheck]) -> FinanceReportSchema:
-        # Модель видит только агрегаты (и итоги бюджетов), не строки выписки.
+        # Модель тек агрегаттарды (және бюджет қорытындыларын) көреді, үзінді жолдарын емес.
         payload = metrics.model_dump(mode="json", exclude={"columns_detected", "warnings"})
         payload["budget_checks"] = [b.model_dump(mode="json") for b in budgets]
         messages = [
