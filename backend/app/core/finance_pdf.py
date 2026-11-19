@@ -101,22 +101,25 @@ class FinancePdfRenderer:
     # --- секции ---------------------------------------------------------------
 
     @staticmethod
-    def _h2(pdf: FPDF, text: str) -> None:
-        if pdf.get_y() > 250:
+    def _h2(pdf: FPDF, text: str, need: float = 40.0) -> None:
+        """Заголовок секции. ``need`` — сколько мм нужно под ним: если не помещается, секция
+        целиком переносится на новую страницу (заголовок не остаётся один внизу страницы).
+        Длинные заголовки (их пишет модель) переносятся по словам, а не обрезаются."""
+        if pdf.get_y() + need > pdf.h - 18:
             pdf.add_page()
         pdf.ln(4)
         pdf.set_font("PTSans", "B", 13)
         pdf.set_text_color(*INK)
-        pdf.cell(0, 8, text, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        pdf.multi_cell(0, 6.6, text, new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
         pdf.set_draw_color(*LINE)
-        pdf.line(pdf.l_margin, pdf.get_y(), pdf.w - pdf.r_margin, pdf.get_y())
-        pdf.ln(2)
+        pdf.line(pdf.l_margin, pdf.get_y() + 1, pdf.w - pdf.r_margin, pdf.get_y() + 1)
+        pdf.ln(3)
 
     @staticmethod
     def _text(pdf: FPDF, text: str, size: float = 10.5, color: tuple[int, int, int] = SOFT, bold: bool = False) -> None:
         pdf.set_font("PTSans", "B" if bold else "", size)
         pdf.set_text_color(*color)
-        pdf.multi_cell(0, 5.6, text, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        pdf.multi_cell(0, 5.6, text, new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
 
     def _header(self, pdf: FPDF, m: FinanceMetrics, created_at: datetime) -> None:
         pdf.set_font("PTSans", "B", 22)
@@ -158,7 +161,7 @@ class FinancePdfRenderer:
         pdf.set_xy(pdf.l_margin, y + 24)
 
     def _conclusions(self, pdf: FPDF, r: FinanceReportSchema) -> None:
-        self._h2(pdf, r.headline)
+        self._h2(pdf, r.headline, need=70)
         self._text(pdf, "Ключевые наблюдения", bold=True, color=INK)
         for item in r.key_findings:
             self._text(pdf, f"•  {item}")
@@ -175,9 +178,7 @@ class FinancePdfRenderer:
     def _monthly_chart(self, pdf: FPDF, m: FinanceMetrics) -> None:
         if not m.monthly:
             return
-        self._h2(pdf, "Помесячный денежный поток")
-        if pdf.get_y() > 200:
-            pdf.add_page()
+        self._h2(pdf, "Помесячный денежный поток", need=82)
         x0, y0 = pdf.l_margin, pdf.get_y() + 2
         width, height = pdf.w - pdf.l_margin - pdf.r_margin, 50
         peak = max(max(x.income, x.expense) for x in m.monthly) or 1
@@ -210,8 +211,6 @@ class FinancePdfRenderer:
         pdf.set_text_color(*INK)
         pdf.set_draw_color(*LINE)
         pdf.set_fill_color(255, 255, 255)  # иначе таблица унаследует цвет последней заливки (легенды графика)
-        if pdf.get_y() > 235:
-            pdf.add_page()
         with pdf.table(col_widths=widths, text_align=("LEFT",) + ("RIGHT",) * (len(header) - 1),
                        line_height=6.2, borders_layout="HORIZONTAL_LINES",
                        headings_style=_headings()) as table:
@@ -224,7 +223,7 @@ class FinancePdfRenderer:
                     row.cell(v)
 
     def _forecast(self, pdf: FPDF, m: FinanceMetrics) -> None:
-        self._h2(pdf, "Прогноз остатка на 3 месяца")
+        self._h2(pdf, "Прогноз остатка на 3 месяца", need=48)
         self._text(pdf, f"По среднему последних {m.forecast_basis_months} полных мес. Это ориентир, а не обещание.",
                    size=9.5, color=MUTE)
         pdf.ln(1)
@@ -240,7 +239,11 @@ class FinancePdfRenderer:
     def _mom(self, pdf: FPDF, m: FinanceMetrics) -> None:
         mom = m.month_over_month
         assert mom is not None
-        self._h2(pdf, f"{month_label(mom.current_month)} к {month_label(mom.previous_month)}")
+        self._h2(
+            pdf,
+            f"{month_label(mom.current_month)} к {month_label(mom.previous_month)}",
+            need=34 + 6.4 * (len(mom.categories) + 1),
+        )
         self._text(
             pdf,
             f"Поступления: {money(mom.income_previous)} → {money(mom.income_current)} · "
@@ -258,7 +261,11 @@ class FinancePdfRenderer:
             self._table(pdf, ("Категория", "Было", "Стало", "Изменение", "%"), rows, (30, 20, 20, 20, 12))
 
     def _budgets(self, pdf: FPDF, m: FinanceMetrics, budgets: list[BudgetCheck]) -> None:
-        self._h2(pdf, f"Бюджеты · {month_label(m.budget_month) if m.budget_month else ''}")
+        self._h2(
+            pdf,
+            f"Бюджеты · {month_label(m.budget_month) if m.budget_month else ''}",
+            need=24 + 6.4 * (len(budgets) + 1),
+        )
         rows = [
             (b.category, money(b.limit), money(b.spent),
              ("перерасход " + money(-b.remaining)) if b.over else money(b.remaining), f"{b.ratio:.0%}")
@@ -267,12 +274,12 @@ class FinancePdfRenderer:
         self._table(pdf, ("Категория", "Лимит", "Потрачено", "Остаток", "Исп."), rows, (30, 20, 20, 26, 12))
 
     def _categories(self, pdf: FPDF, m: FinanceMetrics) -> None:
-        self._h2(pdf, "Расходы по категориям за период")
+        self._h2(pdf, "Расходы по категориям за период", need=24 + 6.4 * (len(m.expense_by_category) + 1))
         rows = [(c.category, money(c.amount), f"{c.share:.1%}") for c in m.expense_by_category]
         self._table(pdf, ("Категория", "Сумма", "Доля"), rows, (40, 24, 14))
 
     def _gaps(self, pdf: FPDF, m: FinanceMetrics) -> None:
-        self._h2(pdf, "Кассовые разрывы")
+        self._h2(pdf, "Кассовые разрывы", need=22 + 6 * len(m.cash_gaps))
         for g in m.cash_gaps:
             self._text(pdf, f"•  {g.start:%d.%m.%Y} — {g.end:%d.%m.%Y} ({g.days} дн.), минимум {money(g.min_balance)}",
                        color=BAD)
