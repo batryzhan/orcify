@@ -93,3 +93,6 @@ def get_logger(name: str) -> SafeLogger:
 
 def configure_logging(level: str = "INFO") -> None:
     logging.basicConfig(level=level, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+    # httpx пишет полный URL каждого запроса на INFO, а в URL Telegram Bot API лежит токен.
+    for noisy in ("httpx", "httpx2", "httpcore"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)

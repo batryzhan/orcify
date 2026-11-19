@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { formatBytes, formatDate, formatMoney, formatPercent } from "../lib/format";
+import { formatDate, formatMoney, formatPercent } from "../lib/format";
 import type { FinanceMetrics, FinanceResult, MonthlyFlow, RiskLevel } from "../types/api";
 
 const RISK_STYLE: Record<RiskLevel, { label: string; className: string; icon: string }> = {
@@ -20,7 +20,7 @@ export function FinanceResultView({ result }: { result: FinanceResult }) {
   const { metrics, report } = result;
   return (
     <section className="space-y-5">
-      <div className="rounded-xl border border-paper-line bg-paper-card p-5">
+      <div className="rounded-lg bg-white p-5 shadow-card">
         <header className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-lg font-semibold">Финансовая сводка</h2>
           <span className="text-xs text-ink-mute">
@@ -32,7 +32,7 @@ export function FinanceResultView({ result }: { result: FinanceResult }) {
       </div>
 
       {report ? (
-        <div className="space-y-4 rounded-xl border border-paper-line bg-paper-card p-5">
+        <div className="space-y-4 rounded-lg bg-white p-5 shadow-card">
           <p className="text-base font-semibold leading-snug">{report.headline}</p>
           <ul className="list-disc space-y-1 pl-5 text-sm text-ink-soft">
             {report.key_findings.map((f) => (
@@ -76,16 +76,16 @@ export function FinanceResultView({ result }: { result: FinanceResult }) {
         </p>
       )}
 
-      <div className="rounded-xl border border-paper-line bg-paper-card p-5">
+      <div className="rounded-lg bg-white p-5 shadow-card">
         <MonthlyChart monthly={metrics.monthly} />
       </div>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-        <div className="min-w-0 rounded-xl border border-paper-line bg-paper-card p-5">
+        <div className="min-w-0 rounded-lg bg-white p-5 shadow-card">
           <h3 className="mb-3 text-sm font-semibold">Расходы по категориям</h3>
           <CategoryBars metrics={metrics} />
         </div>
-        <div className="min-w-0 space-y-4 rounded-xl border border-paper-line bg-paper-card p-5">
+        <div className="min-w-0 space-y-4 rounded-lg bg-white p-5 shadow-card">
           <div>
             <h3 className="mb-2 text-sm font-semibold">Кассовые разрывы</h3>
             {metrics.cash_gaps.length === 0 ? (
@@ -124,15 +124,6 @@ export function FinanceResultView({ result }: { result: FinanceResult }) {
         </div>
       </div>
 
-      {result.document && (
-        <a
-          href={result.document.download_url}
-          download={result.document.filename}
-          className="inline-flex items-center gap-2 rounded-lg bg-local px-4 py-2 text-sm font-medium text-white hover:bg-local/90"
-        >
-          Скачать отчёт (.md, {formatBytes(result.document.size_bytes)})
-        </a>
-      )}
     </section>
   );
 }

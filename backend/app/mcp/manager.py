@@ -25,8 +25,12 @@ from pydantic import BaseModel, JsonValue, SecretStr
 
 from app.config import Settings
 from app.core.anonymizer import AnonymizationSession
+from app.core.jira_store import JiraStore
 from app.core.logger import get_logger
-from app.mcp.sync_queue import SyncQueue
+from app.core.post_renderer import PostRenderer
+from app.core.post_store import PostStore
+from app.mcp.jira_server import build_jira_server
+from app.mcp.posts_server import build_posts_server
 from app.schemas.intent import DomainEnum
 from app.schemas.mcp import (
     McpCallRequest,
@@ -41,7 +45,7 @@ log = get_logger(__name__)
 
 FallbackHandler = Callable[[McpCallRequest, str], Awaitable[McpCallResult]]
 
-_ERROR_CODE_RE = re.compile(r"finance_input_error:([a-z_]{1,48})")
+_ERROR_CODE_RE = re.compile(r"[a-z]+_input_error:([a-z_]{1,48})")
 
 
 class PiiLeakError(RuntimeError):
@@ -228,7 +232,22 @@ def _ms(started: float) -> int:
 # --- реестр по умолчанию (CLAUDE.md §5.4) ------------------------------------
 
 
-def build_default_manager(settings: Settings, sync_queue: SyncQueue) -> MCPServerManager:
+def build_default_manager(
+    settings: Settings,
+    jira: JiraStore,
+    renderer: PostRenderer,
+    posts: PostStore,
+    *,
+    finance_server: MCPServer | None = None,
+) -> MCPServerManager:
+    """Все MCP-серверы Orcify локальные: данные не покидают устройство.
+
+    Внешние генеративные сервисы (видео через Higgsfield, Atlassian, n8n) убраны:
+    у локальной 4B-модели нет для них MCP, а их задачи закрывают
+    ``awesome_posts`` (рендер постов), ``orcify_jira`` (свой трекер) и Telegram-бот
+    (канал автоматизации, ``app/channels/telegram.py``). Механизм ``is_external``
+    с обязательным LocalAnonymizer сохранён для будущих внешних серверов.
+    """
     manager = MCPServerManager()
 
     manager.register(
@@ -240,51 +259,34 @@ def build_default_manager(settings: Settings, sync_queue: SyncQueue) -> MCPServe
             command=sys.executable,
             args=(str(settings.finance_mcp_script),),
             timeout_s=settings.mcp_timeout_s,
-            enabled=settings.finance_mcp_enabled and settings.finance_mcp_script.is_file(),
-            description="Локальный анализ CSV/Excel-выписок (pandas)",
+            enabled=settings.finance_mcp_enabled and (finance_server is not None or settings.finance_mcp_script.is_file()),
+            description="Локальный анализ CSV-выписок (pandas)",
         ),
         degraded_only,
+        in_process=finance_server,  # тесты подключают тот же сервер in-process, без подпроцесса
     )
     manager.register(
         McpServerSpec(
-            name="higgsfield",
-            domains=frozenset({DomainEnum.SMM}),
-            is_external=True,
-            transport=McpTransport.HTTP,
-            url=settings.higgsfield_mcp_url or None,
-            timeout_s=settings.higgsfield_timeout_s,
-            enabled=bool(settings.higgsfield_mcp_url),
-            description="Генерация видео по сценарию",
-        ),
-        degraded_only,  # storyboard строит SMM-пайплайн из уже готового сценария
-        token=settings.higgsfield_mcp_token,
-    )
-    manager.register(
-        McpServerSpec(
-            name="atlassian",
-            domains=frozenset({DomainEnum.SMM, DomainEnum.HR}),
-            is_external=True,
-            transport=McpTransport.HTTP,
-            url=settings.atlassian_mcp_url or None,
+            name="orcify_jira",
+            domains=frozenset(DomainEnum),
+            is_external=False,
+            transport=McpTransport.STDIO,  # фактически in-process; transport не используется
             timeout_s=settings.mcp_timeout_s,
-            enabled=bool(settings.atlassian_mcp_url),
-            description="Задачи Jira / страницы Confluence",
+            description="Собственный трекер задач Orcify Jira (доска ORC)",
         ),
-        sync_queue.fallback_handler,
-        token=settings.atlassian_mcp_token,
+        degraded_only,  # без трекера пайплайн работает дальше, просто без карточки
+        in_process=build_jira_server(jira),
     )
     manager.register(
         McpServerSpec(
-            name="n8n",
+            name="awesome_posts",
             domains=frozenset({DomainEnum.SMM}),
-            is_external=True,
-            transport=McpTransport.HTTP,
-            url=settings.n8n_mcp_url or None,
+            is_external=False,
+            transport=McpTransport.STDIO,
             timeout_s=settings.mcp_timeout_s,
-            enabled=bool(settings.n8n_mcp_url),
-            description="Запуск автоматизированных воркфлоу",
+            description="Рендер Instagram-постов по шаблонам (Pillow)",
         ),
-        sync_queue.fallback_handler,
-        token=settings.n8n_mcp_token,
+        degraded_only,
+        in_process=build_posts_server(renderer, posts),
     )
     return manager

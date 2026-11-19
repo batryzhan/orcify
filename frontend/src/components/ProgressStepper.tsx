@@ -1,38 +1,6 @@
 import type { ReceivedEvent, SSEState } from "../hooks/useSSE";
+import { STAGE_LABEL as LABELS, STAGE_PLAN as PLAN } from "../lib/stages";
 import type { Domain, TaskStatus } from "../types/api";
-
-const LABELS: Record<TaskStatus, string> = {
-  classifying_intent: "Определение домена",
-  routing_smm: "Маршрутизация в SMM",
-  routing_finance: "Маршрутизация в Finance",
-  anonymizing_pii: "Маскирование PII",
-  analyzing: "Анализ",
-  extracting_entities: "Извлечение реквизитов",
-  rendering_docx: "Рендер .docx по шаблону",
-  analyzing_csv: "Локальный анализ CSV",
-  generating_report: "Аналитическое резюме",
-  generating_video: "Генерация видео",
-  creating_jira_issue: "Задача в Jira",
-  completed: "Готово",
-  failed: "Ошибка",
-};
-
-/** Ожидаемые этапы домена — показываются заранее серыми. */
-const PLAN: Record<Domain | "unknown", TaskStatus[]> = {
-  unknown: ["classifying_intent", "completed"],
-  Legal: ["classifying_intent", "extracting_entities", "rendering_docx", "completed"],
-  Finance: ["classifying_intent", "routing_finance", "analyzing_csv", "generating_report", "completed"],
-  SMM: [
-    "classifying_intent",
-    "routing_smm",
-    "analyzing",
-    "anonymizing_pii",
-    "generating_video",
-    "creating_jira_issue",
-    "completed",
-  ],
-  HR: ["classifying_intent", "completed"],
-};
 
 interface Props {
   events: ReceivedEvent[];
@@ -48,7 +16,8 @@ function seconds(ms: number): string {
 export function ProgressStepper({ events, startedAt, state, domain }: Props) {
   const reached = new Map<TaskStatus, number>();
   events.forEach((e, i) => {
-    if (!reached.has(e.data.status)) reached.set(e.data.status, i);
+    // Переносы карточки (updating_jira) повторяются — в списке этапов их не показываем.
+    if (e.data.status !== "updating_jira" && !reached.has(e.data.status)) reached.set(e.data.status, i);
   });
 
   const latest = events.at(-1)?.data ?? null;
@@ -65,7 +34,7 @@ export function ProgressStepper({ events, startedAt, state, domain }: Props) {
   const total = events.length > 0 && startedAt !== null ? (events.at(-1)?.at ?? startedAt) - startedAt : null;
 
   return (
-    <section aria-label="Ход выполнения" className="rounded-xl border border-paper-line bg-paper-card p-5">
+    <section aria-label="Ход выполнения">
       <div className="mb-4 flex items-baseline justify-between gap-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-soft">Ход выполнения</h2>
         <span className="font-mono text-sm tabular-nums text-ink-soft">
@@ -81,7 +50,7 @@ export function ProgressStepper({ events, startedAt, state, domain }: Props) {
         aria-valuenow={progress}
       >
         <div
-          className={`h-full rounded-full transition-[width] duration-500 ${failed ? "bg-fail" : "bg-local"}`}
+          className={`h-full rounded-full transition-[width] duration-500 ${failed ? "bg-fail" : "bg-brand"}`}
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -106,9 +75,9 @@ export function ProgressStepper({ events, startedAt, state, domain }: Props) {
                   status === "failed"
                     ? "border-fail bg-fail text-white"
                     : done && !isCurrent
-                      ? "border-local bg-local text-white"
+                      ? "border-brand bg-brand text-white"
                       : isCurrent
-                        ? "border-local text-local"
+                        ? "border-brand text-brand"
                         : "border-paper-line text-ink-mute",
                 ].join(" ")}
               >
@@ -129,5 +98,5 @@ export function ProgressStepper({ events, startedAt, state, domain }: Props) {
 }
 
 function Spinner() {
-  return <span className="h-2.5 w-2.5 animate-spin rounded-full border-2 border-local border-t-transparent" />;
+  return <span className="h-2.5 w-2.5 animate-spin rounded-full border-2 border-brand border-t-transparent" />;
 }

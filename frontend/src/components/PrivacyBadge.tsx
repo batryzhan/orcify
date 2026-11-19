@@ -46,7 +46,7 @@ export function PrivacyBadge() {
       className={`flex items-center gap-2.5 rounded-full border px-3.5 py-1.5 text-xs ${
         problem ? "border-warn/30 bg-warn-soft text-warn" : "border-local/25 bg-local-soft text-local"
       }`}
-      title="Запросы обрабатываются локальной моделью. Во внешние сервисы данные уходят только после маскирования PII."
+      title="Запросы обрабатываются локальной моделью. Трекер, рендер постов и анализ CSV тоже работают на устройстве."
     >
       <span className={`h-2 w-2 rounded-full ${problem ? "bg-warn" : "bg-local"} ${ok ? "animate-pulse" : ""}`} />
       {problem ? (

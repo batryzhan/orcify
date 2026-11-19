@@ -6,3 +6,5 @@ httpx>=0.28
 docxtpl>=0.19
 mcp>=1.2
 pandas>=2.2
+pillow>=11
+fpdf2>=2.8

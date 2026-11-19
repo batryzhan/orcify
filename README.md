@@ -10,7 +10,7 @@
 | Сценарий | Что происходит | Где данные |
 |---|---|---|
 | **А. Legal** | Переписка → Gemma извлекает реквизиты (Structured Output) → Pydantic проверяет ИИН/БИН, суммы, даты → `docxtpl` рендерит договор `.docx` | полностью локально |
-| **Б. SMM** | Запрос → Gemma пишет сценарий и раскадровку → `LocalAnonymizer` маскирует PII → Higgsfield MCP (видео) → Atlassian MCP (задача). Если внешний сервис недоступен — storyboard и локальная очередь синхронизации | наружу — только `[PERSON_1]`, `[COMPANY_1]`… |
+| **Б. Awesome Posts** | Запрос → Gemma пишет тексты поста (Structured Output) → MCP `awesome_posts` кладёт их на фон шаблона (Cosmos / Neon / Summit) → PNG 1080×1350 и карточка в Orcify Jira | ничего — всё локально; в Telegram только по кнопке |
 | **В. Finance** | CSV-выписка → локальный MCP-сервер на `pandas` считает агрегаты → Gemma пишет резюме **только по агрегатам** → отчёт `.md` | полностью локально |
 | HR | Домен определяется; пайплайн — следующий этап | — |
 
@@ -48,8 +48,10 @@ npm run dev
 
 ### 3. Внешние MCP-серверы (необязательно)
 
-Без настройки Higgsfield, Atlassian и n8n работают в режиме **Graceful Degradation** (storyboard + очередь
-`backend/var/sync_queue.jsonl`, только анонимизированные данные). Чтобы подключить реальные серверы, задайте в `backend/.env`:
+Окна: Jira (задачи, Planner, drag-and-drop), Awesome Posts, Финансы (PDF-отчёты, прогноз, сравнение месяцев, бюджеты, архив, отправка в Telegram), Договоры. Всё работает локально без настройки.
+Telegram-бот (канал автоматизации вместо n8n) включается токеном от @BotFather в `backend/.env`:
+`TELEGRAM_BOT_API_KEY=…` — бот запускает тех же агентов, что и UI, и отвечает в чат. Фоны шаблонов постов —
+`backend/assets/background` (см. `CREDITS.md`).
 
 ```
 ORCIFY_HIGGSFIELD_MCP_URL=https://…/mcp
