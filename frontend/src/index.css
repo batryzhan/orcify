@@ -9,4 +9,75 @@
   body {
     @apply bg-paper font-sans text-ink;
   }
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand/60 ring-offset-1;
+  }
+}
+
+@layer components {
+  .lozenge {
+    @apply inline-flex items-center rounded-[3px] px-1.5 py-px text-[11px] font-bold uppercase leading-4 tracking-wide;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-[3px] px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40;
+  }
+  .btn-primary {
+    @apply btn bg-brand text-white enabled:hover:bg-brand-hover;
+  }
+  .btn-subtle {
+    @apply btn bg-ink/[0.06] text-ink enabled:hover:bg-ink/[0.12];
+  }
+}
+
+/* Рой агентов: курсоры двигаются через transform из requestAnimationFrame. */
+.swarm-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  overflow: hidden;
+}
+.swarm-agent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform, opacity;
+}
+.swarm-box {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border: 1.5px solid theme("colors.select");
+  border-radius: 4px;
+  will-change: transform, width, height, opacity;
+  transition: opacity 0.25s ease;
+}
+.swarm-box i {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: #fff;
+  border: 1.5px solid theme("colors.select");
+}
+.swarm-box i:nth-child(1) { left: -4px; top: -4px; }
+.swarm-box i:nth-child(2) { right: -4px; top: -4px; }
+.swarm-box i:nth-child(3) { left: -4px; bottom: -4px; }
+.swarm-box i:nth-child(4) { right: -4px; bottom: -4px; }
+.swarm-box b {
+  position: absolute;
+  left: 50%;
+  bottom: -24px;
+  transform: translateX(-50%);
+  background: theme("colors.select");
+  color: #fff;
+  font: 600 10px/1 theme("fontFamily.mono");
+  padding: 3px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swarm-layer {
+    display: none;
+  }
 }

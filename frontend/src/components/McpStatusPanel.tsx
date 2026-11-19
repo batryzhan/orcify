@@ -5,9 +5,8 @@ import type { Domain, McpServerHealth } from "../types/api";
 
 const LABEL: Record<string, string> = {
   local_finance: "Local Finance",
-  higgsfield: "Higgsfield",
-  atlassian: "Atlassian",
-  n8n: "n8n",
+  orcify_jira: "Orcify Jira",
+  awesome_posts: "Awesome Posts",
 };
 
 /** Реестр MCPServerManager: какие серверы подключены к активному домену и в каком они состоянии. */
@@ -28,7 +27,7 @@ export function McpStatusPanel({ activeDomain }: { activeDomain: Domain | null }
   if (servers === null || servers.length === 0) return null;
 
   return (
-    <section className="rounded-xl border border-paper-line bg-paper-card p-5">
+    <section className="rounded-lg bg-white p-5 shadow-card">
       <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-soft">MCP-серверы</h2>
       <ul className="space-y-2.5">
         {servers.map((s) => {
@@ -39,7 +38,7 @@ export function McpStatusPanel({ activeDomain }: { activeDomain: Domain | null }
               <span
                 aria-hidden
                 className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
-                  state === "ok" ? "bg-local" : state === "down" ? "bg-fail" : "bg-ink-mute/40"
+                  state === "ok" ? "bg-[#22a06b]" : state === "down" ? "bg-fail" : "bg-ink-mute/40"
                 }`}
               />
               <div className="min-w-0">

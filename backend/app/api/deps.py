@@ -4,10 +4,15 @@ from __future__ import annotations
 
 from fastapi import Request
 
+from app.channels.telegram import TelegramBot
 from app.core.document_store import DocumentStore
+from app.core.finance_store import BudgetStore, ReportStore
+from app.core.jira_store import JiraStore
 from app.core.legal_service import LegalService
 from app.core.llm_client import LLMClient
 from app.core.pipeline import TaskPipeline
+from app.core.post_renderer import PostRenderer
+from app.core.post_store import PostStore
 from app.core.task_store import TaskStore
 from app.mcp.manager import MCPServerManager
 
@@ -40,3 +45,33 @@ def get_document_store(request: Request) -> DocumentStore:
 def get_mcp_manager(request: Request) -> MCPServerManager:
     manager: MCPServerManager = request.app.state.mcp
     return manager
+
+
+def get_jira_store(request: Request) -> JiraStore:
+    store: JiraStore = request.app.state.jira
+    return store
+
+
+def get_post_store(request: Request) -> PostStore:
+    store: PostStore = request.app.state.posts
+    return store
+
+
+def get_post_renderer(request: Request) -> PostRenderer:
+    renderer: PostRenderer = request.app.state.post_renderer
+    return renderer
+
+
+def get_telegram_bot(request: Request) -> TelegramBot | None:
+    bot: TelegramBot | None = request.app.state.telegram
+    return bot
+
+
+def get_report_store(request: Request) -> ReportStore:
+    store: ReportStore = request.app.state.reports
+    return store
+
+
+def get_budget_store(request: Request) -> BudgetStore:
+    store: BudgetStore = request.app.state.budgets
+    return store

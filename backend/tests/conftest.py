@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable
+from pathlib import Path
 
 import httpx
 import pytest
@@ -13,9 +14,19 @@ Handler = Callable[[httpx.Request], httpx.Response]
 
 
 @pytest.fixture
-def settings() -> Settings:
-    # _env_file=None: тесты не читают реальный backend/.env с ключом.
-    return Settings(_env_file=None, llm_api_key=SecretStr("test-key"), llm_max_attempts=2)  # type: ignore[call-arg]
+def settings(tmp_path: Path) -> Settings:
+    # _env_file=None: тесты не читают реальный backend/.env с ключами (LLM, Telegram).
+    # Доска, посты и чаты — во временной папке, чтобы не трогать backend/var.
+    return Settings(  # type: ignore[call-arg]
+        _env_file=None,
+        llm_api_key=SecretStr("test-key"),
+        llm_max_attempts=2,
+        jira_board_path=tmp_path / "jira_board.json",
+        posts_dir=tmp_path / "posts",
+        finance_reports_dir=tmp_path / "finance_reports",
+        finance_budgets_path=tmp_path / "finance_budgets.json",
+        telegram_chats_path=tmp_path / "telegram_chats.json",
+    )
 
 
 def chat_response(content: str, finish_reason: str = "stop") -> httpx.Response:

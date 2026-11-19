@@ -51,11 +51,21 @@ def test_legal_scenario_renders_contract(settings: Settings) -> None:
 
         assert [(e["status"], e["progress"]) for e in events] == [
             ("classifying_intent", 5),
+            ("creating_jira_issue", 10),
+            ("updating_jira", 20),
             ("extracting_entities", 50),
-            ("rendering_docx", 85),
+            ("rendering_docx", 80),
+            ("updating_jira", 95),
             ("completed", 100),
         ]
         legal = events[-1]["result"]["legal"]  # type: ignore[index]
+        # Карточка в Orcify Jira прошла путь К выполнению -> В работе -> Готово и хранит ссылку на договор.
+        key = events[-1]["result"]["issue_key"]  # type: ignore[index]
+        assert [e["issue"]["status"] for e in events if "issue" in e] == ["todo", "in_progress", "done"]
+        issue = next(i for i in client.get("/api/jira/board").json()["issues"] if i["key"] == key)
+        assert issue["status"] == "done" and issue["assignee"] == "Lawyer"
+        assert issue["attachments"][0]["url"] == legal["document"]["download_url"]
+        assert "ТОО" not in issue["summary"]  # в карточку не копируется наименование клиента
         assert legal["outcome"] == "rendered"
         document = legal["document"]
 
@@ -84,7 +94,11 @@ def test_legal_scenario_needs_input_when_fields_missing_or_invalid(settings: Set
     with make_test_client(settings, handler) as client:
         events = run_task(client, "договор")
 
-    assert [e["status"] for e in events] == ["classifying_intent", "extracting_entities", "completed"]
+    assert [e["status"] for e in events] == [
+        "classifying_intent", "creating_jira_issue", "updating_jira", "extracting_entities", "updating_jira", "completed",
+    ]
+    assert events[-2]["issue"]["status"] == "review"  # type: ignore[index]
+    assert "NEEDS INPUT" in events[-2]["issue"]["labels"]  # type: ignore[index]
     legal = events[-1]["result"]["legal"]  # type: ignore[index]
     assert legal["outcome"] == "needs_input"
     assert legal["missing_fields"] == ["deadline_date"]
@@ -107,18 +121,6 @@ def test_render_contract_endpoint_without_llm(settings: Settings) -> None:
         assert "900101300018" not in json.dumps([e["msg"] for e in bad.json()["detail"]])
 
 
-def test_non_legal_domain_stops_after_routing(settings: Settings) -> None:
-    with make_test_client(settings, lambda _req: chat_response(intent_json("HR", 0.92))) as client:
-        events = run_task(client, "Приказ о приёме на работу")
-
-    assert [e["status"] for e in events] == ["classifying_intent", "completed"]
-    result = events[-1]["result"]
-    assert result == {  # type: ignore[comparison-overlap]
-        "intent": {"domain": "HR", "confidence": 0.92, "reasoning": "Запрос на договор."},
-        "low_confidence": False,
-    }
-
-
 def test_stream_is_single_use(settings: Settings) -> None:
     with make_test_client(settings, lambda _req: chat_response(intent_json("HR"))) as client:
         url = client.post("/api/tasks", json={"text": "x"}).json()["events_url"]
@@ -127,7 +129,7 @@ def test_stream_is_single_use(settings: Settings) -> None:
 
 
 def test_low_confidence_flag(settings: Settings) -> None:
-    with make_test_client(settings, lambda _req: chat_response(intent_json("HR", 0.3))) as client:
+    with make_test_client(settings, lambda _req: chat_response(intent_json("Finance", 0.3))) as client:
         final = run_task(client, "что-нибудь")[-1]
     assert final["result"]["low_confidence"] is True  # type: ignore[index]
 
@@ -140,6 +142,7 @@ def test_task_degrades_when_llm_down(settings: Settings) -> None:
         final = run_task(client, "договор")[-1]  # статус 200, ошибка приходит событием
     assert final["status"] == "failed"
     assert final["error"]["code"] == "connection_error"  # type: ignore[index]
+    assert "issue" not in final  # до классификации карточка не создаётся
 
 
 def test_extraction_failure_is_reported(settings: Settings) -> None:
@@ -148,6 +151,7 @@ def test_extraction_failure_is_reported(settings: Settings) -> None:
         events = run_task(client, "договор")
     assert events[-1]["status"] == "failed"
     assert events[-1]["error"]["code"] == "schema_mismatch"  # type: ignore[index]
+    assert "ERROR" in events[-1]["issue"]["labels"]  # type: ignore[index]
 
 
 def test_create_task_validates_input(settings: Settings) -> None:

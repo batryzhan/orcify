@@ -50,17 +50,6 @@ export interface LegalResult {
   document?: DocumentInfo;
 }
 
-// --- Privacy (schemas/privacy.py) ---
-
-export type PiiCategory = "PERSON" | "COMPANY" | "ADDRESS" | "IIN" | "BIN" | "PHONE" | "EMAIL" | "IBAN" | "CARD";
-
-export interface AnonymizationReport {
-  entities_total: number;
-  by_category: Partial<Record<PiiCategory, number>>;
-  llm_detection_used: boolean;
-  leaked_count: number;
-}
-
 // --- Finance (schemas/finance.py) ---
 
 export interface MonthlyFlow {
@@ -97,6 +86,32 @@ export interface Anomaly {
   score: number;
 }
 
+export interface ForecastPoint {
+  month: string;
+  income: number;
+  expense: number;
+  net: number;
+  balance: number;
+}
+
+export interface CategoryChange {
+  category: string;
+  previous: number;
+  current: number;
+  change: number;
+  change_pct: number | null;
+}
+
+export interface MonthComparison {
+  previous_month: string;
+  current_month: string;
+  income_previous: number;
+  income_current: number;
+  expense_previous: number;
+  expense_current: number;
+  categories: CategoryChange[];
+}
+
 export interface FinanceMetrics {
   rows: number;
   period_start: string;
@@ -115,6 +130,11 @@ export interface FinanceMetrics {
   anomalies: Anomaly[];
   columns_detected: Record<string, string>;
   warnings: string[];
+  forecast: ForecastPoint[];
+  forecast_basis_months: number;
+  month_over_month: MonthComparison | null;
+  budget_month: string | null;
+  last_month_by_category: CategoryTotal[];
 }
 
 export type RiskLevel = "low" | "medium" | "high";
@@ -132,78 +152,228 @@ export interface FinanceReport {
   recommendations: string[];
 }
 
+export interface BudgetItem {
+  category: string;
+  limit: number;
+}
+
+export interface Budgets {
+  items: BudgetItem[];
+}
+
+export interface BudgetCheck {
+  category: string;
+  limit: number;
+  spent: number;
+  remaining: number;
+  ratio: number;
+  over: boolean;
+}
+
+export interface ReportFile {
+  report_id: string;
+  filename: string;
+  download_url: string;
+  sha256: string;
+  size_bytes: number;
+}
+
+export interface ReportRecord {
+  file: ReportFile;
+  created_at: string;
+  period_start: string;
+  period_end: string;
+  rows: number;
+  net: number;
+  closing_balance: number;
+  headline: string | null;
+  issue_key: string | null;
+}
+
 export interface FinanceResult {
   metrics: FinanceMetrics;
   report: FinanceReport | null;
   report_error_code: string | null;
-  document: DocumentInfo | null;
+  report_file: ReportFile | null;
+  budget_checks: BudgetCheck[];
   mcp_latency_ms: number;
 }
 
-// --- SMM (schemas/smm.py) ---
+// --- Orcify Jira (schemas/jira.py) ---
 
-export interface Scene {
-  scene_no: number;
-  duration_s: number;
-  visual: string;
-  voiceover: string;
-  on_screen_text: string;
+export type IssueStatus = "todo" | "in_progress" | "review" | "done";
+export type IssueType = "task" | "story" | "bug" | "epic";
+export type IssuePriority = "highest" | "high" | "medium" | "low";
+
+export interface IssueAttachment {
+  kind: "post" | "document" | "report";
+  title: string;
+  url: string;
 }
 
-export interface VideoScript {
+export interface JiraIssue {
+  key: string;
+  summary: string;
+  description: string;
+  status: IssueStatus;
+  type: IssueType;
+  priority: IssuePriority;
+  labels: string[];
+  story_points: number | null;
+  assignee: string | null;
+  domain: Domain | null;
+  task_id: string | null;
+  parent_key: string | null;
+  attachments: IssueAttachment[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BoardColumn {
+  status: IssueStatus;
   title: string;
-  goal: string;
-  target_audience: string;
-  aspect_ratio: "9:16" | "16:9" | "1:1";
-  duration_s: number;
-  scenes: Scene[];
-  video_prompt: string;
+}
+
+export interface JiraBoard {
+  project_key: string;
+  project_name: string;
+  columns: BoardColumn[];
+  issues: JiraIssue[];
+}
+
+export interface IssueCreate {
+  summary: string;
+  description?: string;
+  status?: IssueStatus;
+  type?: IssueType;
+  priority?: IssuePriority;
+  labels?: string[];
+  story_points?: number;
+  assignee?: string;
+}
+
+export interface IssueUpdate {
+  summary?: string;
+  description?: string;
+  status?: IssueStatus;
+  type?: IssueType;
+  priority?: IssuePriority;
+  labels?: string[];
+  story_points?: number;
+  assignee?: string;
+}
+
+export interface ClearBoardResponse {
+  removed: number;
+}
+
+// --- Awesome Posts (schemas/smm.py) ---
+
+export type PostTemplate = "cosmos" | "neon" | "summit";
+
+export interface PostCopy {
+  template: PostTemplate;
+  kicker: string | null;
+  headline: string;
+  headline_accent: string;
+  subtitle: string;
+  cta: string | null;
+  handle: string;
+  caption: string;
   hashtags: string[];
 }
 
-export interface VideoOutcome {
-  status: "generated" | "storyboard";
-  url?: string | null;
-  error_code?: string | null;
-  latency_ms: number;
+export interface RenderedPost {
+  post_id: string;
+  template: PostTemplate;
+  image_url: string;
+  width: number;
+  height: number;
+  sha256: string;
+  size_bytes: number;
+  render_ms: number;
+  created_at: string;
 }
 
-export interface TrackerOutcome {
-  status: "created" | "queued";
-  issue_key?: string | null;
-  queued_id?: string | null;
-  error_code?: string | null;
+export interface PostResult {
+  content: PostCopy;
+  post: RenderedPost;
+  template_forced: boolean;
 }
 
-export interface SmmResult {
-  script: VideoScript;
-  external_prompt: string;
-  anonymization: AnonymizationReport;
-  video: VideoOutcome;
-  tracker: TrackerOutcome;
-  storyboard: DocumentInfo;
+export interface PostRecord {
+  post: RenderedPost;
+  content: PostCopy;
+  issue_key: string | null;
+}
+
+export interface TemplateInfo {
+  id: PostTemplate;
+  title: string;
+  use_case: string;
+  background_url: string;
+  preview_url: string;
+  credit: string;
+}
+
+// --- HR (schemas/hr.py) ---
+
+export interface PlannedIssue {
+  summary: string;
+  description: string;
+  type: IssueType;
+  priority: IssuePriority;
+  story_points: number;
+  assignee_role: string;
+}
+
+export interface HrResult {
+  plan: { epic: string; issues: PlannedIssue[] };
+  issue_keys: string[];
+}
+
+// --- Telegram (schemas/telegram.py) ---
+
+export interface TelegramStatus {
+  configured: boolean;
+  polling: boolean;
+  bot_username: string | null;
+  bot_name: string | null;
+  linked_chats: number;
+  handled_messages: number;
+  completed_runs: number;
+  last_error: string | null;
+}
+
+export interface SendPostResponse {
+  sent: number;
+  linked_chats: number;
 }
 
 export interface TaskResult {
   intent: IntentClassificationResult;
   low_confidence: boolean;
+  issue_key?: string;
   legal?: LegalResult;
   finance?: FinanceResult;
-  smm?: SmmResult;
+  smm?: PostResult;
+  hr?: HrResult;
 }
 
 export type TaskStatus =
   | "classifying_intent"
+  | "creating_jira_issue"
+  | "updating_jira"
   | "routing_smm"
   | "routing_finance"
-  | "anonymizing_pii"
-  | "analyzing"
   | "extracting_entities"
   | "rendering_docx"
   | "analyzing_csv"
   | "generating_report"
-  | "generating_video"
-  | "creating_jira_issue"
+  | "rendering_pdf"
+  | "writing_copy"
+  | "rendering_post"
+  | "planning_tasks"
   | "completed"
   | "failed";
 
@@ -218,7 +388,8 @@ export interface ProgressEvent {
   /** Домен известен после Этапа 1 Smart Routing и приходит во всех следующих событиях. */
   domain?: Domain;
   message?: string;
-  anonymization?: AnonymizationReport;
+  /** Снимок карточки Orcify Jira после создания/переноса — по нему анимируется рой агентов. */
+  issue?: JiraIssue;
   result?: TaskResult;
   error?: ErrorInfo;
 }
@@ -233,6 +404,9 @@ export interface TaskCreateRequest {
   text: string;
   attachment?: TaskAttachment;
   opening_balance?: number;
+  post_template?: PostTemplate;
+  /** Домен задаёт окно интерфейса; без него домен определяет Smart Router. */
+  domain?: Domain;
 }
 
 export interface McpServerHealth {
@@ -279,16 +453,18 @@ export const TERMINAL_STATUSES: ReadonlySet<TaskStatus> = new Set<TaskStatus>(["
 
 const ALL_STATUSES: ReadonlySet<string> = new Set<TaskStatus>([
   "classifying_intent",
+  "creating_jira_issue",
+  "updating_jira",
   "routing_smm",
   "routing_finance",
-  "anonymizing_pii",
-  "analyzing",
   "extracting_entities",
   "rendering_docx",
   "analyzing_csv",
   "generating_report",
-  "generating_video",
-  "creating_jira_issue",
+  "rendering_pdf",
+  "writing_copy",
+  "rendering_post",
+  "planning_tasks",
   "completed",
   "failed",
 ]);

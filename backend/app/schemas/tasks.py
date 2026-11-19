@@ -7,6 +7,9 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.schemas.intent import DomainEnum
+from app.schemas.smm import PostTemplate
+
 
 class TaskAttachment(BaseModel):
     """CSV-файл, прочитанный в браузере как текст (на диск не сохраняется)."""
@@ -24,6 +27,10 @@ class TaskCreateRequest(BaseModel):
     text: str = Field(min_length=1, max_length=50_000)
     attachment: TaskAttachment | None = None
     opening_balance: float = Field(default=0.0, description="Остаток на начало периода для расчёта кассовых разрывов")
+    # Явный выбор шаблона поста в UI; None — шаблон выбирает модель.
+    post_template: PostTemplate | None = None
+    # Домен, заданный окном интерфейса; None — домен определяет Smart Router.
+    domain: DomainEnum | None = None
 
 
 class TaskCreatedResponse(BaseModel):

@@ -9,7 +9,7 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field, HttpUrl, SecretStr
+from pydantic import AliasChoices, Field, HttpUrl, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
@@ -21,6 +21,7 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         env_prefix="ORCIFY_",
         extra="ignore",
+        populate_by_name=True,
     )
 
     # Локальная LLM: Unsloth Studio, OpenAI-совместимый API.
@@ -59,19 +60,30 @@ class Settings(BaseSettings):
     # Локальный финансовый MCP (stdio, запускается этим же интерпретатором).
     finance_mcp_enabled: bool = True
     finance_mcp_script: Path = BACKEND_DIR.parent / "mcp_servers" / "local_finance_server" / "server.py"
-    # Внешние MCP: пустой URL = сервер не настроен -> graceful degradation.
-    higgsfield_mcp_url: str = ""
-    higgsfield_mcp_token: SecretStr = SecretStr("")
-    higgsfield_tool: str = "generate_video"
-    higgsfield_timeout_s: float = Field(default=300.0, gt=0)
-    atlassian_mcp_url: str = ""
-    atlassian_mcp_token: SecretStr = SecretStr("")
-    atlassian_tool: str = "createJiraIssue"
-    atlassian_project_key: str = "MKT"
-    n8n_mcp_url: str = ""
-    n8n_mcp_token: SecretStr = SecretStr("")
-    # Очередь отложенной синхронизации: хранит только анонимизированные payload.
-    sync_queue_path: Path = BACKEND_DIR / "var" / "sync_queue.jsonl"
+
+    # --- Orcify Jira: собственный локальный трекер (in-process MCP "orcify_jira") ---
+    jira_board_path: Path | None = BACKEND_DIR / "var" / "jira_board.json"
+    jira_project_key: str = Field(default="ORC", pattern=r"^[A-Z][A-Z0-9]{1,9}$")
+
+    # --- Awesome Posts: локальный рендер Instagram-постов (in-process MCP "awesome_posts") ---
+    assets_dir: Path = BACKEND_DIR / "assets"
+    posts_dir: Path = BACKEND_DIR / "var" / "posts"
+    default_post_handle: str = "@orcify"
+
+    # --- Окно «Финансы»: бюджеты и архив PDF-отчётов (локально) ---
+    finance_reports_dir: Path = BACKEND_DIR / "var" / "finance_reports"
+    finance_budgets_path: Path | None = BACKEND_DIR / "var" / "finance_budgets.json"
+
+    # --- Telegram-бот (канал автоматизации вместо n8n) ---
+    # Токен читается из TELEGRAM_BOT_API_KEY (так он назван в backend/.env).
+    telegram_bot_token: SecretStr = Field(
+        default=SecretStr(""),
+        validation_alias=AliasChoices("TELEGRAM_BOT_API_KEY", "ORCIFY_TELEGRAM_BOT_TOKEN", "telegram_bot_token"),
+    )
+    telegram_polling: bool = True
+    telegram_api_base: str = "https://api.telegram.org"
+    telegram_chats_path: Path | None = BACKEND_DIR / "var" / "telegram_chats.json"
+    telegram_max_file_bytes: int = Field(default=5_000_000, gt=0)
 
     prompts_dir: Path = BACKEND_DIR / "prompts"
     templates_dir: Path = BACKEND_DIR / "templates"
